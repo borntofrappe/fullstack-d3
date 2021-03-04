@@ -126,3 +126,5 @@ bounds.append('g').call(yAxisGenerator);
 ## 02 - Scatterplot
 
 The second visualization is useful to repeat the concepts introduced with the line chart and also describe the concept of a data join.
+
+## 03 - Bar Charts
