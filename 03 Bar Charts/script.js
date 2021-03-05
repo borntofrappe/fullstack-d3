@@ -33,8 +33,16 @@ async function drawBarCharts() {
       .range([0, dimensions.boundedWidth])
       .nice();
 
+    /*
     const binGenerator = d3
       .histogram()
+      .domain(xScale.domain())
+      .value(metricAccessor)
+      .thresholds(12);
+    */
+
+    const binGenerator = d3
+      .bin()
       .domain(xScale.domain())
       .value(metricAccessor)
       .thresholds(12);
@@ -73,9 +81,9 @@ async function drawBarCharts() {
     const binsGroup = bounds.append('g');
 
     binsGroup
-      .attr('tabindex', '0')
       .attr('role', 'list')
-      .attr('aria-label', 'histogram bars');
+      .attr('tabindex', '0')
+      .attr('aria-label', 'Histogram bars');
 
     const barPadding = 4;
     const binGroups = binsGroup
@@ -85,8 +93,8 @@ async function drawBarCharts() {
       .append('g');
 
     binGroups
-      .attr('tabindex', '0')
       .attr('role', 'listitem')
+      .attr('tabindex', '0')
       .attr(
         'aria-label',
         d =>
@@ -99,7 +107,7 @@ async function drawBarCharts() {
       .append('rect')
       .attr('x', d => xScale(d.x0) + barPadding / 2)
       .attr('width', d =>
-        d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding / 2])
+        d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding])
       )
       .attr('y', d => yScale(yAccessor(d)))
       .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)))
@@ -157,9 +165,6 @@ async function drawBarCharts() {
       .attr('y', dimensions.margin.bottom - 10)
       .attr('font-size', 15)
       .attr('fill', 'currentColor');
-
-    const yAxisGenerator = d3.axisLeft().scale(yScale);
-    bounds.append('g').call(yAxisGenerator);
   }
 
   // call drawHistogram to draw a bar chart for each metric

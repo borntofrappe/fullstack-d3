@@ -60,9 +60,9 @@ async function drawScatterplot() {
     .data(dataset)
     .enter()
     .append('circle')
+    .attr('r', 5)
     .attr('cx', d => xScale(xAccessor(d)))
     .attr('cy', d => yScale(yAccessor(d)))
-    .attr('r', 5)
     .attr('fill', d => colorScale(colorAccessor(d)));
 
   /*
@@ -77,9 +77,9 @@ async function drawScatterplot() {
 
   enterSelection
     .append('circle')
+    .attr('r', 5)
     .attr('cx', d => xScale(xAccessor(d)))
     .attr('cy', d => yScale(yAccessor(d)))
-    .attr('r', 5)
     .attr('fill', d => colorScale(colorAccessor(d)));
   */
 
@@ -89,9 +89,9 @@ async function drawScatterplot() {
     .selectAll('circle')
     .data(dataset)
     .join('circle')
+    .attr('r', 5)
     .attr('cx', d => xScale(xAccessor(d)))
     .attr('cy', d => yScale(yAccessor(d)))
-    .attr('r', 5)
     .attr('fill', d => colorScale(colorAccessor(d)));
   */
 
@@ -103,9 +103,9 @@ async function drawScatterplot() {
     .join(enter =>
       enter
         .append('circle')
+        .attr('r', 5)
         .attr('cx', d => xScale(xAccessor(d)))
         .attr('cy', d => yScale(yAccessor(d)))
-        .attr('r', 5)
         .attr('fill', d => colorScale(colorAccessor(d)))
     );
   */
