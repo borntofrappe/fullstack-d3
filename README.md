@@ -334,3 +334,13 @@ The visualization is made accessible for screen readers with a selection of elem
     </g>
   </svg>
   ```
+
+## 04 - Animation and Transitions
+
+The chapter describes three methods to smoothly change a value over time, with the `<animate>` element, CSS's `transition` property and D3's own `transition` method. With the project folder, however, I elected to focus on the last approach only.
+
+### Fixtures and updates
+
+### Data binding
+
+### transition

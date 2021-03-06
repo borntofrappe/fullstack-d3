@@ -1,0 +1,33 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+#wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 800px;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+#wrapper svg {
+  width: 600px;
+  height: auto;
+  display: block;
+}
+
+#wrapper button {
+  font-family: sans-serif;
+  font-size: 1.1rem;
+  background: rgb(125, 201, 10);
+  color: white;
+  border: none;
+  border-bottom: 0.25rem solid rgb(27, 123, 27);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
+}
