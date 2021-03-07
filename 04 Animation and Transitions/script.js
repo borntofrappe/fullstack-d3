@@ -1,4 +1,3 @@
-/* global d3 */
 async function drawBarChart() {
   /* ACCESS DATA
   the accessor function depends on the metric of the individual bar chart
@@ -22,9 +21,62 @@ async function drawBarChart() {
   dimensions.boundedHeight =
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
+  /* DRAW DATA (STATIC) */
+  const wrapper = d3
+    .select('#wrapper')
+    .append('svg')
+    .attr('width', dimensions.width)
+    .attr('height', dimensions.height);
+
+  wrapper.attr('role', 'figure').attr('tabindex', '0');
+
+  wrapper.append('title');
+
+  const bounds = wrapper
+    .append('g')
+    .style(
+      'transform',
+      `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
+    );
+
+  const binsGroup = bounds.append('g');
+  const axisGroup = bounds.append('g');
+  const meanGroup = bounds.append('g');
+
+  axisGroup
+    .append('text')
+    .style('text-transform', 'capitalize')
+    .attr('x', dimensions.boundedWidth / 2)
+    .attr('y', dimensions.boundedHeight + dimensions.margin.bottom - 10)
+    .attr('font-size', 15)
+    .attr('fill', 'currentColor');
+
+  const xAxisGroup = axisGroup
+    .append('g')
+    .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`);
+
+  meanGroup
+    .append('path')
+    .attr('stroke', 'maroon')
+    .attr('stroke-width', 2)
+    .attr('stroke-dasharray', 6);
+
+  binsGroup
+    .attr('id', 'bins')
+    .attr('role', 'list')
+    .attr('tabindex', '0')
+    .attr('aria-label', 'Histogram bars');
+
+  meanGroup
+    .append('text')
+    .attr('fill', 'maroon')
+    .style('font-size', 12)
+    .style('font-family', 'sans-serif');
+
   function drawHistogram(metric) {
     /* ACCESS DATA */
     const metricAccessor = d => d[metric];
+    const yAccessor = d => d.length;
 
     /* SCALES */
     const xScale = d3
@@ -41,53 +93,54 @@ async function drawBarChart() {
 
     const bins = binGenerator(dataset);
 
-    const yAccessor = d => d.length;
     const yScale = d3
       .scaleLinear()
       .domain([0, d3.max(bins, yAccessor)])
       .range([dimensions.boundedHeight, 0])
       .nice();
 
-    /* DRAW DATA */
-    const wrapper = d3
-      .select('#wrapper')
-      .append('svg')
-      .attr('width', dimensions.width)
-      .attr('height', dimensions.height);
-
-    wrapper.attr('role', 'figure').attr('tabindex', '0');
-
+    /* DRAW DATA (DYNAMIC) */
     wrapper
-      .append('title')
+      .select('title')
       .text(
         `Histogram plotting the distribution of ${metric} for the city of New York and in 2016`
       );
 
-    const bounds = wrapper
-      .append('g')
-      .style(
-        'transform',
-        `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
-      );
+    const exitTransition = d3.transition().duration(500);
 
-    const binsGroup = bounds.append('g');
+    const updateTransition = exitTransition
+      .transition()
+      .duration(1000);
 
-    binsGroup
-      .attr('id', 'bins')
-      .attr('role', 'list')
-      .attr('tabindex', '0')
-      .attr('aria-label', 'Histogram bars');
+    const enterTransition = updateTransition
+      .transition()
+      .duration(1000);
 
     const barPadding = 4;
-    const binGroups = binsGroup
-      .selectAll('g')
-      .data(bins)
-      .enter()
-      .append('g');
 
-    binGroups
+    const binGroups = binsGroup.selectAll('g').data(bins);
+    const newBinGroups = binGroups.enter().append('g');
+    const oldBinGroups = binGroups.exit();
+
+    oldBinGroups.transition(exitTransition).remove();
+
+    oldBinGroups
+      .select('text')
+      .transition(exitTransition)
+      .attr('y', dimensions.boundedHeight)
+      .style('opacity', 0);
+
+    oldBinGroups
+      .select('rect')
+      .attr('fill', 'red')
+      .transition(exitTransition)
+      .attr('y', dimensions.boundedHeight)
+      .attr('height', 0);
+
+    newBinGroups
       .attr('role', 'listitem')
       .attr('tabindex', '0')
+      .merge(binGroups)
       .attr(
         'aria-label',
         d =>
@@ -96,71 +149,76 @@ async function drawBarChart() {
           } and ${d.x1} for a total of ${yAccessor(d)} times`
       );
 
-    binGroups
-      .append('rect')
-      .attr('x', d => xScale(d.x0) + barPadding / 2)
-      .attr('width', d =>
-        d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding])
-      )
-      .attr('y', d => yScale(yAccessor(d)))
-      .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)))
-      .attr('fill', 'cornflowerblue');
-
-    const textGroups = binGroups.filter(yAccessor);
-
-    textGroups
+    newBinGroups
+      .filter(yAccessor)
       .append('text')
-      .attr('x', d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
-      .attr('y', d => yScale(yAccessor(d)) - 5)
       .text(d => yAccessor(d))
+      .attr('x', d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
       .attr('text-anchor', 'middle')
       .attr('fill', 'darkslategrey')
       .style('font-size', 12)
-      .style('font-family', 'sans-serif');
+      .style('font-family', 'sans-serif')
+      .attr('y', dimensions.boundedHeight)
+      .style('opacity', 0)
+      .transition(enterTransition)
+      .style('opacity', 1)
+      .attr('y', d => yScale(yAccessor(d)) - 5);
+
+    newBinGroups
+      .append('rect')
+      .attr('x', d => xScale(d.x0) + barPadding / 2)
+      .attr('width', d => d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding]))
+      .attr('fill', 'cornflowerblue')
+      .attr('y', dimensions.boundedHeight)
+      .attr('height', 0)
+      .attr('fill', 'yellowgreen')
+      .transition(enterTransition)
+      .attr('y', d => yScale(yAccessor(d)))
+      .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)))
+      .transition()
+      .attr('fill', 'cornflowerblue')
+
+    binGroups
+      .filter(yAccessor)
+      .select('text')
+      .text(d => yAccessor(d))
+      .transition(updateTransition)
+      .attr('x', d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
+      .attr('y', d => yScale(yAccessor(d)) - 5);
+    
+    binGroups
+      .select('rect')
+      .transition(updateTransition)
+      .attr('x', d => xScale(d.x0) + barPadding / 2)
+      .attr('width', d => d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding]))
+      .attr('y', d => yScale(yAccessor(d)))
+      .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)));
 
     const mean = d3.mean(dataset, metricAccessor);
-
-    const meanGroup = bounds
-      .append('g')
+    
+    meanGroup
+      .transition(enterTransition)
+      .delay(100)
       .style('transform', `translate(${xScale(mean)}px, 0px)`);
 
-    meanGroup
-      .append('line')
-      .attr('x1', 0)
-      .attr('x2', 0)
-      .attr('y1', 0)
-      .attr('y2', dimensions.boundedHeight)
-      .attr('stroke', 'maroon')
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', 6);
+    meanGroup.select('path').attr('d', `M 0 0 V ${dimensions.boundedHeight}`);
 
     meanGroup
-      .append('text')
+      .select('text')
       .text('Mean')
       .attr('x', 5)
-      .attr('y', 5)
-      .attr('fill', 'maroon')
-      .style('font-size', 12)
-      .style('font-family', 'sans-serif');
+      .attr('y', 5);
 
     /* PERIPHERALS */
     const xAxisGenerator = d3.axisBottom().scale(xScale);
-    const xAxis = bounds
-      .append('g')
-      .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
+    xAxisGroup.selectAll('*').remove();
+
+    xAxisGroup
       .call(xAxisGenerator);
 
-    xAxis
-      .append('text')
-      .text(metric)
-      .style('text-transform', 'capitalize')
-      .attr('x', dimensions.boundedWidth / 2)
-      .attr('y', dimensions.margin.bottom - 10)
-      .attr('font-size', 15)
-      .attr('fill', 'currentColor');
+    axisGroup.select('text').text(metric);
   }
 
-  // call drawHistogram to draw a bar chart for each metric
   const metrics = [
     'windSpeed',
     'moonPhase',
@@ -172,55 +230,17 @@ async function drawBarChart() {
     'temperatureMax',
   ];
 
-  drawHistogram(metrics[0]);
+  let indexMetric = 0;
 
-  function updateHistogram(metric) {
-    /* ACCESS DATA */
-    const metricAccessor = d => d[metric];
+  drawHistogram(metrics[indexMetric]);
 
-    /* SCALES */
-    const xScale = d3
-      .scaleLinear()
-      .domain(d3.extent(dataset, metricAccessor))
-      .range([0, dimensions.boundedWidth])
-      .nice();
-
-    const binGenerator = d3
-      .bin()
-      .domain(xScale.domain())
-      .value(metricAccessor)
-      .thresholds(12);
-
-    const bins = binGenerator(dataset);
-
-    const yAccessor = d => d.length;
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(bins, yAccessor)])
-      .range([dimensions.boundedHeight, 0])
-      .nice();
-
-    /* DRAW DATA */
-
-    d3
-      .select('#wrapper svg title')
-      .text(
-      `Histogram plotting the distribution of ${metric} for the city of New York and in 2016`
-    );
-    
-    d3
-      .select('#wrapper svg #bins')
-      .selectAll('g')
-      .data(bins)
-      .join('')
-
-  }
-
-  // BUTTON
   d3.select('#wrapper')
     .append('button')
     .text('Change metric')
-    .on('click', () => updateHistogram(metrics[1]));
+    .on('click', () => {
+      indexMetric = (indexMetric + 1) % metrics.length;
+      drawHistogram(metrics[indexMetric]);
+    });
 }
 
 drawBarChart();

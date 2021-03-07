@@ -337,10 +337,144 @@ The visualization is made accessible for screen readers with a selection of elem
 
 ## 04 - Animation and Transitions
 
-The chapter describes three methods to smoothly change a value over time, with the `<animate>` element, CSS's `transition` property and D3's own `transition` method. With the project folder, however, I elected to focus on the last approach only.
+The chapter describes three methods to smoothly change a value over time, with the `<animate>` element (SVG), the`transition` property (CSS) and the `transition` method (D3). With the project folder, I elected to focus on the last approach only.
 
-### Fixtures and updates
+D3 provides a `.transition` method to interpolate between a start and end state. Essentially, it is enough to apply a transition as follows:
 
-### Data binding
+```js
+d3.select('rect').attr('width', 0).transition().attr('width', 100);
+```
 
-### transition
+In this instance, the selected rectangle is updated to have a final width of `100`.
+
+Before introducing the method, however, it is important to have a discussion on the structure of the visualization, and again on the concept of a data join.
+
+### Static and Dynamic
+
+The function creating the visualization is divided between static and dynamic instructions. Static are those lines included regardless of the state of the visualization: the object describing the dimensions of the SVG element `<svg>`, the SVG wrapper itself, the group element making up the bounds. Dynamic are those lines which change depending on the input data, and in the specific example the metric chosen for the histogram: the scales, the position and height of the rectangles.
+
+### Data Join
+
+The concept of the data join, as introduced in the second chapter _02 - Scatterplot_, allows to bind data to DOM element, and it is here essential to have D3 manage the transition new, existing and old elements.
+
+`drawHistogram` begins by selecting group elements `<g>` and binding the data provided by the bins.
+
+```js
+const binGroups = binsGroup.selectAll('g').data(bins);
+```
+
+From this starting point, `binGroups` describes the update selection, in other words those group elements `<g>` which already exist. New (missing) elements are identified with the `enter` function, while old (excessive) elements with the `exit` method.
+
+```js
+const newBinGroups = binGroups.enter();
+const oldBinGroups = binGroups.exit();
+```
+
+With this structure, it is finally possible to update the visualization as needed. In the speficic example:
+
+- old elements are removed with the `remove` function
+
+  ```js
+  oldBinGroups.remove();
+  ```
+
+- new elements are included through a group element
+
+  ```js
+  const newBinGroups = binGroups.enter().append('g');
+  ```
+
+  The groups are then used to add the desired label and rectangle
+
+  ```js
+  newBinGroups.filter(yAccessor).append('text');
+  // set attributes and properties
+
+  newBinGroups.append('rect');
+  // set attributes and properties
+  ```
+
+- existing element modify the position and text of the labels, not to mention the position and size of the bars
+
+  ```js
+  binGroups.filter(yAccessor).select('text');
+  // modify attributes and properties
+
+  binGroups.select('rect');
+  // modify attributes and properties
+  ```
+
+### Transition
+
+Coming back to the topic of the chapter, `transition` is applied to a selection object creating a transition object.
+
+```js
+binGroups
+  .select('rect')
+  .transition()
+  .attr('y', (d) => yScale(yAccessor(d)));
+```
+
+The change can be customized in duration and delay with matching functions.
+
+```js
+binGroups
+  .select('rect')
+  .transition()
+  .duration(500)
+  .delay(100)
+  .attr('y', (d) => yScale(yAccessor(d)));
+```
+
+Multiple transitions can also be chained by using the method repeatedly.
+
+```js
+binGroups
+  .select('rect')
+  .transition()
+  .duration(500)
+  .delay(100)
+  .attr('y', (d) => yScale(yAccessor(d)))
+  .transition()
+  .attr('fill', 'cornflowerblue');
+```
+
+
+In this instance the color is modified _after_ the rectangle rectangle reaches its `y` coordinate.
+
+On its own, `transition` is already useful to smoothly change attributes and properties. It is however possible to initialize a transition on the root element with `d3.transition`, and later reference the transition as the argument of a `transition` function.
+
+```js
+const updateTransition = d3.transition().duration(500).delay(100);
+
+binGroups
+  .select('rect')
+  .transition(updateTransition)
+  .attr('y', (d) => yScale(yAccessor(d)));
+```
+
+With this structure the necessary transitions are initialised ahead of time, and can be repeated throughout the code to synchronize change on multiple elements.
+
+```js
+binGroups
+  .select('rect')
+  .transition(updateTransition)
+  // ...
+
+binGroups
+  .filter(yAccessor)
+  .select('text')
+  .transition(updateTransition)
+  // ...
+```
+
+Multiple transitions can then be chained to have the change happen in sequence.
+
+```js
+const exitTransition = d3.transition().duration(500);
+
+const updateTransition = exitTransition
+  .transition()
+  .duration(1000);
+```
+
