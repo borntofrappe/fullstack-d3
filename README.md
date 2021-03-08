@@ -679,3 +679,35 @@ rectangles.dispatch('mouseenter').on('mouseenter', null);
 ```
 
 In this instance, the logic described in the callback function is executed before removing the associated handler.
+
+### Bar Chart
+
+The first example shows user interaction with the same bar charts created for the third chapter, _03 Bar Charts_. 
+
+The visualizatiojn is first updated with a stylesheet, which includes a first type of interaction through the `:hover` pseudo class.
+
+```css
+#wrapper svg rect:hover {
+  fill: purple;
+}
+```
+
+As the mouse hovers on the rectangles, the color is updated to the chosen hue.
+
+_Please note:_ CSS specificity. The property overrides the `fill` attribute. 
+
+```js
+rectangles
+  .attr('fill', 'cornflowerblue');
+```
+
+
+Had the color been set inline and with the `.style` method, the solution would not have worked (at least without the `!important` keyword).
+
+```js
+rectangles
+  // .attr('fill', 'cornflowerblue');
+  .style('fill', 'cornflowerblue');
+```
+
+Past this stylistic update, the visualization is also updated with a `<div>` element describing a tooltip.
