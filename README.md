@@ -602,3 +602,80 @@ const lineGroup = bounds
   const lineGroup = bounds.append('g');
   // .attr('clip-path', 'url(#bounds-clip-path)');
   ```
+
+## 05 - Interactions
+
+_Please note:_ version 6 of the D3 library revised event handlers considerably. Where needed, I try to highlight the code for both version 6 and version 5, used in the book.
+
+### Events
+
+Listen to events through the `on` method. On a selection, this method describes the event and a callback function.
+
+```js
+selection.on('mouseenter', function () {
+  // do something
+});
+```
+
+The function is called when the event is registered, and has knowledge of the event and the bound data.
+
+```js
+const rectangles = bounds.selectAll('rect').data(dates).enter().append('rect');
+
+rectangles.on('mouseenter', function (event, d) {
+  // do something
+});
+```
+
+In this example, the function is executed as the mouse enters in a rectangle. `event` provides details behind the event, like the `x`, `y` coordinates of the event, while `d` the individual date bound to the specific rectangle.
+
+_Please note:_ prior to D3 version 6, the callback function is called with three values: the datum bound to the selection, the index and the collection to which the element belongs.
+
+```js
+rectangles.on('mouseenter', function (d, i, nodes) {
+  // do something
+});
+```
+
+Again and in the rectangles' example, `d` would descibe the date, `nodes` the collection of rectangles, and `i` the index of the invoking rectangle in said collection. To know about the event, the library would have provided the global `d3.event`.
+
+It is still possible to know about the index and nodes collection, but with a different syntax.
+
+```js
+rectangles.on('mouseenter', function (event, d) {
+  const nodes = rectangles.nodes();
+  const i = nodes.indexOf(this);
+});
+```
+
+_Plese also note:_ with the `function` keyword, `this` describes the element behind the event. The concept is useful to target the specific element.
+
+```js
+rectangles.on('mouseenter', function (event, d) {
+  d3.select(this);
+  // update the hovered rectangle
+});
+```
+
+With ES6 arrow syntax, `=>`, and since version 6, it is still possible to have a reference to the element with `event.currentTarget`.
+
+```js
+rectangles.on('mouseenter', (event, d) => {
+  d3.select(event.currentTarget);
+  // update the hovered rectangle
+});
+```
+
+With the `on` keyword the library attaches event handlers to the selected element. With `null` instead of a callback function, it is then possible to destroy said handlers.
+
+```js
+rectangles.on('mouseenter', null);
+```
+
+The `dispatch` method finally allows to execute the code of a specific, input event handler.
+
+```js
+rectangles.dispatch('mouseenter').on('mouseenter', null);
+```
+
+In this instance, the logic described in the callback function is executed before removing the associated handler.
