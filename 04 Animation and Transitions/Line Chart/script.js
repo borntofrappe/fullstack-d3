@@ -83,13 +83,12 @@ async function drawLineChart() {
       .domain(d3.extent(data, yAccessor))
       .range([dimensions.boundedHeight, 0]);
 
+    /* DRAW DATA (DYNAMIC) */
     const lineGenerator = d3
       .line()
       .x(d => xScale(xAccessor(d)))
       .y(d => yScale(yAccessor(d)));
 
-
-    /* DRAW DATA (DYNAMIC) */
     const transition = d3.transition().duration(1000);
 
     const freezingTemperatureY = d3.min([dimensions.boundedHeight, yScale(32)]);
@@ -98,15 +97,19 @@ async function drawLineChart() {
       .attr('y', freezingTemperatureY)
       .attr('height', dimensions.boundedHeight - freezingTemperatureY);
 
-    const lastTwoPoints = data.slice(-2);
-    const pixelsBetweenLastPoints =
-      xScale(xAccessor(lastTwoPoints[1])) - xScale(xAccessor(lastTwoPoints[0]));
+    const pixelsBetweenSuccessivePoints =
+      xScale(xAccessor(data[1])) - xScale(xAccessor(data[0]));
 
+    /*
+    line
+      .transition(transition)
+      .attr('d', lineGenerator(data))
+    */
     line
       .attr('d', lineGenerator(data))
-      .style('transform', `translate(${pixelsBetweenLastPoints}px, 0px)`)
+      .style('transform', `translate(${pixelsBetweenSuccessivePoints}px, 0px)`)
       .transition(transition)
-      .style('transform', 'none');
+      .style('transform', 'translate(0px, 0px)');
 
     const yAxisGenerator = d3.axisLeft().scale(yScale);
     yAxisGroup.transition(transition).call(yAxisGenerator);

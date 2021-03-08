@@ -2,7 +2,7 @@ async function drawBarChart() {
   /* ACCESS DATA
   the accessor function depends on the metric of the individual bar chart
   */
-  const dataset = await d3.json('../nyc_weather_data.json');
+  const dataset = await d3.json('../../nyc_weather_data.json');
 
   /* CHART DIMENSIONS */
   const dimensions = {

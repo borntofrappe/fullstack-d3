@@ -76,7 +76,7 @@ The line chart is included in an SVG element `<svg>` and it is furthermore insid
 </svg>
 ```
 
-This layered structure is useful to safely draw the visualization and peripherals (axes, labels), without fear of cropping the visuals. Anything falling outside of the `<svg>` SVG element `<svg>` is indeed not rendered.
+This layered structure is useful to safely draw the visualization and peripherals (axis, labels), without fear of cropping the visuals. Anything falling outside of the `<svg>` SVG element `<svg>` is indeed not rendered.
 
 The wrapping SVG element is attributed an arbitrary width, height and margin.
 
@@ -347,13 +347,15 @@ d3.select('rect').attr('width', 0).transition().attr('width', 100);
 
 In this instance, the selected rectangle is updated to have a final width of `100`.
 
-Before introducing the method, however, it is important to have a discussion on the structure of the visualization, and again on the concept of a data join.
+### Bar Chart
 
-### Static and Dynamic
+Before introducing the `transition` method in the context of a bar chart, it is important to have a discussion on the structure of the visualization, and again on the concept of a data join.
+
+#### Static and Dynamic
 
 The function creating the visualization is divided between static and dynamic instructions. Static are those lines included regardless of the state of the visualization: the object describing the dimensions of the SVG element `<svg>`, the SVG wrapper itself, the group element making up the bounds. Dynamic are those lines which change depending on the input data, and in the specific example the metric chosen for the histogram: the scales, the position and height of the rectangles.
 
-### Data Join
+#### Data Join
 
 The concept of the data join, as introduced in the second chapter _02 - Scatterplot_, allows to bind data to DOM element, and it is here essential to have D3 manage the transition new, existing and old elements.
 
@@ -404,7 +406,7 @@ With this structure, it is finally possible to update the visualization as neede
   // modify attributes and properties
   ```
 
-### Transition
+#### Transition
 
 Coming back to the topic of the chapter, `transition` is applied to a selection object creating a transition object.
 
@@ -439,7 +441,6 @@ binGroups
   .attr('fill', 'cornflowerblue');
 ```
 
-
 In this instance the color is modified _after_ the rectangle rectangle reaches its `y` coordinate.
 
 On its own, `transition` is already useful to smoothly change attributes and properties. It is however possible to initialize a transition on the root element with `d3.transition`, and later reference the transition as the argument of a `transition` function.
@@ -456,16 +457,11 @@ binGroups
 With this structure the necessary transitions are initialised ahead of time, and can be repeated throughout the code to synchronize change on multiple elements.
 
 ```js
-binGroups
-  .select('rect')
-  .transition(updateTransition)
-  // ...
+binGroups.select('rect').transition(updateTransition);
+// ...
 
-binGroups
-  .filter(yAccessor)
-  .select('text')
-  .transition(updateTransition)
-  // ...
+binGroups.filter(yAccessor).select('text').transition(updateTransition);
+// ...
 ```
 
 Multiple transitions can then be chained to have the change happen in sequence.
@@ -473,8 +469,136 @@ Multiple transitions can then be chained to have the change happen in sequence.
 ```js
 const exitTransition = d3.transition().duration(500);
 
-const updateTransition = exitTransition
-  .transition()
-  .duration(1000);
+const updateTransition = exitTransition.transition().duration(1000);
 ```
 
+### Line
+
+The goal is to update the line chart introduced in the first chapter, _01 Line Chart_, in order to show a fixed number of days. The days are then modified to have the line progress through the year, and analyse the contribution of each passing day.
+
+_Please note:_ the code might differ from that proposed in the book, as I attempted to create the transition on my own.
+
+#### Static and Dynamic
+
+As in the demo animating the bar chart, the function creating the visualization includes static and dynamic elements. With `drawDays`, the idea is to receive a subset of the original dataset, and modify the axis and the line accordingly.
+
+#### Transition
+
+For the axis, it is enough to use the `transition` method before executing the axis generator.
+
+```js
+yAxisGroup.transition().call(yAxisGenerator);
+xAxisGroup.transition().call(xAxisGenerator);
+```
+
+For the line, however, the same solution produces the undesired effect of a wriggle.
+
+```js
+line.transition(transition).attr('d', lineGenerator(data));
+```
+
+This is because D3 is updating the `d` attribute of the line point by point. Consider the following example, where the line is described with a series of points (`L`, or _line to_, instructs the path element to continue the line toward a certain (`x`, `y`) pairing).
+
+```html
+<!-- assuming y coordinates (0, -5, -10, -8)  -->
+<path d="M 0 0 L 1 -5 L 2 -10 L 3 -8" />
+<!-- assuming next coordinate (-2)  -->
+<path d="M 0 -5 L 1 -10 L 2 -8 L 3 -2" />
+```
+
+The first point `(0, 0)` is updated to be `(0, -5)`, resulting in the point moving upwards. As the idea of the animation is to scroll the line toward the left, the solution is to here move the points horizontally:
+
+- while updating the `d` attribute, shift the entire line to the right
+
+  ```js
+  .attr('d', lineGenerator(data))
+  .style('transform', `translate(${x}px, 0px)`);
+  ```
+
+  With this translation, the line doesn't wriggle, as the `x` coordinate is preserved. The last point exceeds the horizontal dimension of the chart, however.
+
+- with a transition, remove the offset to have the points move to the left
+
+  ```js
+  .attr('d', lineGenerator(data))
+  .style('transform', `translate(${x}px, 0px)`)
+  .transition(transition)
+  .style('transform', 'translate(0px, 0px)');
+  ```
+
+  After the translation, the new point resides at the very end of the line, in its rightful `x` coordinate.
+
+There are two important aspects I left out, but I thought of explaining the concept first before describing these details:
+
+1. how much to translate the line
+
+2. how to show the points only in the area described by `dimensions.boundedWidth` and `dimensions.boundedHeight`
+
+To tackle the first issue, the line is translated by the space between two successive points. The book picks the very last two points, to stress the importance of the new data, but ideally any pair of points would do (this is knowing that the data points are all separated by 1 day).
+
+```js
+const lastTwoPoints = data.slice(-2);
+const pixelsBetweenLastPoints =
+  xScale(xAccessor(data[1])) - xScale(xAccessor(data[0]));
+
+// equivalent measure
+
+const pixelsBetweenSuccessivePoints =
+  xScale(xAccessor(data[1])) - xScale(xAccessor(data[0]));
+```
+
+To fix the second issue, it is instead necessary to introduce a new SVG element in `<clipPath>`. Defined in the a `<defs>` element, the clip describes the area in which elements are actually shown. In the instance of the line chart, it describes a rectangle spanning the bounded width and height.
+
+```js
+bounds
+  .append('defs')
+  .append('clipPath')
+  .append('rect')
+  .attr('width', dimensions.boundedWidth)
+  .attr('height', dimensions.boundedHeight);
+```
+
+With an identifier, it is then possible to link the clip to the group element nesting the line, so that the line is shown only in the prescribed rectangle.
+
+```js
+bounds.append('defs').append('clipPath').attr('id', 'bounds-clip-path');
+// clipping area
+
+const lineGroup = bounds
+  .append('g')
+  .attr('clip-path', 'url(#bounds-clip-path)');
+```
+
+#### Minor Tweaks
+
+- the different parts of the visualization, like the axis, the line, the rectangle, are all nested in group elements `<g>`
+
+- the rectangle describing the freezing area limits the `y` coordinate to the bounded height
+
+  ```js
+  const freezingTemperatureY = d3.min([dimensions.boundedHeight, yScale(32)]);
+  ```
+
+  Without this precaution, the risk is to have a negative height, as the height is computed by subtracting the `y` coordinate to the bounded threshold
+
+  ```js
+  rectangle
+    .attr('y', freezingTemperatureY)
+    .attr('height', dimensions.boundedHeight - freezingTemperatureY);
+  ```
+
+- the horizontal scale considers the input data from the second point
+
+  ```js
+  const xScale = d3
+    .scaleTime()
+    .domain(d3.extent(data.slice(1), xAccessor))
+    .range([0, dimensions.boundedWidth]);
+  ```
+
+  This is to avoid removing the first point while first point is still visible. Starting with the second point, the first one is mapped to a negative `x` coordinate, which means it is finally removed outisde of the clip area. Comment out the clip to assess this is what actually happens.
+
+  ```js
+  const lineGroup = bounds.append('g');
+  // .attr('clip-path', 'url(#bounds-clip-path)');
+  ```
