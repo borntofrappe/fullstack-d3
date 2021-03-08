@@ -1,11 +1,9 @@
-/* global d3 */
 async function drawBarCharts() {
   /* ACCESS DATA
   the accessor function depends on the metric of the individual bar chart
   */
   const dataset = await d3.json('../../nyc_weather_data.json');
 
-  const tooltip = d3.select('#tooltip');
   /* CHART DIMENSIONS */
   const dimensions = {
     width: 400,
@@ -24,6 +22,17 @@ async function drawBarCharts() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   function drawHistogram(metric) {
+    const container = d3
+      .select('#root')
+      .append('div')
+      .attr('class', `wrapper`);
+
+    const tooltip = container.append('div').attr('class', 'tooltip');
+
+    tooltip.append('h2');
+
+    tooltip.append('p');
+
     /* ACCESS DATA */
     const metricAccessor = d => d[metric];
 
@@ -33,7 +42,7 @@ async function drawBarCharts() {
       .domain(d3.extent(dataset, metricAccessor))
       .range([0, dimensions.boundedWidth])
       .nice();
-      
+
     const binGenerator = d3
       .bin()
       .domain(xScale.domain())
@@ -50,8 +59,7 @@ async function drawBarCharts() {
       .nice();
 
     /* DRAW DATA */
-    const wrapper = d3
-      .select('#wrapper')
+    const wrapper = container
       .append('svg')
       .attr('width', dimensions.width)
       .attr('height', dimensions.height);
@@ -78,7 +86,7 @@ async function drawBarCharts() {
       .attr('tabindex', '0')
       .attr('aria-label', 'Histogram bars');
 
-    const barPadding = 4;
+    const barPadding = 2;
     const binGroups = binsGroup
       .selectAll('g')
       .data(bins)
@@ -99,71 +107,39 @@ async function drawBarCharts() {
     binGroups
       .append('rect')
       .attr('x', d => xScale(d.x0) + barPadding / 2)
-      .attr('width', d =>
-        d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding])
-      )
+      .attr('width', d => d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding]))
       .attr('y', d => yScale(yAccessor(d)))
       .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)))
       .attr('fill', 'cornflowerblue')
       .on('mouseenter', function(event, d) {
-        const formatY = d3.format('.2f');
+        const formatRange = d3.format('.2f');
 
-        const x = xScale(d.x0) + (xScale(d.x0) + xScale(d.x1)) / 2 + dimensions.margin.left;
+        const x =
+          xScale(d.x0) +
+          (xScale(d.x1) - xScale(d.x0)) / 2 +
+          dimensions.margin.left;
         const y = yScale(yAccessor(d)) + dimensions.margin.top;
 
         tooltip
-          .style('transform', `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`)
+          .style(
+            'transform',
+            `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`
+          )
           .style('opacity', 1);
 
-        tooltip
-          .select('h2')
-          .text(metric);
-        
+        tooltip.select('h2').text(metric);
+
         tooltip
           .select('p')
-          .text(`${formatY(yAccessor(d))} times in the ${d.x0} - ${d.x1} range`);
+          .text(
+            `${yAccessor(d)} times in the ${formatRange(d.x0)} - ${formatRange(
+              d.x1
+            )} range`
+          );
       })
       .on('mouseleave', function() {
-        tooltip
-          .style('opacity', 0);
-      })
-
-    const textGroups = binGroups.filter(yAccessor);
-
-    textGroups
-      .append('text')
-      .attr('x', d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
-      .attr('y', d => yScale(yAccessor(d)) - 5)
-      .text(d => yAccessor(d))
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'darkslategrey')
-      .style('font-size', 12)
-      .style('font-family', 'sans-serif');
-
-    const mean = d3.mean(dataset, metricAccessor);
-
-    const meanGroup = bounds
-      .append('g')
-      .style('transform', `translate(${xScale(mean)}px, 0px)`);
-
-    meanGroup
-      .append('line')
-      .attr('x1', 0)
-      .attr('x2', 0)
-      .attr('y1', 0)
-      .attr('y2', dimensions.boundedHeight)
-      .attr('stroke', 'maroon')
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', 6);
-
-    meanGroup
-      .append('text')
-      .text('Mean')
-      .attr('x', 5)
-      .attr('y', 5)
-      .attr('fill', 'maroon')
-      .style('font-size', 12)
-      .style('font-family', 'sans-serif');
+        tooltip.style('opacity', 0);
+      });
 
     /* PERIPHERALS */
     const xAxisGenerator = d3.axisBottom().scale(xScale);
@@ -193,7 +169,7 @@ async function drawBarCharts() {
     'temperatureMin',
     'temperatureMax',
   ];
-  drawHistogram(metrics[0]);
+  metrics.forEach(metric => drawHistogram(metric));
 }
 
 drawBarCharts();

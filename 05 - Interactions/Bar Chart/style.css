@@ -3,34 +3,37 @@
   margin: 0;
 }
 
-#wrapper {
+body {
+  font-family: monospace;
+}
+
+#root {
   max-width: 1200px;
-  margin: 1rem auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-#wrapper svg rect:hover {
+.wrapper svg rect:hover {
   fill: purple;
 }
 
-#wrapper {
+.wrapper {
   position: relative;
 }
 
-#tooltip {
-  opacity: 0;
-  line-height: 1.5;
+.wrapper .tooltip {
   position: absolute;
+  opacity: 0;
   background: hsl(0, 0%, 100%);
   padding: 0.75rem 1rem;
   pointer-events: none;
   z-index: 5;
-  filter: drop-shadow(0 1px 2px hsl(0, 0%, 0%, 0.25));
+  filter: drop-shadow(0 1px 2px hsl(0, 0%, 0%, 0.2));
+  line-height: 1.5;
 }
 
-#tooltip::before {
+.wrapper .tooltip::before {
   content: '';
   position: absolute;
   top: 100%;
@@ -40,14 +43,19 @@
   height: 0.5rem;
   background: inherit;
   clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  z-index: -5;
 }
 
-#tooltip h2 {
-  font-size: 1.1rem;
+.wrapper .tooltip h2 {
+  font-size: 1.2rem;
   font-weight: bold;
-  font-family: sans-serif;
+  font-family: inherit;
+  text-transform: capitalize;
+  text-align: center;
 }
 
-#tooltip p {
-  font-size: 0.9rem;
+.wrapper .tooltip p {
+  font-size: 1rem;
+  letter-spacing: -0.5px;
+  word-spacing: -1px;
 }
