@@ -853,7 +853,7 @@ Refer to the [`d3-format` module](https://github.com/d3/d3-format) for the compr
 
 ### Scatterplot
 
-The second interactive demo relates to the scatterplot introduced in the second chapter, _02 Scatterplot_, and I decided to actually create two folders, to focus on event handlers first, and voronoi triangulation second (the concept is introduced to aid the selection of individual data points).
+The second interactive demo relates to the scatterplot introduced in the second chapter, _02 Scatterplot_, and I decided to actually create two folders, to focus on event handlers first, and Delaunay triangulation second (the concept is introduced to aid the selection of individual data points).
 
 Event handlers are included on `<circle>` elements exactly like on rectangles.
 
@@ -879,3 +879,89 @@ const formatDate = d3.timeFormat('%B %A %-d, %Y');
 In this instance, the function formats a date object to show the entire name of the month and day, followed by the number of the day and year, like `July Monday 23, 2018`.
 
 Refer to the [`d3-time-format` module](https://github.com/d3/d3-time-format) for the possible directives.
+
+### Delaunay
+
+The scatter plot from the previous demo is enhanced to have the mouse highlight a circle with a bit of leeway. Delaunay triangulation works by partitioning the chart in triangles, each responsible for an individual circle. The data is then shown when hovering on the triangles, and not the smaller, nested circle.
+
+- create the triangulation with `d3.Delaunay.from`. The function accepts three arguments, for the dataset and two functions describing the `x` and `y` coordinate of the points
+
+  ```js
+  const delaunay = d3.Delaunay.from(
+      dataset,
+      d => xScale(xAccessor(d)),
+      d => yScale(yAccessor(d))
+    );
+  ```
+
+
+- create the voronoi diagram with the `voronoi` method. The function is called on the value returned by the previous function
+
+  ```js
+  const voronoi = delaunay.voronoi();
+  ```
+
+  With `xmax` and `ymax` it is possible to change the area covered by the diagram, and in the project, extend the area to the bounded dimensions.
+
+  ```js
+  voronoi.xmax = dimensions.boundedWidth;
+  voronoi.ymax = dimensions.boundedHeight;
+  ```
+
+- render the triangles with `voronoi.renderCell`. The function receives the index of the bounded data.
+
+  ```js
+  bounds
+    .append('g')
+    .selectAll('path')
+    .data(dataset)
+    .enter()
+    .append('path')
+    .attr('d', (d, i) => voronoi.renderCell(i))
+  ```
+
+By default, the path are rendered with a solid fill, so that the scatterplot is completely hidden. Setting a transparent fill, it is possible to conceal the elements, and still register mouse events.
+
+```js
+.append('path')
+.attr('d', (d, i) => voronoi.renderCell(i))
+.attr('fill', 'transparent')
+```
+
+
+As the triangles are meant to just support mouse interaction, it is unnecessary to shown them. If need be, remove the comments from the lines setting a thin stroke. 
+
+```js
+// .attr('stroke', 'currentColor')
+// .attr('stroke-width', 0.5)
+```
+
+For mouse interaction, the event handlers are finally set on the `<path>` elements.
+
+```js
+.append('path')
+.on('mouseenter', onMouseEnter)
+.on('mouseleave', onMouseLeave)
+```
+
+#### Highlight
+
+The event handlers are modified to also show a maroon circle in the place of the selected data point. The idea is to here include a new circle, instead of modifying the existing shape. In so doing, it is possible to guarantee that the highlight is drawn above the existing circles.
+
+```js
+bounds
+  .append('circle')
+  .attr('id', 'tooltipCircle')
+  .attr('fill', 'maroon')
+  .attr('r', 5)
+  .attr('cx', x)
+  .attr('cy', y);
+```
+
+`x` and `y` are updated to refer to the coordinates of the selected data point.
+
+The identifier is finally set to then target and remove the element as the mouse leaves the elements.
+
+```js
+bounds.select('#tooltipCircle').remove();
+```
