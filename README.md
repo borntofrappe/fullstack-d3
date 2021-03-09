@@ -682,27 +682,27 @@ In this instance, the logic described in the callback function is executed befor
 
 ### Bar Chart
 
-The first example shows user interaction with the same bar charts created for the third chapter, _03 Bar Charts_. 
+The first interactive example is based on a bar chart, and I decided to use the visualization created for the third chapter, _03 Bar Charts_, as a basis.
 
-The visualizatiojn is first updated with a stylesheet, which includes a first type of interaction through the `:hover` pseudo class.
+#### Stylesheet
+
+The visualization is first updated with a stylesheet, which includes a first type of interaction through the `:hover` pseudo class.
 
 ```css
-#wrapper svg rect:hover {
+svg rect:hover {
   fill: purple;
 }
 ```
 
 As the mouse hovers on the rectangles, the color is updated to the chosen hue.
 
-_Please note:_ CSS specificity. The property overrides the `fill` attribute. 
+_Please note:_ The property overrides the `fill` attribute.
 
 ```js
-rectangles
-  .attr('fill', 'cornflowerblue');
+rectangles.attr('fill', 'cornflowerblue');
 ```
 
-
-Had the color been set inline and with the `.style` method, the solution would not have worked (at least without the `!important` keyword).
+Had the color been set inline and with the `.style` method, the solution would not have worked (at least without the `!important` keyword). This relates to CSS specificity and not to D3 itself.
 
 ```js
 rectangles
@@ -710,4 +710,143 @@ rectangles
   .style('fill', 'cornflowerblue');
 ```
 
-Past this stylistic update, the visualization is also updated with a `<div>` element describing a tooltip.
+#### Tooltip
+
+Past the stylistic update, D3 manages the contents and position of a tooltip as included in a `<div>` container. The markup is modified from the solution created in the third chapter to nest each bar chart in a wrapping `<div>` element.
+
+```html
+<div id="root">
+  <div class="wrapper"></div>
+  <div class="wrapper"></div>
+  <div class="wrapper"></div>
+</div>
+```
+
+Based on this solution, the idea is to include a tooltip for each visualization.
+
+```html
+<div class="wrapper">
+  <div class="tooltip">
+    <!-- svg -->
+  </div>
+</div>
+```
+
+In so doing, the position of the tooltip is made relative to the dedicated bar chart.
+
+```css
+.wrapper {
+  position: relative;
+}
+
+.wrapper .tooltip {
+  position: absolute;
+}
+```
+
+In the stylesheet, the tooltip is modified with a series of property value pairs, mostly to change the appearance of the element, but it is important to highlight the following:
+
+- `z-index` makes it possible to have the tooltip reside above the sibling SVG element
+
+- `pointer-events` set to `none` avoids mouse events on the element. This is so that when the user hovers on a rectangle, invoking the tooltip, the tooltip itself doesn't block mouse interaction
+
+- `opacity` set to `0` hides the tooltip. The idea is to change the opacity through D3 and in the script
+
+In the script, D3 finally manages the tooltip as the mouse hovers on a rectangle, and using the event handlers introduced in this chapter.
+
+```js
+binGroups
+  .append('rect')
+  .on('mouseenter', onMouseEnter())
+  .on('mouseleave', onMouseLeave());
+```
+
+`onMouseEnter` updates the tooltip modifying the text of its nested elements. For instance and in a heading element, the tooltip shows the metric of the particular bar chart.
+
+```js
+tooltip.select('h2').text(metric);
+```
+
+In terms of style, the function also shows the tooltip modifying its opacity.
+
+```js
+tooltip.style('opacity', 1);
+```
+
+Most importantly, the function updates the position of the tooltip so that it resides above the selected rectangle. The solution is not simple, so that it might help to explain the logic in details:
+
+- `x` refers to the center of the selected rectangle, accessing the coordinates of the range described by `d.x0` and `d.y0`
+
+  ```js
+  const x = xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2;
+  ```
+
+- `y` refers to the top of the selected rectangle, through the value of the rectangle itself
+
+  ```js
+  const y = yScale(yAccessor(d));
+  ```
+
+- both `x` and `y` are updated to consider the margin, included horizontally and vertically in the wrapping `<g>` element
+
+  ```js
+  const x = xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2 + margin.left;
+
+  const y = yScale(yAccessor(d)) + margin.top;
+  ```
+
+- with the `transform` property, the tooltip is translated to the prescribed `x` and `y` coordinates
+
+  ```js
+  tooltip.style('transform', `translate(${x}px, ${y}px)`);
+  ```
+
+  This works, but the tooltip is positioned from the top left corner
+
+- again in the `transform` property, the `calc` function modifies the position to align the tooltip as wanted
+
+  ```js
+  tooltip.style(
+    'transform',
+    `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`
+  );
+  ```
+
+  Percentages in the `transform` property are relative to the dimensions of the element itself, so that `50%` in the first expression describes half the tooltip's width, and `100%` in the second expression refers to its total height
+
+`onMouseLeave` finally hides the tooltip.
+
+```js
+function onMouseLeave() {
+  tooltip.style('opacity', 0);
+}
+```
+
+#### Format
+
+`d3.format` creates a formatting function with a series of directives.
+
+```js
+const format = d3.format('.2f');
+```
+
+In this instance, `format` can be used to describe numerical values with two numbers after the decimal point.
+
+```js
+format(3); // 3.00
+format(3.1456); // 3.14
+```
+
+The book explains the syntax succinctly and as follows:
+
+```code
+[,][.precision][type]
+```
+
+- `[,]`: add a comma every three digits to the left of the decimal point
+
+- `[.precision]`: specify the number of digits to include after the decimal point
+
+- `[type]`: format with a specific notation, like fixed `f`, decimal `r`, percentage `%`.
+
+Refer to the [`d3-format` module](https://github.com/d3/d3-format) for the comprehensive list of the possible directives.

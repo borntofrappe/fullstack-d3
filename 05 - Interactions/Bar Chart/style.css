@@ -9,6 +9,7 @@ body {
 
 #root {
   max-width: 1200px;
+  margin: 2rem auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -25,12 +26,12 @@ body {
 .wrapper .tooltip {
   position: absolute;
   opacity: 0;
-  background: hsl(0, 0%, 100%);
-  padding: 0.75rem 1rem;
   pointer-events: none;
   z-index: 5;
-  filter: drop-shadow(0 1px 2px hsl(0, 0%, 0%, 0.2));
+  background: hsl(0, 0%, 100%);
+  padding: 0.75rem 1rem;
   line-height: 1.5;
+  filter: drop-shadow(0 1px 2px hsl(0, 0%, 0%, 0.25));
 }
 
 .wrapper .tooltip::before {

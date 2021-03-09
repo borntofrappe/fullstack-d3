@@ -104,6 +104,38 @@ async function drawBarCharts() {
           } and ${d.x1} for a total of ${yAccessor(d)} times`
       );
 
+    /* INTERACTION */
+    function onMouseEnter(event, d) {
+      const formatRange = d3.format('.2f');
+
+      const x =
+        xScale(d.x0) +
+        (xScale(d.x1) - xScale(d.x0)) / 2 +
+        dimensions.margin.left;
+      const y = yScale(yAccessor(d)) + dimensions.margin.top;
+
+      tooltip
+        .style(
+          'transform',
+          `translate(calc(-50% + ${x}px), calc(-100% + ${y}px - 0.5rem))`
+        )
+        .style('opacity', 1);
+
+      tooltip.select('h2').text(metric);
+
+      tooltip
+        .select('p')
+        .text(
+          `${yAccessor(d)} times in the ${formatRange(d.x0)} - ${formatRange(
+            d.x1
+          )} range`
+        );
+    }
+
+    function onMouseLeave() {
+      tooltip.style('opacity', 0);
+    }
+
     binGroups
       .append('rect')
       .attr('x', d => xScale(d.x0) + barPadding / 2)
@@ -111,35 +143,8 @@ async function drawBarCharts() {
       .attr('y', d => yScale(yAccessor(d)))
       .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)))
       .attr('fill', 'cornflowerblue')
-      .on('mouseenter', function(event, d) {
-        const formatRange = d3.format('.2f');
-
-        const x =
-          xScale(d.x0) +
-          (xScale(d.x1) - xScale(d.x0)) / 2 +
-          dimensions.margin.left;
-        const y = yScale(yAccessor(d)) + dimensions.margin.top;
-
-        tooltip
-          .style(
-            'transform',
-            `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`
-          )
-          .style('opacity', 1);
-
-        tooltip.select('h2').text(metric);
-
-        tooltip
-          .select('p')
-          .text(
-            `${yAccessor(d)} times in the ${formatRange(d.x0)} - ${formatRange(
-              d.x1
-            )} range`
-          );
-      })
-      .on('mouseleave', function() {
-        tooltip.style('opacity', 0);
-      });
+      .on('mouseenter', onMouseEnter)
+      .on('mouseleave', onMouseLeave);
 
     /* PERIPHERALS */
     const xAxisGenerator = d3.axisBottom().scale(xScale);
