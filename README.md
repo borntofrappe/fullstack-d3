@@ -888,12 +888,11 @@ The scatter plot from the previous demo is enhanced to have the mouse highlight 
 
   ```js
   const delaunay = d3.Delaunay.from(
-      dataset,
-      d => xScale(xAccessor(d)),
-      d => yScale(yAccessor(d))
-    );
+    dataset,
+    (d) => xScale(xAccessor(d)),
+    (d) => yScale(yAccessor(d))
+  );
   ```
-
 
 - create the voronoi diagram with the `voronoi` method. The function is called on the value returned by the previous function
 
@@ -917,7 +916,7 @@ The scatter plot from the previous demo is enhanced to have the mouse highlight 
     .data(dataset)
     .enter()
     .append('path')
-    .attr('d', (d, i) => voronoi.renderCell(i))
+    .attr('d', (d, i) => voronoi.renderCell(i));
   ```
 
 By default, the path are rendered with a solid fill, so that the scatterplot is completely hidden. Setting a transparent fill, it is possible to conceal the elements, and still register mouse events.
@@ -928,8 +927,7 @@ By default, the path are rendered with a solid fill, so that the scatterplot is 
 .attr('fill', 'transparent')
 ```
 
-
-As the triangles are meant to just support mouse interaction, it is unnecessary to shown them. If need be, remove the comments from the lines setting a thin stroke. 
+As the triangles are meant to just support mouse interaction, it is unnecessary to shown them. If need be, remove the comments from the lines setting a thin stroke.
 
 ```js
 // .attr('stroke', 'currentColor')
@@ -965,3 +963,80 @@ The identifier is finally set to then target and remove the element as the mouse
 ```js
 bounds.select('#tooltipCircle').remove();
 ```
+
+### Line
+
+The final interactive demo provides more details for a line chart, a visualization similar to the one introduced in the first chapter, _01 Line Chart_. The biggest change is that the chart focuses on a subset of the entire data, on the first one hundred observations.
+
+```js
+const data = await d3.json('../../nyc_weather_data.json');
+const dataset = data.slice(0, 100);
+```
+
+Past this choice, the chart displays a label for the `y` axis, highlighting how the vertical dimension describes the maximum temperature.
+
+In terms of interaction, the idea is to consider the horizontal coordinate of the mouse to find the date, consider the date to find the closest data point, and finally highlighted the data point in the a tooltip and with a `<circle>` element.
+
+The final step, how the data point is highlighted, is similar to the previous demos, so that the biggest hurdle is actually finding the data point.
+
+For the horizontal coordinate, the script first adds an onverlay with a `<rect>` element, spanning the entirety of the bounded dimensions.
+
+```js
+bounds
+  .append('rect')
+  .attr('width', dimensions.boundedWidth)
+  .attr('height', dimensions.boundedHeight)
+  .attr('fill', 'transparent');
+```
+
+The coordinate is then retrieved following the `mousemove` event.
+
+```js
+bounds.append('rect').on('mousemove', onMouseMove);
+```
+
+The book retrieves the desired value with the `d3.mouse` method.
+
+```js
+function onMouseMove(event) {
+  const [xHover] = d3.mouse(event);
+}
+```
+
+Since version 6, however, the library works with `d3.pointer`. The method provides a more general interface for mouse and touch events.
+
+```js
+function onMouseMove(event) {
+  const [xHover] = d3.pointer(event);
+}
+```
+
+On the basis of the coordinate, the date is computed with the inverse of the horizontal scale.
+
+```js
+const hoverDate = xScale.invert(xHover);
+```
+
+The book finally finds the closest data point with `d3.scan`, identifying the index of the point describing the smallest difference between the point's date and the hover date. The function is however deprecated, and the library provides `d3.leastIndex` instead. `d3.least` actually returns the data point instead of the index, so that it is not necessary to find the index first.
+
+```js
+const d = d3.least();
+```
+
+The function is quite complex, but in the specific example, it works by comparing the items of the dataset two at a time.
+
+```js
+const d = d3.least(dataset, (a, b) => {});
+```
+
+The comparator function computes the difference between the points and the hover date, to finally return the difference between the two.
+
+```js
+const d = d3.least(
+  dataset,
+  (a, b) =>
+    Math.abs(xAccessor(a) - hoverDate) - Math.abs(xAccessor(a) - hoverDate)
+);
+```
+
+In this manner the function creates a collection of differences, and returns the smallest value.
