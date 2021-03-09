@@ -850,3 +850,32 @@ The book explains the syntax succinctly and as follows:
 - `[type]`: format with a specific notation, like fixed `f`, decimal `r`, percentage `%`.
 
 Refer to the [`d3-format` module](https://github.com/d3/d3-format) for the comprehensive list of the possible directives.
+
+### Scatterplot
+
+The second interactive demo relates to the scatterplot introduced in the second chapter, _02 Scatterplot_, and I decided to actually create two folders, to focus on event handlers first, and voronoi triangulation second (the concept is introduced to aid the selection of individual data points).
+
+Event handlers are included on `<circle>` elements exactly like on rectangles.
+
+```js
+bounds
+  .append('circle')
+  .on('mouseenter', onMouseEnter)
+  .on('mouseleave', onMouseLeave);
+```
+
+On top of displaying the data points with numerical values, the tooltip also includes a date, which is formatted with the `d3-time-format` module. Formatted, and parsed actually, as it is first necessary to convert the string describing the points to a date object. The functions work similarly to `d3.format`, with a series of directives describing the format.
+
+```js
+const parseDate = d3.timeParse('%Y-%m-%d');
+```
+
+In this instance, the function creates a date object from a string displaying the full year, month and day, separated with a hyphen, like `2018-07-23`.
+
+```js
+const formatDate = d3.timeFormat('%B %A %-d, %Y');
+```
+
+In this instance, the function formats a date object to show the entire name of the month and day, followed by the number of the day and year, like `July Monday 23, 2018`.
+
+Refer to the [`d3-time-format` module](https://github.com/d3/d3-time-format) for the possible directives.
