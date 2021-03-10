@@ -1,0 +1,243 @@
+async function drawMap() {
+  /* DATA */
+  const countryShapes = await d3.json('./world-geojson.json');
+  const dataset = await d3.csv('./databank_data.csv');
+
+  /* for the elected metric create an object where the country is the key and the metric its accompanying value
+  {
+    AFG: 2.54834664435549,
+    ALB: -0.0919722937442495,
+    // ..
+  }
+  */
+  const metric = 'Population growth (annual %)';
+
+  const metricDataByCountry = dataset.reduce((acc, curr) => {
+    if (curr['Series Name'] === metric) {
+      acc[curr['Country Code']] = parseFloat(curr['2017 [YR2017]']) || 0;
+    }
+
+    return acc;
+  }, {});
+
+  // ACCESSOR FUNCTIONS
+  const countryNameAccessor = d => d.properties.NAME;
+  const countryIdAccessor = d => d.properties.ADM0_A3_IS;
+
+  /* DRAW CHART */
+  const dimensions = {
+    width: window.innerWidth * 0.9,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 10,
+      left: 10,
+    },
+  };
+
+  dimensions.boundedWidth =
+    dimensions.width - (dimensions.margin.left + dimensions.margin.right);
+
+  const sphere = { type: 'Sphere' };
+  const projection = d3
+    .geoEqualEarth()
+    .fitWidth(dimensions.boundedWidth, sphere);
+
+  const pathGenerator = d3.geoPath(projection);
+
+  const y1 = pathGenerator.bounds(sphere)[1][1];
+
+  dimensions.boundedHeight = y1;
+  dimensions.height =
+    dimensions.boundedHeight +
+    (dimensions.margin.top + dimensions.margin.bottom);
+
+  const wrapper = d3
+    .select('#wrapper')
+    .append('svg')
+    .attr('width', dimensions.width)
+    .attr('height', dimensions.height);
+
+  const bounds = wrapper
+    .append('g')
+    .style(
+      'transform',
+      `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
+    );
+
+  const metricValues = Object.values(metricDataByCountry);
+  const [min, max] = d3.extent(metricValues);
+  const maxChange = d3.max([Math.abs(min), Math.abs(max)]);
+  const colorScale = d3
+    .scaleLinear()
+    .domain([-maxChange, 0, maxChange])
+    .range(['indigo', 'white', 'darkgreen']);
+
+  // earth
+  bounds
+    .append('path')
+    .attr('class', 'earth')
+    .attr('d', pathGenerator(sphere))
+    .attr('fill', '#e2f1f1')
+    .attr('stroke', 'none');
+
+  const graticuleJson = d3.geoGraticule10();
+
+  // graticulate
+  bounds
+    .append('path')
+    .attr('class', 'graticule')
+    .attr('d', pathGenerator(graticuleJson))
+    .attr('fill', 'none')
+    .attr('stroke', '#cadddd');
+
+  // countries
+  const countries = bounds
+    .append('g')
+    .selectAll('.country')
+    .data(countryShapes.features)
+    .enter()
+    .append('path')
+    .attr('class', 'country')
+    .attr('d', pathGenerator)
+    .attr('fill', d =>
+      metricDataByCountry[countryIdAccessor(d)]
+        ? colorScale(metricDataByCountry[countryIdAccessor(d)])
+        : '#e2e6e9'
+    );
+
+  // PERIPHERALS
+  const legendGroup = bounds
+    .append('g')
+    .style(
+      'transform',
+      `translate(${dimensions.boundedWidth / 8}px, ${dimensions.boundedHeight /
+        2 +
+        24}px)`
+    );
+  legendGroup
+    .append('text')
+    .text('Population Growth')
+    .attr('text-anchor', 'middle')
+    .attr('y', -36)
+    .style('font-size', 16)
+    .style('font-weight', 'bold');
+
+  legendGroup
+    .append('text')
+    .text('Percentage change in 2017')
+    .attr('text-anchor', 'middle')
+    .attr('y', -20)
+    .style('font-size', 12);
+
+  const legendWidth = 100;
+  const legendHeight = 20;
+
+  const formatLegend = d3.format('.1f');
+
+  const linearGradientId = 'linear-gradient-id';
+
+  const linearGradient = wrapper
+    .append('defs')
+    .append('linearGradient')
+    .attr('id', linearGradientId);
+
+  linearGradient
+    .selectAll('stop')
+    .data(colorScale.range())
+    .enter()
+    .append('stop')
+    .attr('stop-color', d => d)
+    .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`);
+
+  legendGroup
+    .append('rect')
+    .attr('width', legendWidth)
+    .attr('height', legendHeight)
+    .attr('x', -legendWidth / 2)
+    .attr('y', -legendHeight / 2)
+    .attr('fill', `url(#${linearGradientId})`);
+
+  legendGroup
+    .append('text')
+    .text(`${formatLegend(maxChange * -1)}%`)
+    .attr('text-anchor', 'end')
+    .attr('dominant-baseline', 'middle')
+    .attr('x', -legendWidth / 2 - 5);
+
+  legendGroup
+    .append('text')
+    .text(`${formatLegend(maxChange)}%`)
+    .attr('text-anchor', 'start')
+    .attr('dominant-baseline', 'middle')
+    .attr('x', legendWidth / 2 + 5);
+
+  // INTERACTIONS
+  const tooltip = d3.select('#tooltip');
+
+  function onMouseEnter(event, d) {
+    const [x, y] = pathGenerator.centroid(d);
+    const formatMetric = d3.format('.2f');
+    const metricData = metricDataByCountry[countryIdAccessor(d)];
+
+    tooltip
+      .style(
+        'transform',
+        `translate(calc(-50% + ${x +
+          dimensions.margin.left}px), calc(-100% + ${y +
+          dimensions.margin.top -
+          5}px - 0.5rem))`
+      )
+      .style('opacity', 1);
+
+    tooltip.select('h2').text(countryNameAccessor(d));
+    tooltip
+      .select('p')
+      .text(
+        metricData
+          ? `${formatMetric(metricData)}% population change`
+          : 'Data not available'
+      );
+
+    bounds
+      .append('circle')
+      .attr('id', 'tooltipCircle')
+      .attr('fill', 'currentColor')
+      .attr('r', 5)
+      .attr('cx', x)
+      .attr('cy', y)
+      .style('pointer-events', 'none');
+  }
+
+  function onMouseLeave() {
+    d3.select('#tooltip').style('opacity', 0);
+    d3.select('#tooltipCircle').remove();
+  }
+  // countries
+  //   .on('mouseenter', onMouseEnter)
+  //   .on('mouseleave', onMouseLeave)
+
+  const delaunay = d3.Delaunay.from(
+    countryShapes.features,
+    d => pathGenerator.centroid(d)[0],
+    d => pathGenerator.centroid(d)[1]
+  );
+  const voronoi = delaunay.voronoi();
+  voronoi.xmax = dimensions.boundedWidth;
+  voronoi.ymax = dimensions.boundedHeight;
+
+  bounds
+    .append('g')
+    .selectAll('path')
+    .data(countryShapes.features)
+    .enter()
+    .append('path')
+    .attr('d', (d, i) => voronoi.renderCell(i))
+    .attr('fill', 'transparent')
+    // .attr('stroke', 'currentColor')
+    // .attr('stroke-width', 0.5)
+    .on('mouseenter', onMouseEnter)
+    .on('mouseleave', onMouseLeave);
+}
+
+drawMap();
