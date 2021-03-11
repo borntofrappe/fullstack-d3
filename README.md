@@ -1040,3 +1040,346 @@ const d = d3.least(
 ```
 
 In this manner the function creates a collection of differences, and returns the smallest value.
+
+## 06 - Map
+
+_Please note:_ geographical visualizations are a substantial topic, and one in which I still lack familiarity. In light of this, the notes for the chapter are likely to be more detailed than previous ones.
+
+The goal is to plot a chloropleth map, highlighting the population growth by applying a different color on the different countries.
+
+### GeoJSON
+
+For geographical visualization, GeoJSON provides the necessary syntax to draw a map. For the project, the syntax is obtained as follows:
+
+- download a shapefile from [Natural Earth Data](https://www.naturalearthdata.com/). An `.shp` file provides an alternative format to represent geographic data
+
+- convert the shapefile to GeoJSON objects. The book describes a library, but there are alternatives, like [mapshaper.org](https://mapshaper.org/) for a web-based interface
+
+The output is a `.json` file, which I opted to label `world-geojson.json`. Imported in the script like data in previous projects, the object highlights a series of important fields.
+
+```js
+const countryShapes = await d3.json('./world-geojson.json');
+console.log(countryShapes);
+```
+
+Take notice of the `features` array, which describes a series of `Feature` objects for the countries. Each feature has a `geometry` and `properties` field. The first one describes the coordinates making up each country, while the latter details information on the country itself, like its name or continent.
+
+In the specific project, the book introduces here two accessor functions to retrieve the country's name and identifier.
+
+```js
+const countryNameAccessor = (d) => d.properties['NAME'];
+const countryIdAccessor = (d) => d.properties['ADM0_A3_IS'];
+```
+
+The name is useful to describe the country, and will become relevant in the moment the country is highlighted in a tooltip, while the identifier provides a link with which to connect the country and the data describing the populatiojn growth.
+
+### Data
+
+_Please note:_ the values retrieved from the world bank seems to differ for some countries. This is likely because the data has been updated with more accurate estimates.
+
+Data is retrieved from the [world bank](https://databank.worldbank.org/data/source/) and for the year 2017, looking specifically at four metrics:
+
+- population growth
+
+- population density
+
+- net migration
+
+- international tourism through receipts
+
+The dataset is in `.csv` format, where the values are comma separated, but the script reads the data similarly to previous projects. The only difference is `d3.csv` is used in place of `d3.json`.
+
+```js
+const dataset = await d3.csv('./databank_data.csv');
+console.log(dataset);
+```
+
+`dataset` described an array with one item for each row, but, for the project at hand, the relevant metric is just the population growth.
+
+```js
+const metric = 'Population growth (annual %)';
+```
+
+In light of this, a dedicated variable is set to store the necessary values in an object describing the country and population growth with key-value pairs.
+
+```js
+/* desired structure
+{
+  AFG: 2.54834664435549,
+  ALB: -0.0919722937442495,
+}
+*/
+```
+
+I decided to use a `.reduce()` function instead of looping through the data with a `.forEach` loop as in the book, but the logic is the same: loop through the dataset, and include the country code if the item describes the chosen metric.
+
+```js
+if (curr['Series Name'] === metric) {
+  acc[curr['Country Code']] = parseFloat(curr['2017 [YR2017]']) || 0;
+}
+```
+
+`parseFloat` allows to convert the string to a numerical value, while `|| 0` provides a default value of `0` for those countries for which the value value is missing.
+
+### Chart Dimensions
+
+Similarly to previous projects, the chart starts with an object describing the dimensions of the visualization.
+
+Unlike previous projects, however, `dimensions` doesn't initially set the height. The value is computed according to the chosen projection, described in the next section.
+
+### Sphere
+
+An object with a `type` of `'Sphere'` is all that is necessary to eventually draw the outline of the planet.
+
+```js
+const sphere = { type: 'Sphere' };
+```
+
+### Projection
+
+A projection describes how the map is approximated. It is indeed necessary to distort the three dimensional shape in order to draw the visual in two dimensions.
+
+There are several projections, each with its pros and cons, but the book argues for at least the following:
+
+- Mercator (`d3.geoMercator`) and specifically Transverse Mertcator (`d3.geoTransverseMercator`), especially for maps devoted to countries or smaller units
+
+- Winkel-Tripel (`d3.geoWinkel3`) and equal Earth (`d3.geoEqualEarth`), particularly for continents and the entire planet
+
+The documentation for [`d3-geo`](https://github.com/d3/d3-geo) highlights the projections included in the main library, while [`d3-geo-projection`](https://github.com/d3/d3-geo-projection) provides a module for additional types. Incidentally, `d3.geoWinkel3` is available from this additional module.
+
+For the specific map, the chosen projection is natural Earth.
+
+```js
+const projection = d3.geoEqualEarth();
+```
+
+To have the projection consider the bounded dimensions, `fitWidth` receives the chosen width and the object of type `'Sphere'` (the object which describes the outline of the planet).
+
+```js
+const projection = d3.geoEqualEarth().fitWidth(dimensions.boundedWidth, sphere);
+```
+
+### geoPath
+
+`d3.geoPath` provides a generator function similar to `d3.line` as introduced in the first chapter, _01 Line Chart_. It is initialized with the chosen projection.
+
+```js
+const pathGenerator = d3.geoPath(projection);
+```
+
+It then receives a GeoJSON object to produce the necessary syntax for the `d` attribute of `<path>` elements. One of these objects, for instance, is the object of type `'Sphere'` introduced earlier.
+
+```js
+console.log(pathGenerator(sphere)); // M ....
+```
+
+### Chart Dimensions / 2
+
+Thanks to the generator function, it is finally possible to compute the vertical dimensions of the chart. `pathGenerator.bounds` provides a two dimensional array with the bounds of the input GeoJSON object. Through the sphere, the function highlights the bounds of the entire visualization: `[[x0, y0], [x1, y1]]`, and finally the height of the bounded area.
+
+```js
+const y1 = pathGenerator.bounds(sphere)[1][1];
+
+dimensions.boundedHeight = y1;
+dimensions.height =
+  dimensions.boundedHeight + (dimensions.margin.top + dimensions.margin.bottom);
+```
+
+### Scales
+
+The projection takes care of the position of the countries, so that a scale is necessary only to map the population growth to a fill color. The book explains here how a linear scale can create a piece-wise scale, mapping three values to three distinct intervals.
+
+```js
+const colorScale = d3
+  .scaleLinear()
+  .domain([-maxChange, 0, maxChange])
+  .range(['indigo', 'white', 'darkgreen']);
+```
+
+In this instance, `-maxChange` is mapped to indigo, `0` to white and `maxChange` to dark green. Any value in between is interpolated between the chosen colors.
+
+It is important to note that `maxChange` describes the greater between the minimum and maximum population growth, in absolute terms. Using this value instead of the minimum and maximum allows to compare the degree with which countries grow or recede in number.
+
+### Draw Data
+
+The visualization is drawn in a `<svg>` making up the wrapper and a group element `<g>` making up the bounds, exactly like previous project.
+
+The map itself is drawn with the path generator function, and at least three types of GeoJSON objects:
+
+- the object of type `'Sphere'` draws the outline of the planet
+
+  ```js
+  bounds
+    .append('path')
+    .attr('d', pathGenerator(sphere))
+    .attr('fill', '#e2f1f1')
+    .attr('stroke', 'none');
+  ```
+
+- `d3.geoGraticule10` creates an object for the lines highlighting the longitude and latitude
+
+  ```js
+  const graticuleJson = d3.geoGraticule10();
+
+  bounds
+    .append('path')
+    .attr('d', pathGenerator(graticuleJson))
+    .attr('fill', 'none')
+    .attr('stroke', '#cadddd');
+  ```
+
+  The function itself provides a graticule with a set of default options (`10` refers for instance to the degrees separating the longitude and latitude lines). [The documentation](https://github.com/d3/d3-geo#geoGraticule) provides more information as to how to customize the grid.
+
+- each object in the `features` array describes the GeoJSON object for a country
+
+  ```js
+  bounds
+    .append('g')
+    .selectAll('path')
+    .data(countryShapes.features)
+    .enter()
+    .append('path')
+    .attr('d', pathGenerator);
+  ```
+
+  `pathGenerator` works as a shorthand for `d => pathGenerator(d)`, meaning the generating function receives a feature to produce the necessary SVG syntax.
+
+To finally create the chloropleth map, the fill of each country considers the color scale and the population growth.
+
+```js
+.attr('fill', d => {
+  const metricData = metricDataByCountry[countryIdAccessor(d)];
+  return metricData ? colorScale(metricData) : '#e2e6e9`;
+})
+```
+
+`#e2e6e9` is chosen as a default option for those countries not represented in the `metricDataByCountry` object.
+
+### Navigator
+
+`Navigator` is Web APIs which provides detailed information regarding the user location, following the consent of said user. In the specific project, it is used to find the longitude and latitude to then draw a circle in the matching location.
+
+```js
+navigator.geolocation.getCurrentPosition(position => {
+    const { longitude, latitude } = position.coords;
+}
+```
+
+The porjection is useful for the path generator, but also as a standalone function, to provide the `x` and `y` dimensions for a given set of real-world coordinates.
+
+```js
+const [x, y] = projection([longitude, latitude]);
+```
+
+Knowing the location, it is finally possible to highlight the position of the user.
+
+```js
+bounds.append('g').append('circle').attr('cx', x).attr('cy', y).attr('r', 6);
+```
+
+### Peripherals
+
+Instead of axis, peripherals are included in the form of a legend, with a label, a byline and a rectangle describing the color scale. Two labels are included as previous projects, to describe the metric and a short description. Below this visuals, however, the legend details a rectangle to highlightc color scale. The scale is specifically through the fill of the rectangle, which is not a solid color, but a gradient with three colors (the same colors of the range of the color sale).
+
+In SVG, the `<linearGradient>` element works similarly to `<clipPath>`:
+
+- define the element in a `<defs>` block
+
+  ```html
+  <defs>
+    <linearGradient id="linear-gradient"> </linearGradient>
+  </defs>
+  ```
+
+- reference the element through the `id` attribute
+
+  ```html
+  <rect fill="url(#linear-gradient)" />
+  ```
+
+The element itself describes the colors of the gradient with a `<stop>` element and two foundational attributes: `stop-color` and `offset`.
+
+```html
+<linearGradient id="linear-gradient">
+  <stop stop-color="red" offset="0%">
+  <stop stop-color="blue" offset="100%">
+</linearGradient>
+```
+
+In the visualization, the `<stop>` elements are included dynamically, binding the element to the colors of the scale, and specifically its range.
+
+```js
+console.log(colorScale.range()); // ["indigo", "white", "darkgreen"]
+```
+
+The color is included in the `stop-color` attribute, while the offset is computed on the basis of the element's index, so that the `[0, 100]` interval is evenly split in three parts.
+
+```js
+linearGradient
+  .selectAll('stop')
+  .data(colorScale.range())
+  .enter()
+  .append('stop')
+  .attr('stop-color', (d) => d)
+  .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`);
+```
+
+### Interactions
+
+Interactions are included with a tooltip and a couple SVG shapes.
+
+In terms of SVG, the highlight is shown with a `<circle>`, but also a `<path>` element recreating the selected country (the country is actually rendered first, to eventually show the circle above it).
+
+The `<path>` is recreated with the path generator function.
+
+```js
+bounds
+  .append('path')
+  .attr('id', 'tooltipCountry')
+  .attr('fill', 'cornflowerblue')
+  .attr('d', pathGenerator(d));
+```
+
+The circle, instead, is positioned thanks to the `centroid` method, providing the center of a GeoJSON object and for a specific generator function.
+
+```js
+console.log(pathGenerator.centroid(sphere)); // [x, y]
+```
+
+For the tooltip, then, the HTML element highglights the selected country and the connected metric. If the metric is not available, the paragraph displays a default message.
+
+```js
+tooltip
+  .select('p')
+  .text(
+    metricData
+      ? `${formatMetric(metricData)}% population change`
+      : 'Data not available'
+  );
+```
+
+The position of the tooltip refers to the same coordinates computed for the circle, but adjusted for the chosen margins.
+
+### Delaunay
+
+As suggested in the book, mouse interaction can be improved with Delaunay's triangulation. The logic is fundamentally the same as in the previous chapter: include a series of `<path>` elements above the map and attach the mouse event to said shapes. 
+
+```js
+bounds
+  // bind features
+  .append('path')
+  .attr('d', (d, i) => voronoi.renderCell(i))
+  .attr('fill', 'transparent')
+  .on('mouseenter', onMouseEnter)
+  .on('mouseleave', onMouseLeave);
+```
+
+The only difference is in the `x` and `y` coordinates used in the `d3.Delaunay.from` function, which now refer to the center of each country.
+
+```js
+const delaunay = d3.Delaunay.from(
+  countryShapes.features,
+  (d) => pathGenerator.centroid(d)[0],
+  (d) => pathGenerator.centroid(d)[1]
+);
+```

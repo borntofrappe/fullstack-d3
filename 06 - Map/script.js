@@ -24,7 +24,7 @@ async function drawMap() {
   const countryNameAccessor = d => d.properties.NAME;
   const countryIdAccessor = d => d.properties.ADM0_A3_IS;
 
-  /* DRAW CHART */
+  /* CHART DIMENSIONS / 1 */
   const dimensions = {
     width: window.innerWidth * 0.9,
     margin: {
@@ -38,6 +38,7 @@ async function drawMap() {
   dimensions.boundedWidth =
     dimensions.width - (dimensions.margin.left + dimensions.margin.right);
 
+  // SPHERE, PROJECTION and GENERATOR FUNCTION
   const sphere = { type: 'Sphere' };
   const projection = d3
     .geoEqualEarth()
@@ -45,6 +46,7 @@ async function drawMap() {
 
   const pathGenerator = d3.geoPath(projection);
 
+  /* CHART DIMENSIONS / 2 */
   const y1 = pathGenerator.bounds(sphere)[1][1];
 
   dimensions.boundedHeight = y1;
@@ -52,6 +54,16 @@ async function drawMap() {
     dimensions.boundedHeight +
     (dimensions.margin.top + dimensions.margin.bottom);
 
+  /* SCALES */
+  const metricValues = Object.values(metricDataByCountry);
+  const [min, max] = d3.extent(metricValues);
+  const maxChange = d3.max([Math.abs(min), Math.abs(max)]);
+  const colorScale = d3
+    .scaleLinear()
+    .domain([-maxChange, 0, maxChange])
+    .range(['indigo', 'white', 'darkgreen']);
+
+  /* DRAW DATA */
   const wrapper = d3
     .select('#wrapper')
     .append('svg')
@@ -65,28 +77,17 @@ async function drawMap() {
       `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
     );
 
-  const metricValues = Object.values(metricDataByCountry);
-  const [min, max] = d3.extent(metricValues);
-  const maxChange = d3.max([Math.abs(min), Math.abs(max)]);
-  const colorScale = d3
-    .scaleLinear()
-    .domain([-maxChange, 0, maxChange])
-    .range(['indigo', 'white', 'darkgreen']);
-
   // earth
   bounds
     .append('path')
-    .attr('class', 'earth')
     .attr('d', pathGenerator(sphere))
     .attr('fill', '#e2f1f1')
     .attr('stroke', 'none');
 
-  const graticuleJson = d3.geoGraticule10();
-
   // graticulate
+  const graticuleJson = d3.geoGraticule10();
   bounds
     .append('path')
-    .attr('class', 'graticule')
     .attr('d', pathGenerator(graticuleJson))
     .attr('fill', 'none')
     .attr('stroke', '#cadddd');
@@ -94,11 +95,10 @@ async function drawMap() {
   // countries
   const countries = bounds
     .append('g')
-    .selectAll('.country')
+    .selectAll('path')
     .data(countryShapes.features)
     .enter()
     .append('path')
-    .attr('class', 'country')
     .attr('d', pathGenerator)
     .attr('fill', d =>
       metricDataByCountry[countryIdAccessor(d)]
@@ -106,7 +106,24 @@ async function drawMap() {
         : '#e2e6e9'
     );
 
-  // PERIPHERALS
+  /* NAVIGATOR */
+  navigator.geolocation.getCurrentPosition(position => {
+    const { longitude, latitude } = position.coords;
+    const [x, y] = projection([longitude, latitude]);
+
+    bounds
+      .append('g')
+      .append('circle')
+      .attr('cx', x)
+      .attr('cy', y)
+      .attr('fill', '#8f97db')
+      .transition()
+      .delay(200)
+      .duration(500)
+      .attr('r', 6);
+  });
+
+  /* PERIPHERALS */
   const legendGroup = bounds
     .append('g')
     .style(
@@ -172,7 +189,7 @@ async function drawMap() {
     .attr('dominant-baseline', 'middle')
     .attr('x', legendWidth / 2 + 5);
 
-  // INTERACTIONS
+  /* INTERACTIONS */
   const tooltip = d3.select('#tooltip');
 
   function onMouseEnter(event, d) {
@@ -200,6 +217,13 @@ async function drawMap() {
       );
 
     bounds
+      .append('path')
+      .attr('id', 'tooltipCountry')
+      .attr('fill', 'cornflowerblue')
+      .attr('d', pathGenerator(d))
+      .style('pointer-events', 'none');
+
+    bounds
       .append('circle')
       .attr('id', 'tooltipCircle')
       .attr('fill', 'currentColor')
@@ -211,8 +235,10 @@ async function drawMap() {
 
   function onMouseLeave() {
     d3.select('#tooltip').style('opacity', 0);
+    d3.select('#tooltipCountry').remove();
     d3.select('#tooltipCircle').remove();
   }
+
   // countries
   //   .on('mouseenter', onMouseEnter)
   //   .on('mouseleave', onMouseLeave)
