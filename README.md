@@ -1362,7 +1362,7 @@ The position of the tooltip refers to the same coordinates computed for the circ
 
 ### Delaunay
 
-As suggested in the book, mouse interaction can be improved with Delaunay's triangulation. The logic is fundamentally the same as in the previous chapter: include a series of `<path>` elements above the map and attach the mouse event to said shapes. 
+As suggested in the book, mouse interaction can be improved with Delaunay's triangulation. The logic is fundamentally the same as in the previous chapter: include a series of `<path>` elements above the map and attach the mouse event to said shapes.
 
 ```js
 bounds
@@ -1383,3 +1383,13 @@ const delaunay = d3.Delaunay.from(
   (d) => pathGenerator.centroid(d)[1]
 );
 ```
+
+## 07 - Data Visualization Basics
+
+_Please note:_ the notes which follow are no substitute for the thorough analysis of the book. I will focus on a few concepts, but mostly try to recreate the proposed visualizations.
+
+### Humidity Timeline
+
+The goal is to create a visualization highlighting how humidity changes depending on the time of the year.
+
+Starting from a rudimentary timeline, the book illustrates how to purposefully design the line chart to answer the question with more focus and purpose.
