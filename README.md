@@ -1393,3 +1393,17 @@ _Please note:_ the notes which follow are no substitute for the thorough analysi
 The goal is to create a visualization highlighting how humidity changes depending on the time of the year.
 
 Starting from a rudimentary timeline, the book illustrates how to purposefully design the line chart to answer the question with more focus and purpose.
+
+- downsample the data to one per week, `d3.timeWeeks` (d3-time) `d3.curveBasis()` (d3-shape) [curves](https://github.com/d3/d3-shape#curves) (trend)
+
+- lighter grey circles for the individual data points (granularity)
+
+- remove background, grid lines, reduce ticks `.ticks(3)` for the y axis
+
+- highlight seasons
+
+- remove x axis, add labels for the seasons
+
+- y axis, place the label above the chart, next to the y value and not rotated, remove tick marks
+
+- add seasonal means as line, add first label 'Seasonal mean'

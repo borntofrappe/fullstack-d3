@@ -136,16 +136,16 @@ async function drawMap() {
     .append('text')
     .text('Population Growth')
     .attr('text-anchor', 'middle')
-    .attr('y', -36)
-    .style('font-size', 16)
+    .attr('y', -42)
+    .style('font-size', 18)
     .style('font-weight', 'bold');
 
   legendGroup
     .append('text')
     .text('Percentage change in 2017')
     .attr('text-anchor', 'middle')
-    .attr('y', -20)
-    .style('font-size', 12);
+    .attr('y', -24)
+    .style('font-size', 14);
 
   const legendWidth = 100;
   const legendHeight = 20;
@@ -180,14 +180,16 @@ async function drawMap() {
     .text(`${formatLegend(maxChange * -1)}%`)
     .attr('text-anchor', 'end')
     .attr('dominant-baseline', 'middle')
-    .attr('x', -legendWidth / 2 - 5);
+    .attr('x', -legendWidth / 2 - 5)
+    .attr('font-size', 12);
 
   legendGroup
     .append('text')
     .text(`${formatLegend(maxChange)}%`)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .attr('x', legendWidth / 2 + 5);
+    .attr('x', legendWidth / 2 + 5)
+    .attr('font-size', 12);
 
   /* INTERACTIONS */
   const tooltip = d3.select('#tooltip');
