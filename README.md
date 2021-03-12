@@ -1388,22 +1388,102 @@ const delaunay = d3.Delaunay.from(
 
 _Please note:_ the notes which follow are no substitute for the thorough analysis of the book. I will focus on a few concepts, but mostly try to recreate the proposed visualizations.
 
+### Basics
+
+A data visualization is useful only as it is able to answer a question. The line chart in the first chapter describes the variability of the temperature through the year; the scatterplot from the second project focuses on the correlation between humidity and dew point; the bar charts in the third demo show the distribution and variety of multiple metrics.
+
+When picking a particular visualization, it is helpful to start with the data being analysed:
+
+- qualitative, non numerical:
+
+  - binary, representing one of two options (state of a light switch)
+
+  - nominal, categories without order (weather)
+
+  - ordinal, categories with natural order (wind intensity)
+
+- quantitative, numerical:
+
+  - discrete, where it's not possible to interpret a value intermediate of two measurements (number of cards)
+
+  - continuous, where it's possible to interpolate between two values (degrees)
+
+Picking for instance a temperature, the continuous metric can be highlighted through size (the heights of bars in a bar chart), position (the `y` coordinate in a scatterplot), or again color (the fill of circles, the gradient of a rectangle).
+
 ### Humidity Timeline
 
 The goal is to create a visualization highlighting how humidity changes depending on the time of the year.
 
-Starting from a rudimentary timeline, the book illustrates how to purposefully design the line chart to answer the question with more focus and purpose.
+Starting from a rudimentary timeline, the book illustrates how to design the line chart to answer the question with more focus and purpose. The visualization is updated as follows:
 
-- downsample the data to one per week, `d3.timeWeeks` (d3-time) `d3.curveBasis()` (d3-shape) [curves](https://github.com/d3/d3-shape#curves) (trend)
+- the line plots the data with a curve
 
-- lighter grey circles for the individual data points (granularity)
+  ```js
+  const lineGenerator = d3
+    .line()
+    .x((d) => xScale(xAccessor(d)))
+    .y((d) => yScale(yAccessor(d)))
+    .curve(d3.curveBasis);
+  ```
 
-- remove background, grid lines, reduce ticks `.ticks(3)` for the y axis
+- instead of considering every data point, the line generator function receives a smaller set of values, considering the average for each week
 
-- highlight seasons
+  ```js
+  lineGroup.append('path').attr('d', lineGenerator(downsampleData));
+  ```
 
-- remove x axis, add labels for the seasons
+  `downsampleData` considers the weekly averages with `d3.timeWeeks`, a function generating the weeks from the start to end date
 
-- y axis, place the label above the chart, next to the y value and not rotated, remove tick marks
+  ```js
+  const weeks = d3.timeWeeks(
+    xAccessor(dataset[0]),
+    xAccessor(dataset[dataset.length - 1])
+  );
+  ```
 
-- add seasonal means as line, add first label 'Seasonal mean'
+- the data points are preserved with lighter grey circles
+
+- the `y` axis displays fewer ticks modifying the axis generator function
+
+- the label for the `y` axis is moved above the line chart, next to the topmost value
+
+- the `x` axis is removed
+
+- for the seasons, the line chart includes a semi-transparent rectangle, and a line highlighting the mean value
+
+  ```js
+  seasonGroup.append('rect');
+
+  seasonGroup.append('path');
+  ```
+
+  The groups are bound to an object detailing the season.
+
+  ```js
+  const seasonGroup = seasonsGroup
+    .append('g')
+    .selectAll('g')
+    .data(seasonData)
+    .enter()
+    .append('g');
+  ```
+
+  `seasonData` is built to have each data point represented by a season. `d3.timeYears` and `d3.timeMonth` are used to create an array describing one year more than necessary.
+
+  ```js
+  const years = d3.timeYears(d3.timeMonth.offset(startDate, -13), endDate);
+  ```
+
+  An additional (preceding) year is necessary to contemplate the winter season at the beginning of the dataset.
+
+  _Please note:_ `d3.timeYears` produces an array of date object. A formatting function is then used to have `years` describe the intger value only.
+
+  ```js
+  const years = d3
+    .timeYears(d3.timeMonth.offset(startDate, -13), endDate)
+    .map((yearDate) => parseInt(d3.timeFormat('%Y')(yearDate)));
+  ```
+
+- the `y` axis includes a label for the lines detailing the season's averages
+
+- the `x` axis is re-introduced with a label for the seasons
