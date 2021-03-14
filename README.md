@@ -1408,7 +1408,7 @@ When picking a particular visualization, it is helpful to start with the data be
 
   - continuous, where it's possible to interpolate between two values (degrees)
 
-Picking for instance a temperature, the continuous metric can be highlighted through size (the heights of bars in a bar chart), position (the `y` coordinate in a scatterplot), or again color (the fill of circles, the gradient of a rectangle).
+The type of data influences the type of chart. Picking for instance the temperature, the continuous metric can be highlighted with a bar chart (the height of the bars), a scatterplot (the `y` coordinate) or again color (the fill of circles, the gradient of a rectangle).
 
 ### Humidity Timeline
 
@@ -1441,7 +1441,7 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
   );
   ```
 
-- the data points are preserved with lighter grey circles
+- the data points are preserved through lighter grey circles
 
 - the `y` axis displays fewer ticks modifying the axis generator function
 
@@ -1476,7 +1476,7 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
 
   An additional (preceding) year is necessary to contemplate the winter season at the beginning of the dataset.
 
-  _Please note:_ `d3.timeYears` produces an array of date object. A formatting function is then used to have `years` describe the intger value only.
+  `d3.timeYears` produces an array of date object. A formatting function is then used to have `years` describe the intger value only.
 
   ```js
   const years = d3
@@ -1487,3 +1487,17 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
 - the `y` axis includes a label for the lines detailing the season's averages
 
 - the `x` axis is re-introduced with a label for the seasons
+
+### Color
+
+The `d3-color` module provides several tools to manage color spaces.
+
+## Common Charts
+
+The chapter highlights a few chart types.
+
+### Candlestick
+
+### Box Plot
+
+### Radar Chart
