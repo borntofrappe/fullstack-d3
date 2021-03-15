@@ -1516,6 +1516,46 @@ The chapter highlights a few chart types.
 
 ### Candlestick
 
+### Line Chart
+
+### Heatmap
+
+- week day on the y axis
+- months on the x axis
+- color scale interpolating between blues and extent values
+- button to change metric 
+
+- percentile for asian countries for different metrics
+
+### Radar
+
+- lineRadial
+- button to change day
+
+- multiple charts to show multiple days
+
+### Scatterplot
+
+- correlation
+- temperature min and max
+- wind speed and air pressure
+- wind speed and humidity
+- line of best fit
+
+### Pie and Donuts Charts
+
+- few slices
+
+
+
 ### Box Plot
 
-### Radar Chart
+- outliers with dots
+
+- median +- 1.5 interquartile range
+
+- rectangle from 75 to 25 percentile
+
+- median
+
+For maximum temperature (°F)
