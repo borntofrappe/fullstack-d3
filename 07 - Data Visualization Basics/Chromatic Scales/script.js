@@ -4,7 +4,7 @@ async function drawColorScales() {
     article.append('h2').text(scale.type);
 
     const dimensions = {
-      width: 300,
+      width: 200,
       height: 20,
     };
 
@@ -59,19 +59,19 @@ async function drawColorScales() {
   const scales = [
     {
       type: 'categorical',
-      functions: ['schemeCategory10', 'schemeAccent', 'schemeDark2'],
+      functions: ['schemeCategory10', 'schemeAccent', 'schemeDark2', 'schemePaired', 'schemePastel1', 'schemePastel2', 'schemeSet1', 'schemeSet2', 'schemeSet3', 'schemeTableau10'],
     },
     {
       type: 'sequential single hue',
-      functions: ['interpolateBlues', 'interpolateGreens', 'interpolateGreys'],
+      functions: ['interpolateBlues', 'interpolateGreens', 'interpolateGreys', 'interpolateOranges', 'interpolatePurples', 'interpolateReds'],
     },
     {
       type: 'sequential multi hue',
-      functions: ['interpolateGnBu', 'interpolateBuGn', 'interpolateBuPu'],
+      functions: ['interpolateTurbo', 'interpolateViridis', 'interpolateInferno', 'interpolateMagma', 'interpolatePlasma', 'interpolateCividis', 'interpolateWarm', 'interpolateCool', 'interpolateCubehelixDefault', 'interpolateBuGn', 'interpolateBuPu', 'interpolateGnBu', 'interpolateOrRd', 'interpolatePuBuGn', 'interpolatePuBu', 'interpolatePuRd', 'interpolateRdPu', 'interpolateYlGnBu', 'interpolateYlGn', 'interpolateYlOrBr', 'interpolateYlOrRd'],
     },
     {
       type: 'diverging',
-      functions: ['interpolateBrBG', 'interpolatePRGn'],
+      functions: ['interpolateBrBG', 'interpolatePRGn', 'interpolatePiYG', 'interpolatePuOr', 'interpolateRdBu', 'interpolateRdGy', 'interpolateRdYlBu', 'interpolateRdYlGn', 'interpolateSpectral'],
     },
     {
       type: 'cyclical',

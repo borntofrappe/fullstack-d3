@@ -9,8 +9,6 @@
 }
 
 body {
-  display: grid;
-  place-items: center;
   min-height: 100vh;
   background: hsl(210, 17%, 95%);
   color: hsl(210, 29%, 12%);
@@ -21,22 +19,22 @@ svg text {
   font-family: 'Inter var', sans-serif;
 }
 
-
 #wrapper {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: flex-start;
 }
 
 article {
-  margin: 1rem;
-  background: hsl(0, 0%, 100%);
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  box-shadow: 0 2px 12px -8px hsl(210, 29%, 5%);
+  margin: 0.75rem;
   display: flex;
   flex-direction: column;
   line-height: 1.5;
+  padding: 1rem 0.75rem;
+  background: hsl(0, 0%, 100%);
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px -8px hsl(210, 29%, 5%);
 }
 
 article > * + * {
@@ -45,5 +43,5 @@ article > * + * {
 
 article h2 {
   text-transform: capitalize;
-  font-size: 1.4rem;
+  font-size: 1rem;
 }
