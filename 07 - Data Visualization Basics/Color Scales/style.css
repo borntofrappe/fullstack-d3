@@ -45,3 +45,7 @@ article h2 {
   text-transform: capitalize;
   font-size: 1rem;
 }
+
+article p {
+  font-size: 0.9rem;
+}
