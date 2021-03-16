@@ -1512,24 +1512,40 @@ It is important to note the following:
 
 ## Common Charts
 
-The chapter highlights a few chart types.
+The chapter highlights a few types of data visualizations.
 
 ### Candlestick
 
-`.csv` data. Open, close, high, low.
+A candlestick chart highlights stock prices through the open, close, high and low metric. It works similarly to  a box plot, but conveys different information.
 
-### Line Chart
+A few highlights in terms of the D3 library:
 
-Timeline, points, interpolating curve.
+- `d3.csv` considers the comma separated values the describing hypothetical prices
+
+- `d3.schemeSet1` provides an array of colors to distinguish which day resulted in a net gain (when the closing price was higher than the opening value)
+
+- `d3.timeDay.offset` is used to stretch the horizontal scale one day before and one day after the actual domain
+
+### Timeline
+
+With a timeline the goal is to study the evolution of a metric over time. The metric influences the `y` coordinate, while the time is represented in the horizontal dimension.
+
+Fundamentally, the project is a copy of the previous line chart(s). The highlight is however on the points describing the individual line points and the interpolating curve. With a `<input>` element of type `checkbox` and a `<select>` element with a few `<option>`s, the visualization shows a few ways to customize the timeline.
+
+The demo also includes a `<clipPath>` to have the line of best fit restricted to the bounded dimensions.
 
 ### Heatmap
 
 ### Radar
 
-### Scatterplot
+### Scatter
 
-Multiple metrics, line of best fit to highlight correlation.
+A scatterplot is useful to study the relationship between two metric values. Similarly to the timeline, the visualization is a copy of the scatterplot introduced earlier in the repository. Here the focus is however on the relationship between the two metrics (positive, negative, null correlation) and on the line of best fit.
 
-### Pie and Donuts Charts
+### Pie and Donut
+
+### Histogram
 
 ### Box Plot
+
+With a box plot it is possible to study the distribution of a numerical value.
