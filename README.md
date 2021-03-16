@@ -1548,4 +1548,28 @@ A scatterplot is useful to study the relationship between two metric values. Sim
 
 ### Box Plot
 
-With a box plot it is possible to study the distribution of a numerical value.
+With a box plot it is possible to study the distribution of a numerical value. The visualization is similar to the candlestick chart, but is based on a different set of values. The median is useful to describe the tendency of the metric, while the 25th and 75th percentile (also know as 1st and 3rd quarile) provide a measure of the variability. 
+
+```text
+  outliers
+  
+  - median + iqr * 1.5
+  |
+ --- 75th percentile
+|   |
+|---| median
+|   |
+ --- 25th percentile
+  |
+  - median - iqr * 1.5
+
+  outliers
+```
+
+For the D3 library:
+
+- `d3.scaleBand` provides the horizontal coordinate by mapping a discrete domain (an array describing the months) to a continuous range (the bounded width)
+
+- `d3.timeMonths` works similarly to `d3.timeWeeks` in the redesign of the timeline of the seventh chapter. The function creates an array of date objects for the months between the input dates
+
+- in terms of data binding, it is possible to bind two nested layers. Consider how the groups for the boxes are bound to `monthData` and the circles are bound to the array describing the outliers, `d.outliers`
