@@ -1,0 +1,56 @@
+@font-face {
+  font-family: 'Inter var';
+  src: url('../../Inter.var.woff2');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: hsl(210, 17%, 98%);
+  color: #34495e;
+  font-family: 'Inter var', sans-serif;
+}
+
+svg text {
+  font-family: 'Inter var', sans-serif;
+  color: #7f8c8d;
+}
+
+#wrapper {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-areas: 'metric legend button' 'heatmap heatmap heatmap';
+  align-items: center;
+  gap: 1rem 0.5rem;
+}
+
+#wrapper h2 {
+  grid-area: metric;
+}
+
+#wrapper button {
+  grid-area: button;
+  justify-self: end;
+  font-family: inherit;
+  font-size: 1.1rem;
+  background: rgb(125, 201, 10);
+  color: white;
+  border: none;
+  border-bottom: 0.25rem solid rgb(27, 123, 27);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
+}
+
+#wrapper #heatmap {
+  grid-area: heatmap;
+}
+
+#wrapper #legend {
+  grid-area: legend;
+}
