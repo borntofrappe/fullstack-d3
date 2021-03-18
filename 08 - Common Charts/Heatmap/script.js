@@ -1,28 +1,31 @@
 async function drawHeatmap() {
   /* ACCESS DATA */
   const data = await d3.json('../../nyc_weather_data.json');
+  
   const dateParser = d3.timeParse('%Y-%m-%d');
+  const dayParser = d3.timeParse('%e');
+  const dayFormatter = d3.timeFormat('%A');
+  const monthFormatter = d3.timeFormat('%b');
+
   const dateAccessor = d => dateParser(d.date);
-
-  const dataset = data.sort((a, b) => dateParser(b) - dateParser(a))
+  
+  const dataset = [...data].sort((a, b) => dateAccessor(a) - dateAccessor(b));
+ 
   const firstDate = dateAccessor(dataset[0]);
+  // return the number of weeks since start date
   const weekAccessor = d => d3.timeWeeks(firstDate, dateAccessor(d)).length;
-  const dayAccessor = d => d3.timeFormat("%w")(dateAccessor(d))
+  // return the number describing the day
+  const dayAccessor = d => d3.timeFormat('%w')(dateAccessor(d));
 
-  const weeks = weekAccessor(dataset[dataset.length - 1])
+  const weeks = weekAccessor(dataset[dataset.length - 1]);
+  const daysOfWeek = Array(7)
+    .fill()
+    .map((d, i) => dayFormatter(dayParser(i)));
 
-  const dayParser = d3.timeParse('%e') //  1 2 3 4 5
-  const dayFormatter = d3.timeFormat('%A') // Monday
-
-  const monthFormatter = d3.timeFormat('%b') // Jan
-
-const daysOfWeek = Array(7)
-.fill()
-.map((d, i) => dayFormatter(dayParser(i)))
-
-const months = d3
-.timeMonths(dateAccessor(dataset[0]), dateAccessor(dataset[dataset.length - 1]))
-
+  const months = d3.timeMonths(
+    dateAccessor(dataset[0]),
+    dateAccessor(dataset[dataset.length - 1])
+  );
 
   /* CHART DIMENSIONS */
   const dimensions = {
@@ -37,42 +40,42 @@ const months = d3
 
   dimensions.boundedWidth =
     dimensions.width - (dimensions.margin.left + dimensions.margin.right);
-  
+
   const tileTotalSize = dimensions.boundedWidth / (weeks + 1);
-  const tilePadding = 0;
+  const tilePadding = tileTotalSize * 0.1;
   const tileSize = tileTotalSize - tilePadding * 2;
-  
-  dimensions.height = tileTotalSize * daysOfWeek.length + (dimensions.margin.top + dimensions.margin.bottom);
+
+  dimensions.height =
+    tileTotalSize * daysOfWeek.length +
+    (dimensions.margin.top + dimensions.margin.bottom);
 
   dimensions.boundedHeight =
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   const dimensionsLegend = {
-    width: 220,
-    height: 30,
+    width: 250,
+    height: 15,
     margin: {
-      top: 5,
+      top: 0,
       right: 40,
-      bottom: 5,
+      bottom: 0,
       left: 40,
     },
   };
 
   dimensionsLegend.boundedWidth =
-    dimensionsLegend.width - (dimensionsLegend.margin.left + dimensionsLegend.margin.right);
+    dimensionsLegend.width -
+    (dimensionsLegend.margin.left + dimensionsLegend.margin.right);
   dimensionsLegend.boundedHeight =
-    dimensionsLegend.height - (dimensionsLegend.margin.top + dimensionsLegend.margin.bottom);
-
+    dimensionsLegend.height -
+    (dimensionsLegend.margin.top + dimensionsLegend.margin.bottom);
 
   /* SCALES */
   const interpolateColor = d3.interpolateBlues;
-  const colorScale = d3.scaleLinear()
-    .range([0, 1]);
-
-
+  const colorScale = d3.scaleLinear().range([0, 1]);
 
   /* DRAW DATA */
-  const heatmapMetric = d3.select('#wrapper').append('h2')
+  const heatmapMetric = d3.select('#wrapper').append('h2');
   const heatmapGradientId = 'heatmap-gradient';
 
   const heatmapLegend = d3
@@ -89,37 +92,40 @@ const months = d3
     .data([0, 1])
     .enter()
     .append('stop')
-    .attr('offset', (d, i, {length}) => `${i * 100 / (length - 1)}%`)
-    .attr('stop-color', d => interpolateColor(d))
+    .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
+    .attr('stop-color', d => interpolateColor(d));
 
   const heatmapGroup = heatmapLegend
     .append('g')
     .style(
       'transform',
-      `translate(${dimensionsLegend.margin.left}px, ${dimensionsLegend.margin.top}px)`
+      `translate(${dimensionsLegend.margin.left}px, ${
+        dimensionsLegend.margin.top
+      }px)`
     );
 
   heatmapGroup
-      .append('rect')
-      .attr('width', dimensionsLegend.boundedWidth)
-      .attr('height', dimensionsLegend.boundedHeight)
-      .attr('fill', `url(#${heatmapGradientId})`);
-  
+    .append('rect')
+    .attr('width', dimensionsLegend.boundedWidth)
+    .attr('height', dimensionsLegend.boundedHeight)
+    .attr('fill', `url(#${heatmapGradientId})`);
+
   const heatmapMin = heatmapGroup
     .append('text')
     .attr('text-anchor', 'end')
     .attr('dominant-baseline', 'middle')
-    .attr('x', -3)
-    .attr('y', dimensionsLegend.boundedHeight / 2)
-    .attr('font-size', 13)
+    .attr('x', -3);
 
-    const heatmapMax = heatmapGroup
+  const heatmapMax = heatmapGroup
     .append('text')
     .attr('text-anchor', 'start')
-    .attr('dominant-baseline', 'middle')
     .attr('x', dimensionsLegend.boundedWidth + 3)
-    .attr('y', dimensionsLegend.boundedHeight / 2)
-    .attr('font-size', 13)
+    
+  heatmapGroup
+    .selectAll('text')
+    .attr('y', dimensionsLegend.boundedHeight / 2 + 1)
+    .attr('dominant-baseline', 'middle')
+    .attr('font-size', 13);
 
   const heatmapButton = d3
     .select('#wrapper')
@@ -143,35 +149,29 @@ const months = d3
   const axisGroup = bounds.append('g');
   const metricGroup = bounds.append('g');
 
-  
   /* PERIPHERALS */
   const xAxisGroup = axisGroup.append('g');
   const yAxisGroup = axisGroup.append('g');
 
   xAxisGroup
-      .selectAll('text')
-      .data(months)
-      .enter()
-      .append('text')
-      .text(d => monthFormatter(d))
-      .attr('x', d => {
-        return d3.timeWeeks(firstDate, d).length * tileTotalSize;
-      }) 
-      .attr('y', -dimensions.margin.top + 12)
+    .selectAll('text')
+    .data(months)
+    .enter()
+    .append('text')
+    .text(d => monthFormatter(d))
+    .attr('x', d => d3.timeWeeks(firstDate, d).length * tileTotalSize)
+    .attr('y', -dimensions.margin.top + 12);
 
-  
-    yAxisGroup
-      .selectAll('text')
-      .data(daysOfWeek)
-      .enter()
-      .append('text')
-      .text(d => d)
-      .attr('text-anchor', 'end') 
-      .attr('dominant-baseline', 'middle') 
-      .attr('x', -5) 
-      .attr('y', (d, i) => i * tileTotalSize + 6)
-
-  
+  yAxisGroup
+    .selectAll('text')
+    .data(daysOfWeek)
+    .enter()
+    .append('text')
+    .text(d => d)
+    .attr('text-anchor', 'end')
+    .attr('dominant-baseline', 'middle')
+    .attr('x', -5)
+    .attr('y', (d, i) => i * tileTotalSize + 6);
 
   axisGroup
     .selectAll('text')
@@ -179,41 +179,32 @@ const months = d3
     .attr('fill', 'currentColor');
 
   function drawMap(metric) {
-    const metricAccessor = d => d[metric]
-    colorScale
-      .domain(d3.extent(dataset, metricAccessor));
-
+    const metricAccessor = d => d[metric];
+    colorScale.domain(d3.extent(dataset, metricAccessor));
 
     heatmapMetric.text(metric);
-    heatmapMin
-      .text(d3.min(dataset, metricAccessor))
-    
-    heatmapMax 
-      .text(d3.max(dataset, metricAccessor))
+    heatmapMin.text(d3.min(dataset, metricAccessor));
+    heatmapMax.text(d3.max(dataset, metricAccessor));
 
-    const updateGroup = metricGroup
-      .selectAll('rect')
-      .data(dataset);
+    const updateGroup = metricGroup.selectAll('rect').data(dataset);
 
-    const enterGroup = updateGroup
-      .enter()
+    const enterGroup = updateGroup.enter();
 
-    const exitGroup = updateGroup
-      .exit();
+    const exitGroup = updateGroup.exit();
 
     exitGroup.remove();
 
     enterGroup
       .append('rect')
       .attr('fill', d => interpolateColor(colorScale(metricAccessor(d))))
-      .attr('x', (d) => weekAccessor(d) * tileTotalSize + tilePadding)
-      .attr('y', (d) => dayAccessor(d) * tileTotalSize + tilePadding)
+      .attr('x', d => weekAccessor(d) * tileTotalSize + tilePadding)
+      .attr('y', d => dayAccessor(d) * tileTotalSize + tilePadding)
       .attr('width', tileSize)
       .attr('height', tileSize);
 
     updateGroup
       .transition()
-      .attr('fill', d => interpolateColor(colorScale(metricAccessor(d))))
+      .attr('fill', d => interpolateColor(colorScale(metricAccessor(d))));
   }
 
   const metrics = [
@@ -228,15 +219,12 @@ const months = d3
   ];
   let metricIndex = 0;
 
-
   drawMap(metrics[metricIndex]);
-  
-  heatmapButton
-  .on('click', () => {
+
+  heatmapButton.on('click', () => {
     metricIndex = (metricIndex + 1) % metrics.length;
     drawMap(metrics[metricIndex]);
-  })
-  
+  });
 }
 
 drawHeatmap();
