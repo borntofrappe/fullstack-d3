@@ -1,0 +1,59 @@
+@font-face {
+  font-family: 'Inter var';
+  src: url('../../Inter.var.woff2');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: hsl(210, 17%, 98%);
+  color: hsl(210, 29%, 29%);
+  font-family: 'Inter var', sans-serif;
+}
+
+#wrapper {
+  display: grid;
+  gap: 2rem 1.25rem;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+article {
+  text-align: center;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: center;
+}
+
+article > * + * {
+  margin-top: 0.75rem;
+}
+
+article p {
+  font-weight: 900;
+  font-size: 2.75rem;
+}
+
+article h2 {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: hsl(184, 6%, 53%);
+}
+
+button {
+  display: block;
+  grid-column: 2;
+  font-family: inherit;
+  font-size: 1.1rem;
+  background: hsl(84, 91%, 41%);
+  color: hsl(0, 0%, 100%);
+  border: none;
+  border-bottom: 0.25rem solid hsl(120, 64%, 29%);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
+}
