@@ -74,7 +74,7 @@ async function drawDashboard() {
       key: 'pressure',
       label: 'Atmospheric Pressure',
       measure: 'hectopascals',
-      format: d => `${d3.format('.2f')(d / 1000)}<span>k</span>`,
+      format: d => `${d3.format('.1f')(d / 1000)}<span>k</span>`,
       scales: {
         text: d3
           .scaleQuantize()

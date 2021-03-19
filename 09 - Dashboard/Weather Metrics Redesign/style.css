@@ -19,7 +19,7 @@ body {
 
 #wrapper {
   display: grid;
-  gap: 2rem 1.25rem;
+  gap: 2rem 1.5rem;
   grid-template-columns: 1fr 1fr 1fr;
 }
 

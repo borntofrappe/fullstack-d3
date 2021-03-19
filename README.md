@@ -1510,7 +1510,7 @@ It is important to note the following:
 
   - `hcl[a]` describes a color with a hue, chroma and lightness. The chroma is a number in the `[0, 230]` influencing the saturation, while the lightness a number in the `[0, 100]` interval. The difference from the hsl color space is that two values with the same lightness value have the same perceived lightness. In light of this, the format is useful to avoid contrasting levels of saturation
 
-## Common Charts
+## 08 - Common Charts
 
 The chapter introduces a few types of data visualizations with the goal of providing a baseilne, a foundation for more complex projects. With the folder I try to replicate the visuals on my own.
 
@@ -1662,3 +1662,47 @@ For the D3 library:
 - `d3.timeMonths` works similarly to `d3.timeWeeks` in the redesign of the timeline of the seventh chapter. The function creates an array of date objects for the months between the input dates
 
 - in terms of data binding, it is possible to bind two nested layers. Consider how the groups for the boxes are bound to `monthData` and the circles are bound to the array describing the outliers, `d.outliers`
+
+## 09 - Dashboard
+
+A dashboard is loosely introduced an interface for data, a display encompassing the value of a few metrics as weel as complex visualizations.
+
+### Weather Metrics
+
+The demo works to show a rudimentary dashboard, displaying three metrics for a given day in the wind speed, visibility and atmospheric pressure.
+
+Instead of using `<svg>` elements I decided to bind the data to HTML elements.
+
+### Weather Metrics Redesign
+
+The project works to show how the dashboard developed for the previous demo can be improved, providing more context and additional visuals:
+
+- the values are formatted to consider fewer decimal numbers, with a fixed notation
+
+- the metrics are displayed with labels distinct from the value of the connected property. `windSpeed` is displayed as `Wind Speed`, `visibility` as `Visibility` and `pressure` as `Atmospheric pressure`
+
+- each metric is accompanied by a heading displaying the unit of measure
+
+- each metric is accompanied by a gauge, highlighting the value in the context of the dataset, and where the value fits in the domain
+
+It is important to note a distinction introduced with the `drawMetric` function. The script initially sets up the dashboard with the necessary HTML and SVG elements. In `drawMetric`, then, the idea is to change the contents, the appearance of the elements with the specific day.
+
+The project highlights a few methods from the D3 library:
+
+- `d3.scaleQuantize` is helpful to create a scale mapping a continuous domain to a discrete range.
+
+  For the label above the gauge component, the idea is to display one of five options, from very low to very high, according to where the value fits in the domain.
+
+  ```js
+  d3.scaleQuantize().range(['Very low', 'Low', 'Average', 'High', 'Very high']);
+  ```
+
+  `scaleQuantize` divides the domain in intervals of equal size, so that if the value falls in the first 20% of values, it is associated to the `Very low` label. Between 20% and 40% to the `Low` label and so forth. Refer to the documentation in the [`d3-scale`](https://github.com/d3/d3-scale) module for more details.
+
+- `d3.color` is useful to create a color which is then customized with the `.darker()` method.
+
+  ```js
+  d3.color(..).darker(1.5)
+  ```
+
+  In the project, the function receives a color from the `d3.interpolateBlues` scale. Refer to the documentation for the [`d3-color`](https://github.com/d3/d3-color) module for more information.
