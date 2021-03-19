@@ -1,0 +1,82 @@
+@font-face {
+  font-family: 'Inter var';
+  src: url('../../Inter.var.woff2');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: hsl(200, 17%, 95%);
+  color: hsl(210, 29%, 29%);
+  font-family: 'Inter var', sans-serif;
+}
+
+#wrapper {
+  display: grid;
+  gap: 2rem 1.25rem;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+article {
+  text-align: center;
+  display: grid;
+  gap: 0.5rem 0;
+  grid-template-areas: 'gauge' 'value' 'label' 'measure';
+  justify-items: center;
+}
+
+article p {
+  grid-area: value;
+  font-weight: 900;
+  font-size: 3rem;
+}
+
+article p span {
+  color: hsl(212, 17%, 44%);
+}
+
+article h2 {
+  grid-area: label;
+  font-weight: 700;
+  font-size: 1rem;
+  color: hsl(195, 10%, 51%);
+}
+
+article h3 {
+  grid-area: measure;
+  color: hsl(185, 12%, 62%);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+article svg {
+  grid-area: gauge;
+  color: hsl(183, 11%, 61%);
+}
+
+article svg text {
+  font-family: inherit;
+  text-transform: uppercase;
+  font-weight: 300;
+  color: hsl(185, 12%, 62%);
+  font-size: 0.9rem;
+}
+
+button {
+  display: block;
+  grid-column: 2;
+  font-family: inherit;
+  font-size: 1.1rem;
+  background: hsl(84, 91%, 41%);
+  color: hsl(0, 0%, 100%);
+  border: none;
+  border-bottom: 0.25rem solid hsl(120, 64%, 29%);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
+}
