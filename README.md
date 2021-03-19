@@ -1706,3 +1706,9 @@ The project highlights a few methods from the D3 library:
   ```
 
   In the project, the function receives a color from the `d3.interpolateBlues` scale. Refer to the documentation for the [`d3-color`](https://github.com/d3/d3-color) module for more information.
+
+### Feed Metrics
+
+The gauge component is included in a dashboard highlighting the number of articles and views for a specific category, Football. The goal is to show how the metrics by themselves do not provide much insight, but can be combined to provide an actionable metric.
+
+<!-- index.html of the weather metrics demo has a wrong title -->
