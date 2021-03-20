@@ -1714,3 +1714,15 @@ The second demo improves the design with an additional metric: demand. Here the 
 _Please note:_ the script for the second demo slightly differs from the first, as I found a more useful solution in having the accessor function directly in the object describing each metric.
 
 _Please also note:_ the data for the project is included in the _09 - Dashboard_ folder, alongside the icons designed for each section.
+
+### Data States
+
+The project works to show how a dashboard is able to accommodate multiple states.
+
+In the context of a bar chart, the states are included with a rudimentary flow:
+
+- loading; here the script renders a gray-scale, semi-translucent version of the bar chart, under a label describing the loading state.
+
+- loaded, error or empty; here the bar chart is substituted with the actual visualization, an error message, or a message describing the lack of data
+
+Loading is shown immediately, while one of the three remaining states is picked at random after an arbitrary amount of time.
