@@ -2,6 +2,33 @@ async function drawDashboard() {
   const dataset = await d3.csv('./data_feed.csv');
   const dateParser = d3.timeParse('%d-%m-%Y');
   const dateFormatter = d3.timeFormat('%B %-e');
+  const dateAccessor = d => dateParser(d.date);
+  
+  const qualifiers = ['many less', 'less', 'the same', 'more', 'many more'];
+  const colors = ['#e8e9e9', '#29c86d'];
+  const rotation = [0, 180];
+  const strokeDashoffset = [1, 0];
+
+  const dimensions = {
+    width: 150,
+    height: 190,
+    margin: {
+      top: 30,
+      right: 15,
+      bottom: 60,
+      left: 15,
+    },
+  };
+
+  dimensions.boundedWidth =
+    dimensions.width - (dimensions.margin.left + dimensions.margin.right);
+  dimensions.boundedHeight =
+    dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
+
+  const strokeWidthCircle = 1;
+  const radiusCircle = dimensions.margin.left - strokeWidthCircle / 2;
+  const paddingGauge = 2;
+  const strokeWidthGauge = (radiusCircle - paddingGauge) * 2;
 
   const iconsPaths = {
     views:
@@ -15,37 +42,30 @@ async function drawDashboard() {
   const metrics = [
     {
       key: 'views',
-      label: 'Views',
-      value: 'views to articles',
-      note: (value, topic) =>
-        `People read articles related to <a href="#">${topic}</a> ${value} times. Every time someone reads an article, we count it as a view.`,
+      title: 'Views',
+      label: 'views to articles',
+      addendum: (value) => `People read articles related to <a href="#">Football</a> ${value} times. Every time someone reads an article, we count it as a view.`,
       formatAverage: d => `${d3.format('.0f')(d / 1000)}k`,
       formatValue: d => `${d3.format('.1f')(d / 1000)}k`,
       scales: {
-        text: d3
-          .scaleQuantize()
-          .range(['many less', 'less', 'the same', 'more', 'many more']),
-        rotate: d3.scaleLinear().range([0, 180]),
-        fill: d3.scaleLinear().range(['#e8e9e9', '#29c86d']),
-        strokeDashoffset: d3.scaleLinear().range([1, 0]),
+        qualify: d3.scaleQuantize().range(qualifiers),
+        rotate: d3.scaleLinear().range(rotation),
+        color: d3.scaleLinear().range(colors),
+        strokeDashoffset: d3.scaleLinear().range(strokeDashoffset),
       },
     },
-
     {
       key: 'articles',
-      label: 'Articles',
-      value: 'number of articles viewed',
-      note: (value, topic) =>
-        `There were ${value} articles read about <a href="#">${topic}</a>.`,
+      title: 'Articles',
+      label: 'number of articles viewed',
+      addendum: (value) => `There were ${value} articles read about <a href="#">Football</a>.`,
       formatAverage: d => `${d3.format('.0f')(d)}`,
       formatValue: d => `${d3.format('.0f')(d)}`,
       scales: {
-        text: d3
-          .scaleQuantize()
-          .range(['many less', 'less', 'the same', 'more', 'many more']),
-        rotate: d3.scaleLinear().range([0, 180]),
-        fill: d3.scaleLinear().range(['#e8e9e9', '#29c86d']),
-        strokeDashoffset: d3.scaleLinear().range([1, 0]),
+        qualify: d3.scaleQuantize().range(qualifiers),
+        rotate: d3.scaleLinear().range(rotation),
+        color: d3.scaleLinear().range(colors),
+        strokeDashoffset: d3.scaleLinear().range(strokeDashoffset),
       },
     },
   ];
@@ -53,54 +73,64 @@ async function drawDashboard() {
   const root = d3.select('#wrapper');
 
   function drawMetric(day, metric) {
-    const { text, fill, rotate, strokeDashoffset } = metric.scales;
-    const metricAccessor = d => parseInt(d[metric.key]);
+    const { key, label, addendum, formatAverage, formatValue, scales } = metric;
+    const { qualify, rotate, color, strokeDashoffset } = scales;
+    
+    const metricAccessor = d => parseInt(d[key]);
+
     const average = d3.mean(dataset, metricAccessor);
     const value = metricAccessor(dataset[day]);
 
-    const section = d3.select(`#section-${metric.key}`);
+    const section = d3.select(`#section-${key}`);
+
     section
       .select('p:nth-of-type(1)')
       .html(
-        `There were <strong>${text(value)}</strong> ${metric.value} <em>${
-          text(value) === 'the same' ? 'as usual' : 'than usual'
-        }</em> on ${dateFormatter(dateParser(dataset[day].date))}`
+        `There were <strong>${qualify(value)}</strong> ${label} <em>${
+          qualify(value) === 'the same' ? 'as usual' : 'than usual'
+        }</em> on ${dateFormatter(dateAccessor(dataset[day]))}`
       );
 
     section
       .select('p:nth-of-type(2)')
-      .html(metric.note(metric.formatValue(value), 'Football'));
+      .html(addendum(formatValue(value), 'Football'));
 
-    section.select('svg text.average').text(metric.formatAverage(average));
-    section.select('svg text.value').text(metric.formatValue(value));
+    section.select('svg text.average').text(formatAverage(average));
+    section.select('svg text.value').text(formatValue(value));
 
     section
       .select('svg circle.bubble')
       .attr('transform', `rotate(${rotate(value)})`)
-      .attr('fill', d3.color(fill(value)).darker(1));
+      .attr('fill', d3.color(color(value)).darker(1));
 
     section
       .select('svg path.arrow')
       .attr('transform', `rotate(${rotate(value)})`);
 
-    section.select('svg path.gauge').attr('stroke-dashoffset', function() {
-      return (
-        d3
-          .select(this)
-          .node()
-          .getTotalLength() * strokeDashoffset(value)
-      );
-    });
+    section.select('svg path.gauge-stroke')
+      .attr('stroke-dashoffset', function() {
+        return (
+          d3
+            .select(this)
+            .node()
+            .getTotalLength() * strokeDashoffset(value)
+        );
+      });
   }
 
   metrics.forEach(metric => {
-    const domain = d3.extent(dataset, d => parseInt(d[metric.key]));
-    console.log(dataset);
-    Object.keys(metric.scales).forEach(scale =>
+    const { key, title, scales } = metric;
+    const metricAccessor = d => parseInt(d[key]);
+
+    const domain = d3.extent(dataset, metricAccessor);
+
+    Object.keys(scales).forEach(scale =>
       metric.scales[scale].domain(domain)
     );
 
-    const section = root.append('section').attr('id', `section-${metric.key}`);
+    const section = root
+      .append('section')
+      .attr('id', `section-${key}`);
 
     section
       .append('svg')
@@ -112,29 +142,14 @@ async function drawDashboard() {
       .attr('viewBox', '0 0 100 100')
       .append('path')
       .attr('fill', 'currentColor')
-      .attr('d', iconsPaths[metric.key]);
+      .attr('d', iconsPaths[key]);
 
-    section.append('h2').text(metric.label);
-
-    section.append('p');
+    section.append('h2').text(title);
 
     section.append('p');
 
-    const dimensions = {
-      width: 150,
-      height: 190,
-      margin: {
-        top: 30,
-        right: 15,
-        bottom: 60,
-        left: 15,
-      },
-    };
+    section.append('p');
 
-    dimensions.boundedWidth =
-      dimensions.width - (dimensions.margin.left + dimensions.margin.right);
-    dimensions.boundedHeight =
-      dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
     const wrapper = section
       .append('svg')
@@ -143,14 +158,14 @@ async function drawDashboard() {
       .attr('height', dimensions.height)
       .attr('viewBox', `0 0 ${dimensions.width} ${dimensions.height}`);
 
-    const gradientId = `linear-gradient-${metric.key}`;
+    const gradientId = `linear-gradient-${key}`;
 
     wrapper
       .append('defs')
       .append('linearGradient')
       .attr('id', gradientId)
       .selectAll('stop')
-      .data(metric.scales.fill.range())
+      .data(colors)
       .enter()
       .append('stop')
       .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
@@ -183,17 +198,13 @@ async function drawDashboard() {
       .append('text')
       .attr('class', 'value')
       .attr('text-anchor', 'middle')
-      .attr('fill', 'hsl(210, 29%, 29%)')
+      .attr('fill', 'hsl(210, 29%, 5%)')
       .attr('x', dimensions.boundedWidth / 2)
       .attr('y', dimensions.boundedHeight + dimensions.margin.bottom - 5)
-      .style('font-size', 32)
+      .style('font-size', '2em')
       .style('letter-spacing', '1px')
       .style('font-weight', '900');
 
-    const strokeWidthCircle = 1;
-    const radiusCircle = dimensions.margin.left - strokeWidthCircle / 2;
-    const paddingGauge = 2;
-    const strokeWidthGauge = (radiusCircle - paddingGauge) * 2;
 
     const groupGauge = bounds
       .append('g')
@@ -205,7 +216,7 @@ async function drawDashboard() {
     groupGauge
       .append('path')
       .attr('class', 'arrow')
-      .attr('d', 'M 0 -8 a 8 8 0 0 1 0 16 q -6 0 -16 -8 10 -8 16 -8z')
+      .attr('d', 'M 0 -8 a 8 8 0 0 1 0 16 q -6 0 -16 -8 10 -8 16 -8 v 2 a 6 6 0 0 0 0 12 6 6 0 0 0 0 -12 v -2')
       .attr('fill', 'currentColor')
       .attr('stroke', 'currentColor')
       .attr('stroke-width', 4)
@@ -227,7 +238,7 @@ async function drawDashboard() {
 
     groupGauge
       .append('path')
-      .attr('class', 'gauge')
+      .attr('class', 'gauge-stroke')
       .attr(
         'd',
         `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth /
@@ -266,9 +277,9 @@ async function drawDashboard() {
       .attr('class', 'bubble')
       .attr('r', radiusCircle)
       .attr('cx', -dimensions.boundedWidth / 2)
-      .attr('fill', d3.color(metric.scales.fill.range()[0]).darker(1))
+      .attr('fill', d3.color(colors[0]).darker(1))
       .attr('stroke-width', strokeWidthCircle)
-      .attr('stroke', d3.color(metric.scales.fill.range()[1]).darker(1.5));
+      .attr('stroke', d3.color(colors[1]).darker(1.5));
 
     drawMetric(dataset.length - 1, metric);
   });
