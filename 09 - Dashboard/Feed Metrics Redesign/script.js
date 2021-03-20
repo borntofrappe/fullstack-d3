@@ -1,10 +1,11 @@
 async function drawDashboard() {
-  const dataset = await d3.csv('./data_feed.csv');
+  const dataset = await d3.csv('../data_feed.csv');
   const dateParser = d3.timeParse('%d-%m-%Y');
   const dateFormatter = d3.timeFormat('%B %-e');
   const dateAccessor = d => dateParser(d.date);
   
-  const qualifiers = ['many less', 'less', 'the same', 'more', 'many more'];
+  const qualifiersMany   = ['many less', 'less', 'the same', 'more', 'many more'];
+  const qualifiersMuch = ['much less', 'less', 'the same', 'more', 'much more'];
   const colors = ['#e8e9e9', '#29c86d'];
   const rotation = [0, 180];
   const strokeDashoffset = [1, 0];
@@ -44,12 +45,12 @@ async function drawDashboard() {
       key: 'views',
       accessor: d => parseInt(d.views),
       title: 'Views',
-      label: 'views to articles',
+      note: (qualifier, date) => `There were <strong>${qualifier}</strong> views ${qualifier === 'the same' ? 'as usual' : 'than usual'} on ${dateFormatter(date)}.`,
       addendum: (value) => `People read articles related to <a href="#">Football</a> ${value} times. Every time someone reads an article, we count it as a view.`,
       formatAverage: d => `${d3.format('.0f')(d / 1000)}k`,
       formatValue: d => `${d3.format('.1f')(d / 1000)}k`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifiers),
+        qualify: d3.scaleQuantize().range(qualifiersMany),
         rotate: d3.scaleLinear().range(rotation),
         color: d3.scaleLinear().range(colors),
         strokeDashoffset: d3.scaleLinear().range(strokeDashoffset),
@@ -59,12 +60,12 @@ async function drawDashboard() {
       key: 'articles',
       accessor: d => parseInt(d.articles),
       title: 'Articles',
-      label: 'number of articles viewed',
+      note: (qualifier, date) => `There were <strong>${qualifier}</strong> articles ${qualifier === 'the same' ? 'as usual' : 'than usual'} on ${dateFormatter(date)}.`,
       addendum: (value) => `There were ${value} articles read about <a href="#">Football</a>.`,
       formatAverage: d => `${d3.format('.0f')(d)}`,
       formatValue: d => `${d3.format('.0f')(d)}`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifiers),
+        qualify: d3.scaleQuantize().range(qualifiersMany),
         rotate: d3.scaleLinear().range(rotation),
         color: d3.scaleLinear().range(colors),
         strokeDashoffset: d3.scaleLinear().range(strokeDashoffset),
@@ -74,12 +75,12 @@ async function drawDashboard() {
       key: 'demand',
       accessor: d => parseInt(d.views) / parseInt(d.articles),
       title: 'Demand',
-      label: 'demand',
+      note: (qualifier, date) => `There was <strong>${qualifier}</strong> demand ${qualifier === 'the same' ? 'as usual' : 'than usual'} on ${dateFormatter(date)}.`,
       addendum: (value) => `On average people viewed an article related to <a href="#">Football</a> ${value} times. Demand is the average daily views per article`,
       formatAverage: d => `${d3.format('.0f')(d)}`,
       formatValue: d => `${d3.format('.1f')(d)}`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifiers),
+        qualify: d3.scaleQuantize().range(qualifiersMuch),
         rotate: d3.scaleLinear().range(rotation),
         color: d3.scaleLinear().range(colors),
         strokeDashoffset: d3.scaleLinear().range(strokeDashoffset),
@@ -88,9 +89,10 @@ async function drawDashboard() {
   ];
 
   const root = d3.select('#wrapper');
+  let selectedDay = 0;
 
   function drawMetric(day, metric) {
-    const { key, accessor, label, addendum, formatAverage, formatValue, scales } = metric;
+    const { key, accessor, note, addendum, formatAverage, formatValue, scales } = metric;
     const { qualify, rotate, color, strokeDashoffset } = scales;
 
     const average = d3.mean(dataset, accessor);
@@ -100,11 +102,7 @@ async function drawDashboard() {
 
     section
       .select('p:nth-of-type(1)')
-      .html(
-        `There were <strong>${qualify(value)}</strong> ${label} <em>${
-          qualify(value) === 'the same' ? 'as usual' : 'than usual'
-        }</em> on ${dateFormatter(dateAccessor(dataset[day]))}`
-      );
+      .html(note(qualify(value), dateAccessor(dataset[day])));
 
     section
       .select('p:nth-of-type(2)')
@@ -115,14 +113,20 @@ async function drawDashboard() {
 
     section
       .select('svg circle.bubble')
+      .transition()
+      .duration(400)
       .attr('transform', `rotate(${rotate(value)})`)
       .attr('fill', d3.color(color(value)).darker(1));
 
     section
       .select('svg path.arrow')
+      .transition()
+      .duration(400)
       .attr('transform', `rotate(${rotate(value)})`);
 
     section.select('svg path.gauge-stroke')
+    .transition()
+    .duration(400)
       .attr('stroke-dashoffset', function() {
         return (
           d3
@@ -212,7 +216,7 @@ async function drawDashboard() {
       .append('text')
       .attr('class', 'value')
       .attr('text-anchor', 'middle')
-      .attr('fill', 'hsl(210, 29%, 5%)')
+      .attr('fill', 'currentColor')
       .attr('x', dimensions.boundedWidth / 2)
       .attr('y', dimensions.boundedHeight + dimensions.margin.bottom - 5)
       .style('font-size', '2em')
@@ -295,8 +299,17 @@ async function drawDashboard() {
       .attr('stroke-width', strokeWidthCircle)
       .attr('stroke', d3.color(colors[1]).darker(1.5));
 
-    drawMetric(dataset.length - 23, metric);
+    drawMetric(selectedDay, metric);
   });
+
+  root
+    .append('button')
+    .text('Change Date')
+    .on('click', () => {
+      selectedDay = (selectedDay + 1) % dataset.length;
+
+      metrics.forEach(metric => drawMetric(selectedDay, metric));
+    });
 }
 
 drawDashboard();

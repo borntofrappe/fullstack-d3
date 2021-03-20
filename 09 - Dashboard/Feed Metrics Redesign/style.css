@@ -35,7 +35,7 @@ section {
 }
 
 section svg.icon {
-  font-size: 1.25em;
+  font-size: 1.2em;
 }
 
 section svg.gauge {
@@ -47,6 +47,10 @@ section svg.gauge {
   align-self: center;
 }
 
+section svg.gauge .value {
+  color: hsl(210, 29%, 5%);
+}
+
 section h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -56,18 +60,30 @@ section p:nth-of-type(1) {
   font-size: 0.9rem;
 }
 
-em {
-  font-style: normal;
-  border-bottom: 1px solid currentColor;
-}
-
 section p:nth-of-type(2) {
   font-size: 0.9rem;
   font-style: italic;
   color: hsl(190, 10%, 52%);
 }
 
+section p em {
+  font-style: normal;
+  border-bottom: 1px solid currentColor;
+}
+
 section a {
   color: hsl(210, 90%, 50%);
   text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  font-size: 1.1rem;
+  justify-self: center;
+  background: hsl(84, 91%, 41%);
+  color: hsl(0, 0%, 100%);
+  border: none;
+  border-bottom: 0.25rem solid hsl(120, 64%, 29%);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
 }

@@ -195,7 +195,6 @@ async function drawDashboard() {
       .attr('stroke', `url(#${gradientId})`)
       .attr('stroke-width', strokeWidthGauge)
       .attr('fill', 'none')
-      .attr('opacity', 2)
       .attr('stroke-linecap', 'round')
       .attr('stroke-dasharray', function() {
         return d3

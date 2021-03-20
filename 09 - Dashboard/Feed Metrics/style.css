@@ -24,7 +24,7 @@ svg text {
 #wrapper {
   display: grid;
   grid-auto-flow: row;
-  grid-gap: 3rem 0;
+  grid-gap: 4rem 0;
 }
 
 section {
@@ -35,29 +35,29 @@ section {
 }
 
 section svg.icon {
-  font-size: 1.75em;
+  font-size: 1.2em;
 }
 
 section svg.gauge {
   grid-column: 1;
   grid-row: 1/5;
   color: hsl(190, 10%, 52%);
-  width: 125px;
+  width: 100px;
   height: auto;
+  align-self: center;
+}
+
+section svg.gauge .value {
+  color: hsl(210, 29%, 5%);
 }
 
 section h2 {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
 section p:nth-of-type(1) {
-  font-size: 0.95rem;
-}
-
-em {
-  font-style: normal;
-  border-bottom: 1px solid currentColor;
+  font-size: 0.9rem;
 }
 
 section p:nth-of-type(2) {
@@ -66,7 +66,24 @@ section p:nth-of-type(2) {
   color: hsl(190, 10%, 52%);
 }
 
+section p em {
+  font-style: normal;
+  border-bottom: 1px solid currentColor;
+}
+
 section a {
   color: hsl(210, 90%, 50%);
   text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  font-size: 1.1rem;
+  justify-self: center;
+  background: hsl(84, 91%, 41%);
+  color: hsl(0, 0%, 100%);
+  border: none;
+  border-bottom: 0.25rem solid hsl(120, 64%, 29%);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
 }
