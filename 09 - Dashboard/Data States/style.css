@@ -20,21 +20,25 @@ svg text {
   font-family: 'Inter var', sans-serif;
 }
 
+a {
+  text-decoration: underline;
+}
+
 svg text.main {
   font-weight: 900;
-  font-size: 2.75rem;
+  font-size: 2rem;
   fill: hsl(210, 29%, 5%);
 }
 
 svg text.sub {
   font-weight: 400;
-  font-size: 1.15rem;
+  font-size: 1rem;
   fill: hsl(204, 13%, 29%);
 }
 
 svg text.label {
   font-weight: 400;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   fill: hsl(204, 13%, 29%);
 }
 

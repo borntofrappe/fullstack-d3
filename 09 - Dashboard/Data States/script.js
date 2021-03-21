@@ -11,6 +11,11 @@ async function drawBarChart() {
     },
   };
 
+  const iconsPaths = {
+    empty: 'M 0 0',
+    error: 'M 0 0',
+  }
+
   const barPadding = 2;
 
   dimensions.boundedWidth = dimensions.width - (dimensions.margin.left + dimensions.margin.right);
@@ -45,7 +50,7 @@ async function drawBarChart() {
     .attr('y1', 0)
     .attr('y2', 1)
     .selectAll('stop')
-    .data(['hsl(0, 0%, 100%)', 'hsl(0, 0%, 50%)'])
+    .data(['hsl(0, 0%, 100%)', 'hsl(0, 0%, 0%)'])
     .enter()
     .append('stop')
     .attr('stop-color', d => d)
@@ -93,7 +98,7 @@ async function drawBarChart() {
       .attr('y', d => d.y)
       .attr('width', d => d.width)
       .attr('height', d => d.height)
-      .attr('fill', 'hsl(0, 0%, 60%)');
+      .attr('fill', 'hsl(0, 0%, 85%)');
 
       meanGroup
       .style('opacity', 0)
@@ -112,8 +117,8 @@ async function drawBarChart() {
           .append('text')
           .attr('class', 'label')
           .text('Mean')
-          .attr('x', 5)
-          .attr('y', 5)
+          .attr('text-anchor', 'middle')
+          .attr('y', -5)
 
 
     const xAxisGroup = axisGroup
@@ -151,28 +156,61 @@ async function drawBarChart() {
     .attr('fill', 'currentColor')
     .attr('mask', `url(#${maskId})`)
 
-  const overlayTextGroup = overlayGroup
+  const overlayMessageGroup = overlayGroup
     .append('g')
     .attr('fill', 'currentColor')
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'middle')
     .attr('transform', `translate(${dimensions.boundedWidth / 2} ${dimensions.boundedHeight / 2})`)
 
-  overlayTextGroup
+  overlayMessageGroup
+    .append('path');
+
+  overlayMessageGroup
     .append('text')
     .attr('class', 'main')
     .text('Loading')
 
-  overlayTextGroup
+  overlayMessageGroup
     .append('text')
     .attr('class', 'sub')
     .text('Please wait as we fetch the data')
     .attr('y', 42)
 
 
-  async function drawData() {
-    const metric = 'temperatureMax';
-    const dataset = await d3.json('../../nyc_weather_data.json');
+  function handleErrorState(error) {
+    console.error(error);
+    overlayMessageGroup.select('path').attr('d', iconsPaths.error);
+    overlayMessageGroup.select('.main').text('Something went wrong')
+    overlayMessageGroup.select('.sub').text('Please try again with a different filter')
+    
+  }
+
+  function handleEmptyState() {
+    const overlayTransition = d3.transition().delay(250).duration(1000);
+
+    binGroups
+      .selectAll('rect')
+      .transition(overlayTransition)
+      .attr('y', dimensions.boundedHeight)
+      .attr('height', 0)
+      .remove();
+
+    overlayBins
+      .selectAll('rect')
+      .transition(overlayTransition)
+      .attr('y', dimensions.boundedHeight)
+      .attr('height', 0)
+      .remove();
+
+    overlayMessageGroup.select('path').attr('d', iconsPaths.empty);
+    overlayMessageGroup.select('.main').text('No data yet')
+    overlayMessageGroup.select('.sub').html('Check out <a href="">these docks</a> for help integrating')
+
+  }
+
+  function handleLoadedState(dataset) {
+    const metric = 'windSpeed'
     const metricAccessor = d => d[metric];
 
     const xScale = d3
@@ -209,7 +247,7 @@ async function drawBarChart() {
     const enter = update.enter().append('g');
     const exit = update.exit();
 
-    const exitTransition = d3.transition(overlayTransition).duration(500);
+    const exitTransition = d3.transition(overlayTransition).duration(750);
     const updateTransition = d3.transition(exit.empty() ? overlayTransition : exitTransition).transition().duration(1000);
     const enterTransition = d3.transition(updateTransition).transition().duration(1000);
 
@@ -282,11 +320,22 @@ async function drawBarChart() {
           .transition()
           .style('opacity', 1)
           .style('transform', `translate(${xScale(mean)}px, 0px)`);
-    
   }
 
+
   setTimeout(() => {
-    drawData();
+    d3
+      .json('../../nyc_weather_data.json')
+      .then(dataset => {
+        if(dataset.length === 0) {
+          handleEmptyState();
+        } else {
+          handleLoadedState(dataset);
+        }
+      })
+      .catch(error => {
+        handleErrorState(error);
+      });
   }, 2500);
 }
 
