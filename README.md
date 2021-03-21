@@ -1759,3 +1759,11 @@ _Please note_: in its current design, the promise should always proceed to the l
 ```js
 d3.json('../../nyc_weather_data.jn');
 ```
+
+### Outliers Bar Chart & Timeline
+
+The projects work to showcase how to handle outliers, values which vary from the mean and are prone to skew the perception of the visualization.
+
+There's a single solution, and it is important to consider the influence of outliers case by case. For instance and to visualize the popularity of articles in terms of views, it might be useful to preserve outliers in recent data, as to highlight potential spikes. It might be then more informative to crop the value (with an accompanying label) after an arbitrary amount of time, to highlight the overall trend. In the first instance the domain considers the maximum value, while in the second it could consider the mean plus twice the standard deviation.
+
+The definition of outlier is not fixed, but a good solution is to consider values exceeding the mean by more than twice the standard deviation.
