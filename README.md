@@ -1723,6 +1723,39 @@ In the context of a bar chart, the states are included with a rudimentary flow:
 
 - loading; here the script renders a gray-scale, semi-translucent version of the bar chart, under a label describing the loading state.
 
-- loaded, error or empty; here the bar chart is substituted with the actual visualization, an error message, or a message describing the lack of data
+- loaded, error or empty; here the bar chart is substituted with the actual visualization, or updated with an error message, or again a message describing the lack of data
 
-Loading is shown immediately, while one of the three remaining states is picked at random after an arbitrary amount of time.
+The loading state is shown immediately, while the three remaining states follow after a brief timeout.
+
+```js
+setTimeout(() => {
+  d3.json();
+}, 2500);
+```
+
+`d3.json` provides a promise to fetch the data. If successful the idea is to either show the empty or loaded state, according to the length of the obtained data.
+
+```js
+d3.json('../../nyc_weather_data.json').then((dataset) => {
+  if (dataset.length === 0) {
+    handleEmptyState();
+  } else {
+    handleLoadedState(dataset);
+  }
+});
+```
+
+If not successful, the idea is to then show the error state.
+
+```js
+d3.json('../../nyc_weather_data.json').catch((error) => {
+  console.error(error);
+  handleErrorState();
+});
+```
+
+_Please note_: in its current design, the promise should always proceed to the loaded state. To highlight the other states, try modifying the logic of the promise. To highlight an error, for instance, have the promise look for a non-existing file.
+
+```js
+d3.json('../../nyc_weather_data.jn');
+```

@@ -16,38 +16,23 @@ body {
   font-family: 'Inter var', sans-serif;
 }
 
+.color-main {
+  color: hsl(205, 17%, 19%);
+}
+
+.color-sub {
+  color: hsl(202, 14%, 44%);
+}
+
+.color-background {
+  color: hsl(200, 17%, 95%);
+}
+
 svg text {
   font-family: 'Inter var', sans-serif;
+  fill: currentColor;
 }
 
 a {
   text-decoration: underline;
-}
-
-svg text.main {
-  font-weight: 900;
-  font-size: 2rem;
-  fill: hsl(210, 29%, 5%);
-}
-
-svg text.sub {
-  font-weight: 400;
-  font-size: 1rem;
-  fill: hsl(204, 13%, 29%);
-}
-
-svg text.label {
-  font-weight: 400;
-  font-size: 0.75rem;
-  fill: hsl(204, 13%, 29%);
-}
-
-svg g.tick text {
-  font-weight: 400;
-  font-size: 0.8rem;
-  fill: hsl(204, 13%, 29%);
-}
-
-svg .overlay-bins {
-  color: hsl(200, 17%, 95%);
 }
