@@ -1667,11 +1667,11 @@ For the D3 library:
 
 A dashboard is loosely introduced an interface for data, a display encompassing the value of a few metrics as weel as complex visualizations.
 
-### Weather Metrics & Redesign
+### Weather Metrics
 
 The first demo works to show a rudimentary dashboard, displaying three metrics for a given day in the wind speed, visibility and atmospheric pressure.
 
-Instead of using `<svg>` elements I decided to bind the data to HTML elements.
+Instead of using `<svg>` elements, I decided to bind the data to HTML elements.
 
 The redesign works to show how the dashboard can be improved by providing more context and additional visuals:
 
@@ -1705,7 +1705,7 @@ The project highlights a few methods from the D3 library:
 
   In the project, the function receives a color from the `d3.interpolateBlues` scale. Refer to the documentation for the [`d3-color`](https://github.com/d3/d3-color) module for more information.
 
-### Feed Metrics & Redesign
+### Feed Metrics
 
 The first demo considers a few metrics connected to a news feed, with the same visual designed for the weather dashboard. The focus is here on the number of views and articles connected to a hypothetical subject.
 
@@ -1760,15 +1760,15 @@ _Please note_: in its current design, the promise should always proceed to the l
 d3.json('../../nyc_weather_data.jn');
 ```
 
-### Outliers Bar Chart & Timeline
+### Outliers
 
 The projects work to showcase how to handle outliers, values which vary from the mean and are prone to skew the perception of the visualization.
 
-There is not one solution for every visualization, and it is important to consider the influence of outliers case by case. For instance and to visualize the popularity of articles in terms of views, it might be useful to preserve outliers in recent data, as to highlight potential spikes. It might be then more informative to crop the value (with an accompanying label) after an arbitrary amount of time, to highlight the overall trend. This is exactly what happens in _Outliers Bar Chart_; in the first visualization the scale considers the maximum value, while in the second the domain is capped at a threshold considering the mean and standard deviation.
+There is not one solution for every visualization, and it is important to consider the influence of outliers case by case. For instance and to visualize the popularity of articles in terms of views, it might be useful to preserve outliers in recent data, as to highlight potential spikes. It might be then more informative to crop the value (with an accompanying label) after an arbitrary amount of time, to highlight the overall trend. This is exactly what happens in the demo exploring the bar chart; in the first visualization the scale considers the maximum value, while in the second the domain is capped at a threshold considering the mean and standard deviation.
 
-It is important to stress that the bar chart shows one way to handle outliers, and defines an outlier with another arbitrary choice. The second project, _Outliers Timeline_, proves this by plotting the number of views and articles. The number of articles is shown with a series of dots, and the number of dots is limited to a third of the bounded height. An outlier is here any observation with more articles than can fit in the chosen fraction of the height and is highlighted with a small arrow pointing upwards.
+It is important to stress that the bar chart shows one way to handle outliers, and defines an outlier with another arbitrary choice. The second project, creating a timeline, proves this by plotting the number of views and articles. The number of articles is shown with a series of dots, and the number of dots is limited to a third of the bounded height. An outlier is here any observation with more articles than can fit in the chosen fraction of the height and is highlighted with a small arrow pointing upwards.
 
-### Table & Redesign
+### Table
 
 A table provides an effective layout to focus on exact values. In the first demo, the data is included as-is, without considering the design of the visualization. The project is still useful to rehearse data binding with HTML elements.
 
@@ -1786,7 +1786,7 @@ In the second demo, the table is redesigned both in style and function. In the s
 
 - the rows alternate in background color to stress the distinction between observations
 
-- the rows are  highlighted on hover and through the background color
+- the rows are highlighted on hover and through the background color
 
 In the script, the content is updated as follows:
 
@@ -1802,7 +1802,4 @@ In the script, the content is updated as follows:
 
 - the time describing the maximum temperature is represented through the horizontal position of a line instead of a label describing the hour
 
-
-<!-- remove globals d3
-add font to outliers timeline
- -->
+_Please note:_ considering the entire dataset, the risk is to having the table exceedingly wide. This is mostly due to two fields: summary and UV index. For the first field, the solution is to limit the width of the associated text. For the second field, one solution is to limit the number of icons associated with the index, and highlight a greater value with another visual.

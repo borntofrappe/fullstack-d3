@@ -356,7 +356,7 @@ function drawBarChart() {
   }
 
   setTimeout(() => {
-    d3.json('../../nyc_weather_data.json')
+    d3.json('../../../nyc_weather_data.json')
       .then(dataset => {
         if (dataset.length === 0) {
           handleEmptyState();

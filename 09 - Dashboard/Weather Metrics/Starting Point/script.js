@@ -1,5 +1,5 @@
 async function drawDashboard() {
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await d3.json('../../../nyc_weather_data.json');
 
   const wrapper = d3.select('#wrapper');
 

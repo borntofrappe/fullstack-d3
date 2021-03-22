@@ -1,4 +1,3 @@
-/* globals d3 */
 async function drawDashboard() {
   const dataset = await d3.csv('./data_outliers.csv');
   const dateParser = d3.timeParse('%d-%m-%Y');

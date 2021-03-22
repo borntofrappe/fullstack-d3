@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Inter var';
-  src: url('../../Inter.var.woff2');
+  src: url('../../../Inter.var.woff2');
 }
 
 * {
@@ -12,8 +12,8 @@ body {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background: hsl(17ì28, 90%, 98%);
-  color: hsl(132, 50%, 22%);
+  background: hsl(272, 90%, 98%);
+  color: hsl(233, 67%, 14%);
 }
 
 #wrapper {

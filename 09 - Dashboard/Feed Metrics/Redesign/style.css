@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Inter var';
-  src: url('../../Inter.var.woff2');
+  src: url('../../../Inter.var.woff2');
 }
 
 * {
@@ -22,6 +22,7 @@ svg text {
 }
 
 #wrapper {
+  margin: 1rem 0;
   display: grid;
   grid-auto-flow: row;
   grid-gap: 4rem 0;

@@ -1,6 +1,5 @@
 async function drawDashboard() {
-  const data = await d3.json('../../nyc_weather_data.json');
-  const dataset = data.slice(0, 31);
+  const dataset = await d3.json('../../../nyc_weather_data.json');
   const metrics = [
     {
       key: 'date',
