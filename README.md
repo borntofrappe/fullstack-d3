@@ -1770,6 +1770,39 @@ It is important to stress that the bar chart shows one way to handle outliers, a
 
 ### Table & Redesign
 
+A table provides an effective layout to focus on exact values. In the first demo, the data is included as-is, without considering the design of the visualization. The project is still useful to rehearse data binding with HTML elements.
+
+In the second demo, the table is redesigned both in style and function. In the stylesheet, the table is updated as follows:
+
+- the table removes the border, included as a rudimentary way to distinguish the data
+
+- cells benefit from whitespace in the form of considerable padding
+
+- the font is updated with the `font-feature-setting` property so that individual numbers have the same width
+
+- the column dedicated to the summary is reduced in importance through the `font-size` property
+
+- the row describing the head of the table is fixed to the top of the table with the `position` property set to `sticky`. The same row uses a dark background and a light color for the text to create a clear disinction with the body of the table
+
+- the rows alternate in background color to stress the distinction between observations
+
+- the rows are  highlighted on hover and through the background color
+
+In the script, the content is updated as follows:
+
+- the columns are aligned left or right according to whether the values are strings or numbers respectively
+
+- the values are formatted with the `d3-format` and the `d3-format-time` modules to provide more readable labels
+
+- the maximum temperature and the wind speed show the value in context with a color scale and the `background` property
+
+- the UV index is represented with a series of icons instead of a numerical values
+
+- the column describing the precipitation type is substituted with one detailing the presence, or lack, of snow. Snow is signalled with an icon instead of a label
+
+- the time describing the maximum temperature is represented through the horizontal position of a line instead of a label describing the hour
+
+
 <!-- remove globals d3
 add font to outliers timeline
  -->

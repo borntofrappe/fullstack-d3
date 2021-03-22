@@ -1,0 +1,80 @@
+@font-face {
+  font-family: 'Inter var';
+  src: url('../../Inter.var.woff2');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: hsl(222, 90%, 98%);
+  color: hsl(233, 67%, 15%);
+  font-family: 'Inter var', sans-serif;
+}
+
+/* 
+
+* color scales for maxTemp (blue to red) and windSpeed (white to slate gray)
+* uv index number of symbols (suns)
+* precipitation column and symbol (Did Snow, snowflake)
+* max temp time instead of value, a line positioned horizontally according to time of day
+
+*/
+table {
+  margin: 1rem 0;
+  border-collapse: collapse;
+  font-feature-settings: 'tnum';
+}
+
+table thead th {
+  position: sticky;
+  top: 0;
+  color: hsl(222, 90%, 98%);
+  background: hsl(234, 30%, 21%);
+}
+
+table thead {
+  font-size: 0.95rem;
+}
+
+table tbody {
+  font-size: 0.9rem;
+}
+
+table th,
+table td {
+  font-weight: 400;
+  padding: 0.75rem 0.5rem;
+}
+
+table td {
+  padding: 1rem 0.5rem;
+}
+
+table tbody tr td:nth-of-type(2) {
+  font-size: 0.85rem;
+  vertical-align: bottom;
+  max-width: 350px;
+}
+
+table tbody tr:nth-of-type(2n) {
+  background: hsl(200, 10%, 92%);
+}
+
+table tbody tr:hover {
+  background: hsl(210, 72%, 90%);
+}
+
+table svg {
+  width: 1em;
+  height: auto;
+}
+
+table span svg {
+  margin: 0 0.25em;
+}
