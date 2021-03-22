@@ -1767,3 +1767,9 @@ The projects work to showcase how to handle outliers, values which vary from the
 There is not one solution for every visualization, and it is important to consider the influence of outliers case by case. For instance and to visualize the popularity of articles in terms of views, it might be useful to preserve outliers in recent data, as to highlight potential spikes. It might be then more informative to crop the value (with an accompanying label) after an arbitrary amount of time, to highlight the overall trend. This is exactly what happens in _Outliers Bar Chart_; in the first visualization the scale considers the maximum value, while in the second the domain is capped at a threshold considering the mean and standard deviation.
 
 It is important to stress that the bar chart shows one way to handle outliers, and defines an outlier with another arbitrary choice. The second project, _Outliers Timeline_, proves this by plotting the number of views and articles. The number of articles is shown with a series of dots, and the number of dots is limited to a third of the bounded height. An outlier is here any observation with more articles than can fit in the chosen fraction of the height and is highlighted with a small arrow pointing upwards.
+
+### Table & Redesign
+
+<!-- remove globals d3
+add font to outliers timeline
+ -->
