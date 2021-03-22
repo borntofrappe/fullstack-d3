@@ -1,5 +1,5 @@
 async function drawDashboard() {
-  const dataset = await d3.csv('../data_outliers.csv');
+  const dataset = await d3.csv('./data_outliers.csv');
   const dateParser = d3.timeParse('%d-%m-%Y');
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => parseInt(d.views);
