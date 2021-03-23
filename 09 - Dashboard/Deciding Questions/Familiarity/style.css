@@ -1,0 +1,137 @@
+@font-face {
+  font-family: 'Inter var';
+  src: url('../../../Inter.var.woff2');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: hsl(0, 0%, 95%);
+  color: hsl(215, 29%, 25%);
+  font-family: 'Inter var', sans-serif;
+}
+
+#root {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 2fr 1fr;
+  margin: 2rem auto;
+  width: 800px;
+}
+
+header {
+  padding: 0.25rem 0;
+  grid-column: 1/-1;
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+}
+
+header::before {
+  position: absolute;
+  content: '';
+  bottom: 100%;
+  width: 100%;
+  height: 0.25rem;
+  background-image: linear-gradient(
+    to right,
+    hsl(36, 84%, 57%),
+    hsl(142, 66%, 57%)
+  );
+}
+
+header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+header h2:nth-of-type(1) {
+  color: hsl(36, 84%, 57%);
+}
+
+header h2:nth-of-type(2) {
+  color: hsl(142, 66%, 57%);
+}
+
+article {
+  padding: 1rem;
+  background: hsl(0, 0%, 100%);
+  box-shadow: 0 0 10px -8px currentColor;
+}
+
+h3 {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+}
+
+h3 svg {
+  margin-right: 0.25rem;
+}
+
+.value {
+  font-size: 3rem;
+  font-weight: 900;
+}
+
+.note {
+  font-size: 0.8rem;
+  color: hsl(215, 29%, 45%);
+}
+
+.gauge {
+  width: 100px;
+  height: auto;
+  color: hsl(215, 29%, 45%);
+}
+
+#unfamiliar {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+  grid-template-columns: 1fr 2fr;
+  grid-template-areas: 'header header' 'gauge details' 'value details' 'note details';
+}
+
+#unfamiliar h3 {
+  justify-self: start;
+  grid-area: header;
+}
+
+#unfamiliar .gauge {
+  grid-area: gauge;
+}
+
+#unfamiliar .value {
+  grid-area: value;
+}
+
+#unfamiliar .note {
+  grid-area: note;
+}
+
+#unfamiliar .details {
+  line-height: 1.5;
+  grid-area: details;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+#familiar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#familiar h3 {
+  align-self: flex-start;
+}
+
+#familiar > * + * {
+  margin-top: 0.5rem;
+}
