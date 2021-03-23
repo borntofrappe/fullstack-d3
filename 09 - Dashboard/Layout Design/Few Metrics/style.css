@@ -1,0 +1,129 @@
+@font-face {
+  font-family: 'Inter var';
+  src: url('../../../Inter.var.woff2');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: hsl(0, 0%, 90%);
+  color: hsl(215, 29%, 25%);
+  font-family: 'Inter var', sans-serif;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  margin: 3rem auto;
+  padding: 1rem 0 0;
+  width: 850px;
+  background: hsl(0, 0%, 97%);
+  box-shadow: 0 0 10px -6px currentColor;
+  position: relative;
+}
+
+#root > * + * {
+  margin-top: 0.5rem;
+}
+
+#root::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  width: 100%;
+  height: 2rem;
+  background: hsl(0, 0%, 85%);
+}
+
+#root::after {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 0.5rem;
+  width: 1rem;
+  height: 1rem;
+  content: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='currentColor' d='m50 0a8.8 8.8 0 0 0-8.801 8.801 8.8 8.8 0 0 0 8.801 8.799 8.8 8.8 0 0 0 8.801-8.799 8.8 8.8 0 0 0-8.801-8.801zm-29 12.07a8.8 8.8 0 0 0-6.352 2.576 8.8 8.8 0 0 0 0 12.45 8.8 8.8 0 0 0 12.45 0 8.8 8.8 0 0 0 0-12.45 8.8 8.8 0 0 0-6.094-2.576zm58.27 0a8.8 8.8 0 0 0-6.352 2.576 8.8 8.8 0 0 0 0 12.45 8.8 8.8 0 0 0 12.45 0 8.8 8.8 0 0 0 0-12.45 8.8 8.8 0 0 0-6.094-2.576zm-29.26 15.93a22 22 0 0 0-22 22 22 22 0 0 0 22 22 22 22 0 0 0 22-22 22 22 0 0 0-22-22zm-41.2 13.2a8.8 8.8 0 0 0-8.801 8.801 8.8 8.8 0 0 0 8.801 8.801 8.8 8.8 0 0 0 8.799-8.801 8.8 8.8 0 0 0-8.799-8.801zm82.4 0a8.8 8.8 0 0 0-8.799 8.801 8.8 8.8 0 0 0 8.799 8.801 8.8 8.8 0 0 0 8.801-8.801 8.8 8.8 0 0 0-8.801-8.801zm-70.2 29.13a8.8 8.8 0 0 0-6.352 2.576 8.8 8.8 0 0 0 0 12.45 8.8 8.8 0 0 0 12.45 0 8.8 8.8 0 0 0 0-12.45 8.8 8.8 0 0 0-6.094-2.576zm58.27 0a8.8 8.8 45 0 0-6.352 2.576 8.8 8.8 45 0 0 0 12.45 8.8 8.8 45 0 0 12.45 0 8.8 8.8 45 0 0 0-12.45 8.8 8.8 45 0 0-6.094-2.576zm-29.26 12.07a8.8 8.8 0 0 0-8.801 8.799 8.8 8.8 0 0 0 8.801 8.801 8.8 8.8 0 0 0 8.801-8.801 8.8 8.8 0 0 0-8.801-8.799z' /%3E%3C/svg%3E%0A");
+}
+
+header {
+  margin: 0 2rem;
+}
+
+header > * + * {
+  margin-top: 0.25rem;
+}
+
+header h1 {
+  font-weight: 900;
+  font-size: 1.8rem;
+}
+
+header h2 {
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+section {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0rem 1rem;
+  padding: 1rem;
+}
+
+article {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 0.75rem 0.5rem;
+  background: hsl(0, 0%, 100%);
+  box-shadow: 0 0 10px -8px hsl(215, 29%, 35%);
+}
+
+article > * + * {
+  margin-top: 1rem;
+}
+
+article > svg {
+  width: 40%;
+  height: auto;
+  display: block;
+  color: hsl(215, 29%, 65%);
+}
+
+article h3 {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  font-size: 1rem;
+  margin-right: auto;
+}
+
+article h3 span {
+  font-size: 1.2rem;
+  margin-right: 0.25rem;
+}
+
+article p:nth-of-type(1) {
+  font-size: 3.5rem;
+  font-weight: 900;
+}
+
+article p:nth-of-type(1) span {
+  font-size: 0.75em;
+  color: hsl(215, 29%, 45%);
+}
+
+article p:nth-of-type(2) {
+  font-size: 0.9rem;
+  color: hsl(215, 29%, 45%);
+}
+
+svg text {
+  color: hsl(215, 29%, 45%);
+  font-family: 'Inter var', sans-serif;
+  fill: currentColor;
+}
