@@ -1803,3 +1803,11 @@ In the script, the content is updated as follows:
 - the time describing the maximum temperature is represented through the horizontal position of a line instead of a label describing the hour
 
 _Please note:_ considering the entire dataset, the risk is to having the table exceedingly wide. This is mostly due to two fields: summary and UV index. For the first field, the solution is to limit the width of the associated text. For the second field, one solution is to limit the number of icons associated with the index, and highlight a greater value with another visual.
+
+### Layout Design
+
+The folder highlight how a dashboard works best when it focuses on providing a clear message and a few metric. The first demo shows the minimum and maximum temperature leading up to a selected day with a timeline. The second demo focyses on showing three metrics side by side.
+
+### Deciding Questions
+
+The folder focuses on a few arguments essential to the design of a dashboard. Among these arguments: the familiarity of users with the provided metrics, and the time users dedicate to the visualizations. On their own, these two issues compel a different design. For instance, experienced users do not need an explanation for the provided values, and time-sensitive readers do not need a complex overview.
