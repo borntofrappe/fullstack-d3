@@ -1853,3 +1853,7 @@ const domain = d3.extent([
   ...dataset.map(yAccessor),
 ]);
 ```
+
+#### Color
+
+The `fill` attribute of the `<circle>` element is updated to color the shapes according to the date of the year. It is here helpful to have a year of reference, so that data spanning multiple years refer to the same domain.
