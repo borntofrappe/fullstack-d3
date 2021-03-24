@@ -1,0 +1,123 @@
+@font-face {
+  font-family: 'Inter var';
+  src: url('../../../Inter.var.woff2');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: hsl(0, 0%, 95%);
+  color: hsl(215, 29%, 25%);
+  font-family: 'Inter var', sans-serif;
+}
+
+#root {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 2fr 1fr;
+  margin: 2rem auto;
+  width: 900px;
+}
+
+header {
+  padding: 0.25rem 0;
+  grid-column: 1/-1;
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+}
+
+header::before {
+  position: absolute;
+  content: '';
+  bottom: 100%;
+  width: 100%;
+  height: 0.25rem;
+  background-image: linear-gradient(
+    to right,
+    hsl(36, 84%, 57%),
+    hsl(142, 66%, 57%)
+  );
+}
+
+header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+header h2:nth-of-type(1) {
+  color: hsl(36, 84%, 57%);
+}
+
+header h2:nth-of-type(2) {
+  color: hsl(142, 66%, 57%);
+}
+
+article {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: hsl(0, 0%, 100%);
+  box-shadow: 0 0 10px -8px currentColor;
+}
+
+article > * + * {
+  margin-top: 0.5rem;
+}
+
+h3 {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+}
+
+h3 svg {
+  margin-right: 0.25rem;
+}
+
+h4 {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  color: hsl(215, 29%, 45%);
+}
+
+.value {
+  font-size: 3rem;
+  font-weight: 900;
+}
+
+.value span {
+  font-size: 0.75em;
+  color: hsl(215, 29%, 45%);
+}
+
+.note {
+  font-size: 0.8rem;
+  color: hsl(215, 29%, 45%);
+}
+
+.gauge {
+  width: 100px;
+  height: auto;
+  color: hsl(215, 29%, 45%);
+}
+
+.packing {
+  width: 100%;
+  height: auto;
+  color: hsl(215, 29%, 45%);
+}
+svg text {
+  font-family: 'Inter var', sans-serif;
+  fill: currentColor;
+}
+
+.color-sub {
+  color: hsl(215, 29%, 45%);
+}
