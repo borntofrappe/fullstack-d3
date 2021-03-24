@@ -1810,4 +1810,19 @@ The folder highlight how a dashboard works best when it focuses on providing a c
 
 ### Deciding Questions
 
-The folder focuses on a few arguments essential to the design of a dashboard. Among these arguments: the familiarity of users with the provided metrics, and the time users dedicate to the visualizations. On their own, these two issues compel a different design. For instance, experienced users do not need an explanation for the provided values, and time-sensitive readers do not need a complex overview.
+The folder focuses on two questions essential to the design of a dashboard: how familar are users with the provided data, how much time do user spend with the visualization. Already, these issues compel a different visualization. Consider for instance how inexperienced users might benefit from a short explanation (first demo), or again how time-sensitive readers might prefer a single metric instead of an elaborate visualization (second demo).
+
+In terms of D3, it is helpful to note how the elaborate visualization in the second demo leans on the `d3-force` module to have the circles describing the observations separated from one another. With `d3.simulation`, the project sets up a series of forces to have the points tend toward the desired `x` coordinate.
+
+```js
+d3.forceSimulation(simulationData)
+      .force('collision', ...)
+      .force('x', d3.forceX().x(d => xScale(metricAccessor(d))))
+      .force('y', ...)
+```
+
+The simulation is then run an arbitrary number of time to eventually position the circles.
+
+```js
+d3.simulation().tick(300);
+```
