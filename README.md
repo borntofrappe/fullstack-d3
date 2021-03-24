@@ -1826,3 +1826,30 @@ The simulation is then run an arbitrary number of time to eventually position th
 ```js
 d3.simulation().tick(300);
 ```
+
+## 10 - Complex Visualizations
+
+The chapter is devoted to three complex visualizations, exploring multiple questions with elaborate designs and interactions. In the folder I try to recreate the projects as closely as possible.
+
+### Marginal Histogram
+
+The goal is to explore the weather dataset and specifically temperature ranges, the differences between minimum and maximum values.
+
+#### Scatterplot
+
+A scatterplot works as a starting point, plotting the individual observations with a series of circles. Horizontally, the position is determined by the minimum temperature, while vertically the relevant metric is the maximum temperature.
+
+#### Background
+
+The visualization includes a solid background in the form of a rectangle, spanning the entirety of the bounded dimensions. The shape is helpful to create a distinction with the visuals.
+
+#### Domain
+
+Both dimensions use the same domain, to have the sides immediately comparable.
+
+```js
+const domain = d3.extent([
+  ...dataset.map(xAccessor),
+  ...dataset.map(yAccessor),
+]);
+```
