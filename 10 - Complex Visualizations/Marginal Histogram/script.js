@@ -93,9 +93,10 @@ async function drawMarginalHistogram() {
     .attr('stop-color', d => colorScale(d));
 
   const axisGroup = bounds.append('g');
+  const histogramsGroup = bounds.append('g');
+  const highlightGroup = bounds.append('g')
   const legendGroup = bounds.append('g');
   const scatterplotGroup = bounds.append('g');
-  const histogramsGroup = bounds.append('g');
   const tooltipGroup = bounds.append('g')
   const delaunayGroup = bounds.append('g')
 
@@ -165,11 +166,27 @@ async function drawMarginalHistogram() {
 
 
       /* INTERACTIONS */
+        highlightGroup
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+        .attr('fill', 'currentColor')
+        .style('mix-blend-mode', 'color-burn')
+    
+        highlightGroup
+        .append('rect')
+        .attr('y', -scatterplotRadius)
+        .attr('height', scatterplotRadius * 2)
+        
+        highlightGroup
+          .append('rect')
+          .attr('x', -scatterplotRadius)
+          .attr('width', scatterplotRadius * 2)
 
-  tooltipGroup
-  .style('pointer-events', 'none')
-  .style('opacity', 0)
-  
+
+     tooltipGroup
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+
   const tooltipRadius = 8;
   const tooltipStrokeWidth = 3;
 
@@ -185,11 +202,17 @@ async function drawMarginalHistogram() {
     .attr('stroke-width', tooltipStrokeWidth)
     .attr('r', tooltipRadius)
 
+
+      
+
     function onMouseEnter(event, d) {
       const x = xScale(xAccessor(d));
       const y = yScale(yAccessor(d));
 
       const color = colorScale(colorAccessor(d))
+
+
+
       tooltip
       .style(
         'transform',
@@ -198,7 +221,7 @@ async function drawMarginalHistogram() {
           dimensions.margin.top -
           5}px - 1rem))`
       )
-        .style('opacity', 1);
+      .style('opacity', 1);
 
 
       tooltip
@@ -209,6 +232,22 @@ async function drawMarginalHistogram() {
         .select('p')
         .text(`${formatTemperature(xAccessor(d))} - ${formatTemperature(yAccessor(d))}`)
 
+        
+      highlightGroup
+      .style('opacity', 1)
+      .attr('transform', `translate(${x} ${y})`)
+
+      highlightGroup
+        .select('rect:nth-of-type(1)')
+        .attr('width', dimensions.boundedWidth - x + dimensions.margin.right)
+
+        highlightGroup
+        .select('rect:nth-of-type(2)')
+        .attr('height', y + dimensions.margin.top)
+        .attr('transform', 'scale(1 -1)')
+
+
+
       tooltipGroup
       .style('opacity', 1)
       .attr('transform', `translate(${x} ${y})`)
@@ -216,10 +255,14 @@ async function drawMarginalHistogram() {
       tooltipGroup
           .select('circle')
           .attr('fill', color)
+
     }
 
     function onMouseLeave() {
       tooltip
+        .style('opacity', 0)
+
+        highlightGroup
         .style('opacity', 0)
 
         tooltipGroup

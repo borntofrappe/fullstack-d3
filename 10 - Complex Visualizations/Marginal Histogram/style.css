@@ -23,7 +23,7 @@ body {
 }
 
 .color-background {
-  color: hsl(200, 17%, 98%);
+  color: hsl(0, 0%, 100%);
 }
 
 svg {
@@ -44,12 +44,13 @@ svg text {
   opacity: 0;
   z-index: 5;
   pointer-events: none;
+  color: hsl(206, 18%, 18%);
   background: hsl(0, 0%, 100%);
   padding: 0.75rem 1rem;
   line-height: 1.5;
   text-align: center;
-  border: 2px solid hsl(202, 19%, 78%);
-  transition: transform 0.2s ease-out;
+  filter: drop-shadow(0 0 5px hsl(202, 19%, 78%));
+  transition: transform 0.15s ease-out;
 }
 
 #wrapper #tooltip::before {

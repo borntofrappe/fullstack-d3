@@ -1897,3 +1897,13 @@ https://github.com/d3/d3-scale#sequential-scales
 - area generator function based on the y scale, again on the height; an area to describe the fill below the line
 
 - same logic for the histogram to the left, but translating and rotating the shape
+
+#### Hover histogram
+
+- transform translate, scale
+
+- css mix-blend-mode
+
+- white background
+
+- below the scatterplot
