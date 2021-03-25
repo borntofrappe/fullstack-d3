@@ -11,8 +11,8 @@ async function drawMarginalHistogram() {
     width: 600,
     height: 600,
     margin: {
-      top: 10,
-      right: 10,
+      top: 80,
+      right: 80,
       bottom: 60,
       left: 60,
     },
@@ -20,6 +20,10 @@ async function drawMarginalHistogram() {
       width: 250,
       height: 25,
     },
+    histogram: {
+      height: 60,
+      margin: 10
+    }
   };
 
   dimensions.boundedWidth =
@@ -86,9 +90,10 @@ async function drawMarginalHistogram() {
 
   const axisGroup = bounds.append('g');
   const legendGroup = bounds.append('g');
-  const circlesGroup = bounds.append('g');
+  const scatterplotGroup = bounds.append('g');
+  const histogramsGroup = bounds.append('g');
 
-  circlesGroup
+  scatterplotGroup
     .selectAll('circle')
     .data(dataset)
     .enter()
@@ -97,6 +102,60 @@ async function drawMarginalHistogram() {
     .attr('cx', d => xScale(xAccessor(d)))
     .attr('cy', d => yScale(yAccessor(d)))
     .attr('fill', d => colorScale(colorAccessor(d)));
+
+
+    histogramsGroup.attr('class', 'color-sub')
+  const thresholds = 20;
+  const topHistogramGenerator = d3.bin()
+      .domain(xScale.domain())
+      .value(xAccessor)
+      .thresholds(thresholds)
+
+  const topHistogramBins = topHistogramGenerator(dataset)
+ 
+  const topHistogramScale = d3.scaleLinear().domain([0, d3.max(topHistogramBins, d => d.length)]).range([dimensions.histogram.height, 0])
+  const topHistogramAreaGenerator = d3.area()
+      .x(d => xScale((d.x0 + d.x1) / 2))
+      .y0(d => topHistogramScale(d.length))
+      .y1(dimensions.histogram.height)
+      .curve(d3.curveBasis)
+
+      const topHistogramGroup = histogramsGroup
+      .append('g')
+      .attr('transform', `translate(0 -${dimensions.histogram.height + dimensions.histogram.margin})`)
+
+      
+      topHistogramGroup
+        .append('path')
+        .attr('d', topHistogramAreaGenerator(topHistogramBins))
+        .attr('fill', 'currentColor')
+
+
+      const rightHistogramGenerator = d3.bin()
+      .domain(yScale.domain())
+      .value(yAccessor)
+      .thresholds(thresholds)
+
+  const rightHistogramBins = rightHistogramGenerator(dataset)
+ 
+  const rightHistogramScale = d3.scaleLinear().domain([0, d3.max(rightHistogramBins, d => d.length)]).range([dimensions.histogram.height, 0])
+  const rightHistogramAreaGenerator = d3.area()
+      .x(d => xScale((d.x0 + d.x1) / 2))
+      .y0(d => rightHistogramScale(d.length))
+      .y1(dimensions.histogram.height)
+      .curve(d3.curveBasis)
+
+      const rightHistogramGroup = histogramsGroup
+      .append('g')
+      .attr('transform', `translate(${dimensions.boundedWidth} 0) rotate(90) translate(${dimensions.boundedWidth} -${dimensions.histogram.height + dimensions.histogram.margin}) scale(-1 1)`)
+
+      
+      rightHistogramGroup
+        .append('path')
+        .attr('d', rightHistogramAreaGenerator(rightHistogramBins))
+        .attr('fill', 'currentColor')
+
+  /* PERIPHERALS */
 
   legendGroup.attr(
     'transform',

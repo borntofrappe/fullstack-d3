@@ -18,12 +18,8 @@ body {
   font-family: 'Inter var', sans-serif;
 }
 
-.color-main {
-  color: hsl(205, 17%, 19%);
-}
-
 .color-sub {
-  color: hsl(202, 14%, 44%);
+  color: hsl(204, 19%, 74%);
 }
 
 .color-background {
@@ -34,6 +30,7 @@ svg {
   width: 500px;
   height: auto;
   display: block;
+  color: hsl(206, 18%, 18%);
 }
 
 svg text {

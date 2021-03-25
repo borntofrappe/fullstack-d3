@@ -1854,6 +1854,46 @@ const domain = d3.extent([
 ]);
 ```
 
-#### Color
+#### Color & Legend
 
 The `fill` attribute of the `<circle>` element is updated to color the shapes according to the date of the year. It is here helpful to have a year of reference, so that data spanning multiple years refer to the same domain.
+
+- a sequential scale with the rainbow spectrum and an interpolator function
+
+- domain with a given year
+
+- year of reference since we are interested in the time of year
+
+- d3.interpolateRainbow() for cyclical data
+
+https://github.com/d3/d3-scale-chromatic#interpolateRainbow
+
+given a number in the 0-1 range provides a color in the rainbow
+
+- sequential scale; interpolator method with the rainbow, built-in scale. A domain and interpolator function/array. If array, it describes the mapped range
+
+By default identity function, d => d
+
+Inverted to have the inverted rainbow d => -d
+
+https://github.com/d3/d3-scale#sequential-scales
+
+- linear gradient using 12 stop elements, one per month
+
+- legend plotting the gradient and one tick for every other month
+
+#### Mini Histograms
+
+- distribution of minimum and maximum temperatures
+
+- increase margin top and right
+
+- define histogram margin (distane from axis) and height
+
+- d3.bins to create the bins (20 thresholds) based on the scale
+
+- y scale based on the height of the bins
+
+- area generator function based on the y scale, again on the height; an area to describe the fill below the line
+
+- same logic for the histogram to the left, but translating and rotating the shape
