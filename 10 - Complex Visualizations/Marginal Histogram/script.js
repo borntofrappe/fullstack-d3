@@ -4,6 +4,9 @@ async function drawMarginalHistogram() {
   const xAccessor = d => d.temperatureMin;
   const yAccessor = d => d.temperatureMax;
   const parseDate = d3.timeParse('%Y-%m-%d');
+  const formatTemperature = d => `${d3.format('.1f')(d)}°F`
+  const formatDate = d3.timeFormat('%A, %b   %d, %Y');
+  const dateAccessor = d => parseDate(d.date);
   const colorScaleYear = 2018;
   const colorAccessor = d => parseDate(d.date).setYear(colorScaleYear);
 
@@ -55,6 +58,7 @@ async function drawMarginalHistogram() {
     ])
     .interpolator(d => d3.interpolateRainbow(d * -1));
 
+  const tooltip = d3.select('#tooltip').style('opacity', 0)
   const wrapper = d3
     .select('#wrapper')
     .append('svg')
@@ -92,16 +96,20 @@ async function drawMarginalHistogram() {
   const legendGroup = bounds.append('g');
   const scatterplotGroup = bounds.append('g');
   const histogramsGroup = bounds.append('g');
+  const tooltipGroup = bounds.append('g')
+  const delaunayGroup = bounds.append('g')
 
+  const scatterplotRadius = 5;
+  
   scatterplotGroup
     .selectAll('circle')
     .data(dataset)
     .enter()
     .append('circle')
-    .attr('r', 5)
+    .attr('r', scatterplotRadius)
     .attr('cx', d => xScale(xAccessor(d)))
     .attr('cy', d => yScale(yAccessor(d)))
-    .attr('fill', d => colorScale(colorAccessor(d)));
+    .attr('fill', d => colorScale(colorAccessor(d)))
 
 
     histogramsGroup.attr('class', 'color-sub')
@@ -154,6 +162,90 @@ async function drawMarginalHistogram() {
         .append('path')
         .attr('d', rightHistogramAreaGenerator(rightHistogramBins))
         .attr('fill', 'currentColor')
+
+
+      /* INTERACTIONS */
+
+  tooltipGroup
+  .style('pointer-events', 'none')
+  .style('opacity', 0)
+  
+  const tooltipRadius = 8;
+  const tooltipStrokeWidth = 3;
+
+  tooltipGroup
+  .append('circle')
+  .attr('fill', 'currentColor')
+  .attr('r', scatterplotRadius)
+
+  tooltipGroup
+    .append('circle')
+    .attr('fill', 'none')
+    .attr('stroke', 'maroon')
+    .attr('stroke-width', tooltipStrokeWidth)
+    .attr('r', tooltipRadius)
+
+    function onMouseEnter(event, d) {
+      const x = xScale(xAccessor(d));
+      const y = yScale(yAccessor(d));
+
+      const color = colorScale(colorAccessor(d))
+      tooltip
+      .style(
+        'transform',
+        `translate(calc(-50% + ${x +
+          dimensions.margin.left}px), calc(-100% + ${y +
+          dimensions.margin.top -
+          5}px - 1rem))`
+      )
+        .style('opacity', 1);
+
+
+      tooltip
+        .select('h2')
+        .text(formatDate(dateAccessor(d)))
+
+        tooltip
+        .select('p')
+        .text(`${formatTemperature(xAccessor(d))} - ${formatTemperature(yAccessor(d))}`)
+
+      tooltipGroup
+      .style('opacity', 1)
+      .attr('transform', `translate(${x} ${y})`)
+
+      tooltipGroup
+          .select('circle')
+          .attr('fill', color)
+    }
+
+    function onMouseLeave() {
+      tooltip
+        .style('opacity', 0)
+
+        tooltipGroup
+        .style('opacity', 0)
+    }
+
+    const delaunay = d3.Delaunay.from(dataset,
+      d => xScale(xAccessor(d)),
+      d => yScale(yAccessor(d)),
+      )
+
+      const voronoi = delaunay.voronoi([0, 0, dimensions.boundedWidth, dimensions.boundedHeight])
+
+      delaunayGroup
+      .append('g')
+      .selectAll('path')
+      .data(dataset)
+      .enter()
+      .append('path')
+      .attr('d', (d, i) => voronoi.renderCell(i))
+      .attr('fill', 'transparent')
+      // .attr('stroke', 'currentColor')
+      // .attr('stroke-width', 0.5)
+      .on('mouseenter', onMouseEnter)
+      .on('mouseleave', onMouseLeave);
+
 
   /* PERIPHERALS */
 

@@ -27,13 +27,54 @@ body {
 }
 
 svg {
-  width: 500px;
-  height: auto;
-  display: block;
   color: hsl(206, 18%, 18%);
 }
 
 svg text {
   font-family: 'Inter var', sans-serif;
   fill: currentColor;
+}
+
+#wrapper {
+  position: relative;
+}
+
+#wrapper #tooltip {
+  position: absolute;
+  opacity: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: hsl(0, 0%, 100%);
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+  text-align: center;
+  border: 2px solid hsl(202, 19%, 78%);
+  transition: transform 0.2s ease-out;
+}
+
+#wrapper #tooltip::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1rem;
+  height: 0.5rem;
+  background: inherit;
+  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  z-index: -5;
+}
+
+#wrapper #tooltip h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-transform: capitalize;
+  text-align: center;
+}
+
+#wrapper #tooltip p {
+  font-size: 0.9rem;
+  letter-spacing: -0.5px;
+  word-spacing: -1px;
 }
