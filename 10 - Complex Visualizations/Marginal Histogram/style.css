@@ -14,12 +14,12 @@ body {
   display: grid;
   place-items: center;
   background: hsl(200, 17%, 92%);
-  color: hsl(210, 29%, 5%);
+  color: hsl(210, 29%, 15%);
   font-family: 'Inter var', sans-serif;
 }
 
 .color-sub {
-  color: hsl(204, 19%, 74%);
+  color: hsl(204, 19%, 80%);
 }
 
 .color-background {
@@ -27,12 +27,38 @@ body {
 }
 
 svg {
-  color: hsl(206, 18%, 18%);
+  color: hsl(210, 29%, 25%);
 }
 
 svg text {
   font-family: 'Inter var', sans-serif;
   fill: currentColor;
+}
+
+#root {
+  margin: 1rem 0;
+}
+
+#root > * + * {
+  margin-top: 1rem;
+}
+
+header {
+  text-align: center;
+}
+
+header > * + * {
+  margin-top: 0.25rem;
+}
+
+header h1 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+header p {
+  line-height: 1.5;
+  font-size: 0.9rem;
 }
 
 #wrapper {
