@@ -2130,3 +2130,18 @@ const temperatureTicks = radiusScale.ticks(4); // [20, 40, 60, 80, 100]
 ```
 
 - grid numbers with a solid background
+
+#### Temperature
+
+- freezing temperature, conditional
+
+- radial area generator function
+
+- radial gradient with chromatic scale
+
+```js
+temperatureGroup
+.append('circle')
+.attr('r', dimensions.boundedRadius)
+.attr('fill', `url(#${gradientId})`)
+```

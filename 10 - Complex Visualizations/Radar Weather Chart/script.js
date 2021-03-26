@@ -43,11 +43,25 @@ async function drawRadarWeatherChart() {
       `translate(${dimensions.margin + dimensions.boundedRadius} ${dimensions.margin + dimensions.boundedRadius})`
     );
 
-  const peripheralsGroup = bounds.append('g');
-  const temperatureGroup = bounds.append('g');
+  const defs = wrapper.append('defs');
+  const gradientId = 'tempereature-gradient';
+  const stops = 10;
+  const stopData = Array(stops).fill().map((d, i, {length}) => ({
+    color: d3.interpolateYlOrRd(i / (length - 1)),
+    offset: `${(i * 100) / (length - 1)}%`
+  }))
+  defs
+      .append('radialGradient')
+      .attr('id', gradientId)
+      .selectAll('stop')
+      .data(stopData)
+      .enter()
+      .append('stop')
+      .attr('stop-color', d => d.color)
+      .attr('offset', d => d.offset)
 
+  const peripheralsGroup = bounds.append('g');
   const axisGroup = peripheralsGroup.append('g');
-  const gridLinesGroup = peripheralsGroup.append('g');
 
   const months = d3.timeMonths(...angleScale.domain())
   axisGroup
@@ -86,6 +100,8 @@ async function drawRadarWeatherChart() {
       })
       .attr('dominant-baseline', 'middle')
 
+
+  const gridLinesGroup = peripheralsGroup.append('g');
 
   const radiusScale = d3.scaleLinear()
       .domain(
@@ -134,8 +150,25 @@ async function drawRadarWeatherChart() {
     .attr('opacity', 0.75);
 
   
+  const temperatureGroup = bounds.append('g');
+    const freezingTemperature = 32;
+    if(radiusScale.domain()[0] <= freezingTemperature) {
+      temperatureGroup  
+        .append('circle')
+        .attr('r', radiusScale(freezingTemperature))
+        .attr('fill', '#00d2d3')
+        .attr('opacity', 0.15)
+    }
 
+    const temperatureAreaGenerator = d3.areaRadial()
+      .angle(d => angleScale(dateAccessor(d)))
+      .innerRadius(d => radiusScale(temperatureMinAccessor(d)))
+      .outerRadius(d => radiusScale(temperatureMaxAccessor(d)))
 
+    temperatureGroup
+      .append('path')
+      .attr('d', temperatureAreaGenerator(dataset))
+      .attr('fill', `url(#${gradientId})`)
 
    
   
