@@ -352,6 +352,7 @@ async function drawMarginalHistogram() {
       .attr('x', dimensions.legend.width / 2)
       .attr('y', -10)
       .attr('font-size', 13)
+      .style('font-feature-settings', 'tnum')
 
     legendHighlightGroup
       .append('rect')
@@ -361,32 +362,41 @@ async function drawMarginalHistogram() {
       .attr('stroke', 'hsl(0, 0%, 100%)')
       .attr('stroke-width', 3)
 
+      
+    const formatLegendDate = d3.timeFormat("%b %d");
+    const weeksHighlight = 2;
+    
     function onLegendMouseMove(event) {
       const [x] = d3.pointer(event);
       const date = legendTickScale.invert(x);
 
-      const formatLegendDate = d3.timeFormat("%b %d")
-      const startDate = d3.timeWeek.offset(date, -2)
-      const endDate = d3.timeWeek.offset(date, 2)
+      const [startDate, endDate] = legendTickScale.domain()
+
+      const d1 = d3.max([startDate, d3.timeWeek.offset(date, -weeksHighlight)])
+      const d2 = d3.min([endDate, d3.timeWeek.offset(date, weeksHighlight)])
 
       legendTicksGroup
         .style('opacity', 0)
 
       scatterplotGroup
         .selectAll('circle')
-        .style('opacity', (d) => dateAccessor(d) > startDate && dateAccessor(d) < endDate ? 1 : 0)
+        .style('opacity', (d) => {
+          const yearDate = dateAccessor(d).setYear(colorScaleYear);
+          return yearDate >= d1 && yearDate <= d2 ? 1 : 0;
+        })
 
       legendHighlightGroup
         .style('opacity', 1)
 
         legendHighlightGroup
         .select('text')
-        .text(`${formatLegendDate(startDate)} - ${formatLegendDate(endDate)}`);
+        .attr('x', legendTickScale(d1) + (legendTickScale(d2) - legendTickScale(d1)) / 2)
+        .text(`${formatLegendDate(d1)} - ${formatLegendDate(d2)}`);
 
       legendHighlightGroup
         .select('rect')
-        .attr('width', legendTickScale(endDate) - legendTickScale(startDate))
-        .attr('transform', `translate(${legendTickScale(startDate)} 0)`)
+        .attr('width', legendTickScale(d2) - legendTickScale(d1))
+        .attr('transform', `translate(${legendTickScale(d1)} 0)`)
 
     }
 
