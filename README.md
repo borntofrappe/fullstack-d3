@@ -2110,3 +2110,7 @@ _Plese note:_ there are parts I elected not to document, hoping to focus on the 
 - the labels and ticks above the legend are hidden when hovering on the legend, allowing to focus on the highlight
 
 - the mini-histogram are attributed a color based on the selected date
+
+### Radar Weather Chart
+
+The second complex visualization focuses on a radial line chart, studying the weather dataset through multiple metrics.
