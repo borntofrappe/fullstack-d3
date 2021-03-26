@@ -2114,3 +2114,19 @@ _Plese note:_ there are parts I elected not to document, hoping to focus on the 
 ### Radar Weather Chart
 
 The second complex visualization focuses on a radial line chart, studying the weather dataset through multiple metrics.
+
+#### Peripherals
+
+- d3.timeMonths to create the months
+
+- rotate path element to create angle lines (instead of computing the coordinates with cosine and sine functions)
+
+- translate text elements at the end of the lines
+
+- grid lines based on the temperature, `ticks` function to create an array of values based on the scale
+
+```js
+const temperatureTicks = radiusScale.ticks(4); // [20, 40, 60, 80, 100]
+```
+
+- grid numbers with a solid background
