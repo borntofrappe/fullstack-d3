@@ -146,6 +146,9 @@ async function drawMarginalHistogram() {
     .attr('d', topHistogramAreaGenerator(topHistogramBins))
     .attr('fill', 'currentColor');
 
+    const topHistogramHighlight = topHistogramGroup
+    .append('path')
+
   const rightHistogramGenerator = d3
     .bin()
     .domain(yScale.domain())
@@ -179,6 +182,9 @@ async function drawMarginalHistogram() {
     .append('path')
     .attr('d', rightHistogramAreaGenerator(rightHistogramBins))
     .attr('fill', 'currentColor');
+
+  const rightHistogramHighlight = rightHistogramGroup
+    .append('path')
 
   /* INTERACTIONS */
   const tooltip = d3.select('#tooltip').style('opacity', 0);
@@ -365,6 +371,11 @@ async function drawMarginalHistogram() {
       
     const formatLegendDate = d3.timeFormat("%b %d");
     const weeksHighlight = 2;
+
+    function isWithinRange(datum, d1, d2) {
+      const yearDate = dateAccessor(datum).setYear(colorScaleYear);
+      return yearDate >= d1 && yearDate <= d2;
+    }
     
     function onLegendMouseMove(event) {
       const [x] = d3.pointer(event);
@@ -380,10 +391,7 @@ async function drawMarginalHistogram() {
 
       scatterplotGroup
         .selectAll('circle')
-        .style('opacity', (d) => {
-          const yearDate = dateAccessor(d).setYear(colorScaleYear);
-          return yearDate >= d1 && yearDate <= d2 ? 1 : 0;
-        })
+        .style('opacity', (d) => isWithinRange(d, d1, d2) ? 1 : 0)
 
       legendHighlightGroup
         .style('opacity', 1)
@@ -398,6 +406,20 @@ async function drawMarginalHistogram() {
         .attr('width', legendTickScale(d2) - legendTickScale(d1))
         .attr('transform', `translate(${legendTickScale(d1)} 0)`)
 
+      const highlightDataset = dataset.filter(d => isWithinRange(d, d1, d2))
+
+      const color = colorScale(date);
+
+      topHistogramHighlight
+        .style('opacity', 1)
+        .attr('fill', color)
+        .attr('d', topHistogramAreaGenerator(topHistogramGenerator(highlightDataset)))
+
+
+      rightHistogramHighlight
+        .style('opacity', 1)
+        .attr('fill', color)
+        .attr('d', rightHistogramAreaGenerator(rightHistogramGenerator(highlightDataset)))
     }
 
     function onLegendMouseLeave() {
@@ -409,6 +431,12 @@ async function drawMarginalHistogram() {
         .style('opacity', 1)
 
       legendHighlightGroup
+        .style('opacity', 0)
+
+        topHistogramHighlight
+        .style('opacity', 0)
+
+      rightHistogramHighlight
         .style('opacity', 0)
     }
     legendGroup

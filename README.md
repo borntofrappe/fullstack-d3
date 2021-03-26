@@ -1907,3 +1907,15 @@ https://github.com/d3/d3-scale#sequential-scales
 - white background
 
 - below the scatterplot
+
+#### Legend highlight
+
+- hover
+
+- offset date
+
+- set year
+
+#### Histogram highlight
+
+- generator function
