@@ -1833,15 +1833,20 @@ The chapter is devoted to three complex visualizations, exploring multiple quest
 
 ### Marginal Histogram
 
-The goal is to explore the weather dataset and specifically temperature ranges, the differences between minimum and maximum values.
+The goal is to explore the weather dataset and specifically temperature ranges, the differences between minimum and maximum temperatures.
 
 #### Scatterplot
 
 A scatterplot works as a starting point, plotting the individual observations with a series of circles. Horizontally, the position is determined by the minimum temperature, while vertically the relevant metric is the maximum temperature.
 
+```js
+const xAccessor = (d) => d.temperatureMin;
+const yAccessor = (d) => d.temperatureMax;
+```
+
 #### Background
 
-The visualization includes a solid background in the form of a rectangle, spanning the entirety of the bounded dimensions. The shape is helpful to create a distinction with the visuals.
+The visualization includes a solid background in the form of a rectangle, spanning the entirety of the bounded dimensions. The shape is helpful to create a clear distinction between the scatterplot and the surrounding visuals (axis and soon-to-be histograms).
 
 #### Domain
 
@@ -1854,68 +1859,254 @@ const domain = d3.extent([
 ]);
 ```
 
-#### Color & Legend
+#### Color
 
 The `fill` attribute of the `<circle>` element is updated to color the shapes according to the date of the year. It is here helpful to have a year of reference, so that data spanning multiple years refer to the same domain.
 
-- a sequential scale with the rainbow spectrum and an interpolator function
+```js
+const colorScaleYear = 2018;
+const colorAccessor = (d) => parseDate(d.date).setYear(colorScaleYear);
+```
 
-- domain with a given year
+The scale itself is a sequential scale. As per [the documentation](https://github.com/d3/d3-scale#scaleSequential), the scale is defined with a domain and an interpolator.
 
-- year of reference since we are interested in the time of year
+```js
+d3.scaleSequential()
+  .domain([,])
+  .interpolator((d) => d);
+```
 
-- d3.interpolateRainbow() for cyclical data
+The idea is to have the interpolator function receive a date and return a color in a prescribed interval. In the specific project, the interpolator makes a reference to the `d3.interpolateRainbow` function, which receives a value in the `[0, 1]` range to return a color in the rainbow spectrum.
 
-https://github.com/d3/d3-scale-chromatic#interpolateRainbow
+```js
+d3.scaleSequential()
+  .domain([
+    parseDate(`${colorScaleYear}-01-01`),
+    parseDate(`${colorScaleYear}-12-31`),
+  ])
+  .interpolator((d) => d3.interpolateRainbow(d * -1));
+```
 
-given a number in the 0-1 range provides a color in the rainbow
+By multiplying the value by `-1` it is possible to invert the rainbow, and have the warmer season described by warmer colors (red, orange, yellow).
 
-- sequential scale; interpolator method with the rainbow, built-in scale. A domain and interpolator function/array. If array, it describes the mapped range
+This is helpful for my own understanding, but the interpolator function might also work as follows:
 
-By default identity function, d => d
+```js
+.interpolator(d => `hsl(${d * 360}, 80%, 60%)`);
+```
 
-Inverted to have the inverted rainbow d => -d
+Here the color is picked from the hslcolor wheel in the `[0, 360]` range, with a fixed saturation and lightness. With `d3.color` it could also be possible to lean on the hcl format, obtaining a color wheel with the same perceived lightness.
 
-https://github.com/d3/d3-scale#sequential-scales
+```js
+.interpolator(d => d3.hcl((d * 360 + 220) % 360, 160, 75));
+```
 
-- linear gradient using 12 stop elements, one per month
+As mentioned, the scale is used to color the circles in the scatterplot.
 
-- legend plotting the gradient and one tick for every other month
+```js
+.append('circle')
+.attr('fill', d => colorScale(colorAccessor(d)));
+```
 
-#### Mini Histograms
+However, the scale is also included in the `<linearGradient>` element to color the legend. The idea is to here include one `<stop>` element for each month, creating a gradient through twelve colors.
 
-- distribution of minimum and maximum temperatures
+```js
+.selectAll('stop')
+.data(d3.timeMonths(...colorScale.domain()))
+```
 
-- increase margin top and right
+`d3.timeMonths` creates an array of dates between a start and end date. These dates are handily obtained through the domain of the scale itself.
 
-- define histogram margin (distane from axis) and height
+The scale is useful elsewhere, for instance in the `fill` color of the histograms created for the highlighted circles (soon-to-be), but here I want to mention how the domain is included once more in the legend, to provide the labels of the gradient for every other month.
 
-- d3.bins to create the bins (20 thresholds) based on the scale
+```js
+.selectAll('g')
+.data(d3.timeMonths(...colorScale.domain()).filter((d, i) => i % 2 !== 0))
+```
 
-- y scale based on the height of the bins
+#### Histograms
 
-- area generator function based on the y scale, again on the height; an area to describe the fill below the line
+The idea is to include two histograms, describing the overall distribution of the temperatures across the year.
 
-- same logic for the histogram to the left, but translating and rotating the shape
+The dimensions of the visuals are included in the `dimensions` object, which is itself modified to increase the top and right margin.
 
-#### Hover histogram
+```js
+const dimensions = {
+  margin: {
+    top: 80,
+    right: 80,
+  },
+  histogram: {
+    height: 60,
+    margin: 10,
+  },
+};
+```
 
-- transform translate, scale
+A `margin` is included for the histogram as well to separate the visual from the scatterplot.
 
-- css mix-blend-mode
+The way the histogram is generated is similar to the visualizaton in a previous chapter. I'll describe the steps for the top histogram, but fundamentally, the code is the same for the right side (barring one difference highlighter later):
 
-- white background
+- `d3.bin` provides the generator function, with a given scale and threshold
 
-- below the scatterplot
+  ```js
+  const topHistogramGenerator = d3
+    .bin()
+    .domain(xScale.domain())
+    .value(xAccessor)
+    .thresholds(20);
+  ```
 
-#### Legend highlight
+  The accessor function means the generator function looks for the value in the minimum temperature.
 
-- hover
+  ```js
+  const topHistogramBins = topHistogramGenerator(dataset);
+  ```
 
-- offset date
+- a linear scale maps the size of the bins to the height of the histogram. The size is determined by the `length` of the arrays describing the bins
 
-- set year
+  ```js
+  const topHistogramScale = d3
+    .scaleLinear()
+    .domain([0, d3.max(topHistogramBins, (d) => d.length)])
+    .range([dimensions.histogram.height, 0]);
+  ```
 
-#### Histogram highlight
+- `d3.area` provides the generator function for the `d` attribute of the `<path>` element making up the histogram
 
-- generator function
+  The function works similarly to `d3.line`, but defines two vertical coordinates, for the area below the line (or curve).
+
+  ```js
+  const topHistogramAreaGenerator = d3
+    .area()
+    .x((d) => xScale((d.x0 + d.x1) / 2))
+    .y0((d) => topHistogramScale(d.length))
+    .y1(dimensions.histogram.height);
+  ```
+
+  `x0` and `x1` are two fields included by the bin generator for each array, describing the start and end value (in this instance in terms of minimum temperature).
+
+  As mentioned, the function is finally included in a `<path>` element above the scatterplot.
+
+  ```js
+  topHistogramGroup
+    .append('path')
+    .attr('d', topHistogramAreaGenerator(topHistogramBins))
+    .attr('fill', 'currentColor');
+  ```
+
+The same logic is repeated for the right side, but the histogram is ultimately flipped and positioned to have the visualization highlight the ranges top to bottom.
+
+#### Scatterplot Interaction
+
+When hovering on the scatterplot, the visualization highlights a specific circle. This is implemented exactly as in the chapter devoted to interactions, with a tooltip and Delaunay's triangulation, so I want devote much attention to the code. I will note, however, that beside the tooltip and the circle highlighting the selection, the visualization includes two rectangle elements, to highlight the color in the context of the histogram.
+
+```js
+highlightGroup.append('rect');
+
+highlightGroup.append('rect');
+```
+
+One important mention goes to the `mix-blend-mode` property, used to have the rectangles virtually hidden above the white background. This helps focusing the attention on the accompanying histograms.
+
+```js
+highlightGroup.style('mix-blend-mode', 'color-burn');
+```
+
+The highlight group is also included before the scatterplot, so that the rectangles are drawn below the circles.
+
+#### Legend Interaction
+
+The idea is to highlight a set of values when hovering on the legend. The implementation is slightly different from that describes in the book, but relies on the same visuals.
+
+Immediately, `legendHighlightGroup` is created to contain two elements: a `<text>` working as a label and a `<rect>` to highlight the selected date, or more precisely the selected range.
+
+```js
+legendHighlightGroup.append('text');
+
+legendHighlightGroup.append('rect');
+```
+
+When hovering on the rectangle making up the legend, the idea is to then pick a start and end date around the selected date. The specific date is obtained by inverting the horizontal coordinate with the scale created for the legend.
+
+```js
+const [x] = d3.pointer(event);
+const date = legendTickScale.invert(x);
+```
+
+The range is then computed considering a number of weeks around the date, but limiting the values to the start and end of the year. The domain for the scale conveniently provides these values.
+
+```js
+const [startDate, endDate] = legendTickScale.domain();
+```
+
+`d3.timeWeek.offset` provides the date before/after the date, while `d3.max`, `d3.min` allow to fallback to the values if exceeding the selected year. For instance and for the start date, this value cannot precede the first of January.
+
+```js
+const d1 = d3.max([startDate, d3.timeWeek.offset(date, -weeksHighlight)]);
+```
+
+Based on this structure, `d1` and `d2` describe the dates in the given year. The highlight is noted in the legend by updating the rectangle to describe the range.
+
+```js
+legendHighlightGroup
+  .select('rect')
+  .attr('x', legendTickScale(d1))
+  .attr('width', legendTickScale(d2) - legendTickScale(d1));
+```
+
+The label is also updated in position, similarly to the rectangle, but also and notably in the text, in order to display the dates with the chosen month and date.
+
+```js
+const formatLegendDate = d3.timeFormat('%b %d');
+
+legendHighlightGroup.text(`${formatLegendDate(d1)} - ${formatLegendDate(d2)}`);
+```
+
+The two dates are however and most importantly used to highlight the dots with the appropriate date. This is achieved by considering every circle and changing the opacity according to the date.
+
+```js
+scatterplotGroup
+  .selectAll('circle')
+  .style('opacity', (d) => (isWithinRange(d, d1, d2) ? 1 : 0));
+```
+
+The date of reference is always in the year, to account for data potentially expanding beyond one year.
+
+```js
+function isWithinRange(datum, d1, d2) {
+  const yearDate = dateAccessor(datum).setYear(colorScaleYear);
+  return yearDate >= d1 && yearDate <= d2;
+}
+```
+
+The function is used to hide/show the data matching the selection, but also and finally to create mini-histogram. This last step showcases the usefulness of D3 and its generator functions. What is necessary is to:
+
+- consider the data in the range
+
+  ```js
+  const highlightDataset = dataset.filter((d) => isWithinRange(d, d1, d2));
+  ```
+
+- use the generator function(s) with the subset of data
+
+  ```js
+  topHistogramAreaGenerator(topHistogramGenerator(highlightDataset)); // M...
+  ```
+
+The syntax returned by the function is included in the `d` attribute of a `<path>` element. Two elements, actually, to plot a mini histogram for each axis.
+
+```js
+topHistogramHighlight
+  .style('opacity', 1)
+  .attr(
+    'd',
+    topHistogramAreaGenerator(topHistogramGenerator(highlightDataset))
+  );
+```
+
+_Plese note:_ there are parts I elected not to document, hoping to focus on the most prominent sections of the code. Consider, for instance, how the function called when hovering on the legend includes a few more instructions which work to provide more polish:
+
+- the labels and ticks above the legend are hidden when hovering on the legend, allowing to focus on the highlight
+
+- the mini-histogram are attributed a color based on the selected date

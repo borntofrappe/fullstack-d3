@@ -1,4 +1,5 @@
 async function drawMarginalHistogram() {
+  /* ACCESS DATA */
   const dataset = await d3.json('../../nyc_weather_data.json');
 
   const xAccessor = d => d.temperatureMin;
@@ -10,6 +11,7 @@ async function drawMarginalHistogram() {
   const colorScaleYear = 2018;
   const colorAccessor = d => parseDate(d.date).setYear(colorScaleYear);
 
+  /* CHART DIMENSIONS */
   const dimensions = {
     width: 600,
     height: 600,
@@ -34,6 +36,7 @@ async function drawMarginalHistogram() {
   dimensions.boundedHeight =
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
+  /* SCALES */
   const domain = d3.extent([
     ...dataset.map(xAccessor),
     ...dataset.map(yAccessor),
@@ -57,8 +60,10 @@ async function drawMarginalHistogram() {
       parseDate(`${colorScaleYear}-01-01`),
       parseDate(`${colorScaleYear}-12-31`),
     ])
+    // .interpolator(d => d3.hcl((d * 360 + 220) % 360, 160, 75))
     .interpolator(d => d3.interpolateRainbow(d * -1));
 
+  /* DRAW DATA */
   const wrapper = d3
     .select('#wrapper')
     .append('svg')
@@ -146,8 +151,7 @@ async function drawMarginalHistogram() {
     .attr('d', topHistogramAreaGenerator(topHistogramBins))
     .attr('fill', 'currentColor');
 
-    const topHistogramHighlight = topHistogramGroup
-    .append('path')
+  const topHistogramHighlight = topHistogramGroup.append('path');
 
   const rightHistogramGenerator = d3
     .bin()
@@ -183,8 +187,7 @@ async function drawMarginalHistogram() {
     .attr('d', rightHistogramAreaGenerator(rightHistogramBins))
     .attr('fill', 'currentColor');
 
-  const rightHistogramHighlight = rightHistogramGroup
-    .append('path')
+  const rightHistogramHighlight = rightHistogramGroup.append('path');
 
   /* INTERACTIONS */
   const tooltip = d3.select('#tooltip').style('opacity', 0);
@@ -206,7 +209,7 @@ async function drawMarginalHistogram() {
     .attr('stroke-width', tooltipStrokeWidth)
     .attr('r', tooltipRadius);
 
-    highlightGroup
+  highlightGroup
     .style('pointer-events', 'none')
     .style('opacity', 0)
     .attr('fill', 'currentColor')
@@ -270,7 +273,7 @@ async function drawMarginalHistogram() {
     tooltip.style('opacity', 0);
 
     tooltipGroup.style('opacity', 0);
-    
+
     highlightGroup.style('opacity', 0);
   }
 
@@ -300,9 +303,6 @@ async function drawMarginalHistogram() {
     .on('mouseenter', onMouseEnter)
     .on('mouseleave', onMouseLeave);
 
-
-
-
   /* PERIPHERALS */
   legendGroup.attr(
     'transform',
@@ -311,13 +311,11 @@ async function drawMarginalHistogram() {
       10} ${dimensions.boundedHeight - dimensions.legend.height - 10})`
   );
 
-
-
   legendGroup
     .append('rect')
     .attr('width', dimensions.legend.width)
     .attr('height', dimensions.legend.height)
-    .attr('fill', `url(#${gradientId})`)
+    .attr('fill', `url(#${gradientId})`);
 
   const legendTickScale = d3
     .scaleLinear()
@@ -348,102 +346,101 @@ async function drawMarginalHistogram() {
     .attr('text-anchor', 'middle');
 
   const legendHighlightGroup = legendGroup
-      .append('g')
-      .style('pointer-events', 'none')
-      .style('opacity', 0);
+    .append('g')
+    .style('pointer-events', 'none')
+    .style('opacity', 0);
+
+  legendHighlightGroup
+    .append('text')
+    .attr('text-anchor', 'middle')
+    .attr('x', dimensions.legend.width / 2)
+    .attr('y', -10)
+    .attr('font-size', 13)
+    .style('font-feature-settings', 'tnum');
+
+  legendHighlightGroup
+    .append('rect')
+    .attr('width', 10)
+    .attr('height', dimensions.legend.height)
+    .attr('fill', 'hsla(0, 0%, 100%, 0.25)')
+    .attr('stroke', 'hsl(0, 0%, 100%)')
+    .attr('stroke-width', 3);
+
+  const formatLegendDate = d3.timeFormat('%b %d');
+  const weeksHighlight = 2;
+
+  function isWithinRange(datum, d1, d2) {
+    const yearDate = dateAccessor(datum).setYear(colorScaleYear);
+    return yearDate >= d1 && yearDate <= d2;
+  }
+
+  function onLegendMouseMove(event) {
+    const [x] = d3.pointer(event);
+    const date = legendTickScale.invert(x);
+
+    const [startDate, endDate] = legendTickScale.domain();
+
+    const d1 = d3.max([startDate, d3.timeWeek.offset(date, -weeksHighlight)]);
+    const d2 = d3.min([endDate, d3.timeWeek.offset(date, weeksHighlight)]);
+
+    legendTicksGroup.style('opacity', 0);
+
+    scatterplotGroup
+      .selectAll('circle')
+      .style('opacity', d => (isWithinRange(d, d1, d2) ? 1 : 0));
+
+    legendHighlightGroup.style('opacity', 1);
 
     legendHighlightGroup
-      .append('text')
-      .attr('text-anchor', 'middle')
-      .attr('x', dimensions.legend.width / 2)
-      .attr('y', -10)
-      .attr('font-size', 13)
-      .style('font-feature-settings', 'tnum')
+      .select('text')
+      .attr(
+        'x',
+        legendTickScale(d1) + (legendTickScale(d2) - legendTickScale(d1)) / 2
+      )
+      .text(`${formatLegendDate(d1)} - ${formatLegendDate(d2)}`);
 
     legendHighlightGroup
-      .append('rect')
-      .attr('width', 10)
-      .attr('height', dimensions.legend.height)
-      .attr('fill', 'hsla(0, 0%, 100%, 0.25)')
-      .attr('stroke', 'hsl(0, 0%, 100%)')
-      .attr('stroke-width', 3)
-
-      
-    const formatLegendDate = d3.timeFormat("%b %d");
-    const weeksHighlight = 2;
-
-    function isWithinRange(datum, d1, d2) {
-      const yearDate = dateAccessor(datum).setYear(colorScaleYear);
-      return yearDate >= d1 && yearDate <= d2;
-    }
-    
-    function onLegendMouseMove(event) {
-      const [x] = d3.pointer(event);
-      const date = legendTickScale.invert(x);
-
-      const [startDate, endDate] = legendTickScale.domain()
-
-      const d1 = d3.max([startDate, d3.timeWeek.offset(date, -weeksHighlight)])
-      const d2 = d3.min([endDate, d3.timeWeek.offset(date, weeksHighlight)])
-
-      legendTicksGroup
-        .style('opacity', 0)
-
-      scatterplotGroup
-        .selectAll('circle')
-        .style('opacity', (d) => isWithinRange(d, d1, d2) ? 1 : 0)
-
-      legendHighlightGroup
-        .style('opacity', 1)
-
-        legendHighlightGroup
-        .select('text')
-        .attr('x', legendTickScale(d1) + (legendTickScale(d2) - legendTickScale(d1)) / 2)
-        .text(`${formatLegendDate(d1)} - ${formatLegendDate(d2)}`);
-
-      legendHighlightGroup
-        .select('rect')
-        .attr('width', legendTickScale(d2) - legendTickScale(d1))
-        .attr('transform', `translate(${legendTickScale(d1)} 0)`)
-
-      const highlightDataset = dataset.filter(d => isWithinRange(d, d1, d2))
-
-      const color = colorScale(date);
-
-      topHistogramHighlight
-        .style('opacity', 1)
-        .attr('fill', color)
-        .attr('d', topHistogramAreaGenerator(topHistogramGenerator(highlightDataset)))
-
-
-      rightHistogramHighlight
-        .style('opacity', 1)
-        .attr('fill', color)
-        .attr('d', rightHistogramAreaGenerator(rightHistogramGenerator(highlightDataset)))
-    }
-
-    function onLegendMouseLeave() {
-      legendTicksGroup
-        .style('opacity', 1)
-
-      scatterplotGroup
-        .selectAll('circle')
-        .style('opacity', 1)
-
-      legendHighlightGroup
-        .style('opacity', 0)
-
-        topHistogramHighlight
-        .style('opacity', 0)
-
-      rightHistogramHighlight
-        .style('opacity', 0)
-    }
-    legendGroup
       .select('rect')
-      .on('mousemove', onLegendMouseMove)
-      .on('mouseleave', onLegendMouseLeave);
+      .attr('width', legendTickScale(d2) - legendTickScale(d1))
+      .attr('transform', `translate(${legendTickScale(d1)} 0)`);
 
+    const highlightDataset = dataset.filter(d => isWithinRange(d, d1, d2));
+
+    const color = colorScale(date);
+
+    topHistogramHighlight
+      .style('opacity', 1)
+      .attr('fill', color)
+      .attr(
+        'd',
+        topHistogramAreaGenerator(topHistogramGenerator(highlightDataset))
+      );
+
+    rightHistogramHighlight
+      .style('opacity', 1)
+      .attr('fill', color)
+      .attr(
+        'd',
+        rightHistogramAreaGenerator(rightHistogramGenerator(highlightDataset))
+      );
+  }
+
+  function onLegendMouseLeave() {
+    legendTicksGroup.style('opacity', 1);
+
+    scatterplotGroup.selectAll('circle').style('opacity', 1);
+
+    legendHighlightGroup.style('opacity', 0);
+
+    topHistogramHighlight.style('opacity', 0);
+
+    rightHistogramHighlight.style('opacity', 0);
+  }
+  
+  legendGroup
+    .select('rect')
+    .on('mousemove', onLegendMouseMove)
+    .on('mouseleave', onLegendMouseLeave);
 
   const ticks = 5;
   const xAxisGenerator = d3
@@ -484,11 +481,8 @@ async function drawMarginalHistogram() {
 
   axisGroup.selectAll('g.tick text').attr('font-size', 11);
 
-  axisGroup.selectAll('path')
-    .attr('class', 'color-sub')
-    axisGroup.selectAll('line')
-    .attr('class', 'color-sub')
-
+  axisGroup.selectAll('path').attr('class', 'color-sub');
+  axisGroup.selectAll('line').attr('class', 'color-sub');
 }
 
 drawMarginalHistogram();
