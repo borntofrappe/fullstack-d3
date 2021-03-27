@@ -18,7 +18,7 @@ async function drawRadarWeatherChart() {
   /* CHART DIMENSIONS */
   const dimensions = {
     size: 600,
-    margin: 100,
+    margin: 150,
   };
 
   dimensions.boundedSize = dimensions.size - (dimensions.margin * 2);
@@ -84,14 +84,14 @@ async function drawRadarWeatherChart() {
       .append('text')
       .attr('transform', d => {
         const angle = angleScale(d) - Math.PI / 2;
-        const x = Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.75)
-        const y = Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.75)
+        const x = Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.62)
+        const y = Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.62)
 
         return `translate(${x} ${y})`
       })
       .text(d => formatDateMonth(d))
-      .attr('fill', 'currentColor')
-      .attr('font-size', 14)
+      .attr('fill', '#8395a7')
+      .attr('font-size', 12)
       .attr('text-anchor', d => {
         const angle = angleScale(d) - Math.PI / 2;
         const x = Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin / 2)
@@ -238,6 +238,69 @@ async function drawRadarWeatherChart() {
         .attr('fill', d => precipTypeColorScale(precipTypeAccessor(d)))
         .attr('r', (d, i) => precipProbabilityRadiusScale(precipProbabilityAccessor(d)))
         .attr('opacity', 0.5)
+
+
+        const annotationsGroup = bounds.append('g')
+
+        function drawAnnotation(angle, offset, text) {
+          const theta = angle - Math.PI / 2;
+          const x1 = Math.cos(theta) * offset;
+          const y1 = Math.sin(theta) * offset;
+          
+          const x2 = Math.cos(theta) * (dimensions.boundedRadius + dimensions.margin * 0.8);
+          const y2 = Math.sin(theta) * (dimensions.boundedRadius + dimensions.margin * 0.8);
+          
+          const annotationGroup = annotationsGroup.append('g')
+
+          annotationGroup
+          .append('path')
+          .attr('d', `M ${x1} ${y1} L ${x2} ${y2}`)
+          .attr('fill', 'none')
+          .attr('stroke', 'currentColor')
+          .attr('stroke-width', 0.5)
+
+          annotationGroup
+          .append('text')
+          .text(text)
+          .attr('transform', `translate(${x2 + 4} ${y2})`)
+          .attr('fill', 'currentColor')
+          .attr('dominant-baseline', 'middle')
+          .attr('font-size', 13)
+
+          if(text.toLowerCase() === 'precipitation') {
+            const annotationDetailsGroup = annotationsGroup
+              .append('g')
+              .attr('transform', `translate(${x2 + 24} ${y2 + 16})`);
+
+            const annotationDetailsGroups = annotationDetailsGroup
+              .selectAll('g')
+              .data(precipTypes)
+              .enter()
+              .append('g')
+              .attr('transform', (d, i) => `translate(0 ${16 * i})`)
+
+              annotationDetailsGroups
+              .append('circle')
+              .attr('r', 4)
+              .attr('fill', d => precipTypeColorScale(d))
+
+              annotationDetailsGroups
+              .append('text')
+              .text(d => d)
+              .attr('x', 8)
+              .attr('dominant-baseline', 'middle')
+              .attr('font-size', 12)
+          }
+        }
+
+        drawAnnotation(angleScale(dateAccessor(dataset[22])), dimensions.boundedRadius + dimensions.margin * 0.5, 'Cloud Cover')
+        drawAnnotation(angleScale(dateAccessor(dataset[40])), dimensions.boundedRadius + dimensions.margin * 0.3, 'Precipitation')
+        drawAnnotation(angleScale(dateAccessor(dataset[134])), radiusScale(temperatureMaxAccessor(dataset[134])), 'Temperature')
+        drawAnnotation(angleScale(dateAccessor(uvIndexData[4])), uvIndexY + uvIndexStrokeLength / 2, `UV Index over ${uvIndexThreshold}`)
+        if(radiusScale.domain()[0] <= freezingTemperature) {
+          drawAnnotation(Math.PI * 9 / 10, radiusScale(freezingTemperature), `Freezing temperature`)
+        }
+
 
 }
 

@@ -100,3 +100,7 @@ header h1 {
   letter-spacing: -0.5px;
   word-spacing: -1px;
 }
+
+#wrapper svg {
+  overflow: visible;
+}
