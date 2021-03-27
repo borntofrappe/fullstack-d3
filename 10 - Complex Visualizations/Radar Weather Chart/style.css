@@ -75,7 +75,7 @@ header h1 {
 }
 
 #wrapper #tooltip > * + * {
-  margin-top: 0.15rem;
+  margin-top: 0.25rem;
 }
 
 #wrapper #tooltip h2 {
