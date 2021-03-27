@@ -12,8 +12,14 @@ async function drawRadarWeatherChart() {
   const precipTypeAccessor = d => d.precipType;
   const cloudCoverAccessor = d => d.cloudCover;
 
-  const formatDateMonth = d => d3.timeFormat('%b')(d)
+  const formatDate = d => d3.timeFormat('%b')(d)
   const formatTemperature = d => `${d3.format('.0f')(d)}°F`;
+  
+  
+  const formatDateTooltip = d => d3.timeFormat('%B %d')(d);
+  const formatTemperatureTooltip = d => `${d3.format('.1f')(d)}°F`;
+  const formatCloudCoverTooltip = d => d3.format('.2f')(d);
+  const formatPrecipProbabilityTooltip = d => d3.format('.0%')(d);
 
   /* CHART DIMENSIONS */
   const dimensions = {
@@ -46,8 +52,9 @@ async function drawRadarWeatherChart() {
   const defs = wrapper.append('defs');
   const gradientId = 'tempereature-gradient';
   const stops = 10;
+  const gradientColorScale = d3.interpolateYlOrRd;
   const stopData = Array(stops).fill().map((d, i, {length}) => ({
-    color: d3.interpolateYlOrRd(i / (length - 1)),
+    color: gradientColorScale(i / (length - 1)),
     offset: `${(i * 100) / (length - 1)}%`
   }))
   defs
@@ -89,7 +96,7 @@ async function drawRadarWeatherChart() {
 
         return `translate(${x} ${y})`
       })
-      .text(d => formatDateMonth(d))
+      .text(d => formatDate(d))
       .attr('fill', '#8395a7')
       .attr('font-size', 12)
       .attr('text-anchor', d => {
@@ -301,6 +308,126 @@ async function drawRadarWeatherChart() {
           drawAnnotation(Math.PI * 9 / 10, radiusScale(freezingTemperature), `Freezing temperature`)
         }
 
+
+      /* INTERACTIONS */
+      const tooltip = d3.select('#tooltip');
+
+      const highlightPath = bounds
+        .append('g')
+        .style('pointer-events', 'none')
+        .append('path')
+        .attr('fill', '#8395a7')
+        .attr('fill-opacity', 0.4)
+        // .style('mix-blend-mode', 'multiply')
+
+      const arcGenerator = d3.arc()
+        .innerRadius(0)
+        .outerRadius(dimensions.boundedRadius + dimensions.margin * 0.8);
+
+      const temperatureColorScale = d3.scaleSequential()
+        .domain(d3.extent(
+          [...dataset.map(temperatureMinAccessor), ...dataset.map(temperatureMaxAccessor)]
+        ))
+        .interpolator(gradientColorScale)
+
+      function onMouseMove(event) {
+        const [x, y] = d3.pointer(event);
+        const theta = Math.atan2(y, x);
+        let angle = theta + Math.PI / 2;
+        if(angle < 0) {
+          angle += Math.PI * 2;
+        }
+
+        const date = angleScale.invert(angle);
+        const d = dataset.find(d => d3.timeFormat('%Y-%m-%d')(date) === d.date);
+
+        if(d) {
+          
+          arcGenerator
+          .startAngle(angle - 0.025)
+          .endAngle(angle + 0.025)
+
+        highlightPath
+          .style('opacity', 1)
+          .attr('d', arcGenerator)
+
+          const tooltipX =  Math.cos(theta) * (dimensions.boundedRadius + dimensions.margin * 0.7)
+          const tooltipY = Math.sin(theta) * (dimensions.boundedRadius + dimensions.margin * 0.7)
+
+          let translateX = `${dimensions.boundedRadius + dimensions.margin + tooltipX}px`;
+          if(tooltipX < 0) {
+            translateX = `calc(${translateX} - 100%)`
+          }
+
+          let translateY = `${dimensions.boundedRadius + dimensions.margin + tooltipY}px`;;
+          if(tooltipY < 0) {
+            translateY = `calc(${translateY} - 100%)`
+          }
+
+        tooltip
+          .style('opacity', 1)
+          .style('transform', `translate(${translateX}, ${translateY})`)
+
+          tooltip
+            .select('h2')
+            .text(formatDateTooltip(date))
+
+          const temperatureMin = temperatureMinAccessor(d)
+          const temperatureMax = temperatureMaxAccessor(d)
+            tooltip
+            .select('p')
+            .html(`<span style="color: ${temperatureColorScale(temperatureMin)}">${formatTemperatureTooltip(temperatureMin)}</span> - <span style="color: ${temperatureColorScale(temperatureMax)}">${formatTemperatureTooltip(temperatureMax)}</span>`)
+
+
+          const values = [
+            {
+              title: 'UV Index',
+              description: uvIndexAccessor(d),
+              color: '#feca57'
+            },
+            {
+              title: 'Cloud Cover',
+              description: formatCloudCoverTooltip(cloudCoverAccessor(d)),
+              color: '#c8d6e5'
+            },
+            {
+              title: 'Precipitation Probability',
+              description: formatPrecipProbabilityTooltip(precipProbabilityAccessor(d)),
+              color: 'currentColor'
+            },
+            {
+              title: 'Precipitation Type',
+              description: precipTypeAccessor(d),
+              color: precipTypeAccessor(d) ? precipTypeColorScale(precipTypeAccessor(d)) : ''
+            }
+          ];
+
+          tooltip
+            .select('dl')
+            .html(values
+              .filter(({description}) => description !== undefined)
+              .map(({title, description, color}) => `<dt style="border-left: 0.25rem solid ${color};">${title}</dt><dd>${description}</dd>`).join(''));
+        }
+
+
+      }
+
+      function onMouseLeave() {
+        highlightPath
+          .style('opacity', 0)
+
+          
+        tooltip
+        .style('opacity', 0);
+
+      }
+
+      bounds
+        .append('circle')
+        .attr('r', dimensions.boundedRadius + dimensions.margin)
+        .attr('fill', 'transparent')
+        .on('mousemove', onMouseMove)
+        .on('mouseleave', onMouseLeave)
 
 }
 
