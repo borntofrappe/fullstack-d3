@@ -8,8 +8,8 @@ async function drawRadarWeatherChart() {
   const temperatureMinAccessor = d => d.temperatureMin;
   const temperatureMaxAccessor = d => d.temperatureMax;
   const uvIndexAccessor = d => d.uvIndex;
-  const precipitationProbabilityAccessor = d => d.precipitationProbability;
-  const precipitationTypeAccessor = d => d.precipitationType;
+  const precipProbabilityAccessor = d => d.precipProbability;
+  const precipTypeAccessor = d => d.precipType;
   const cloudCoverAccessor = d => d.cloudCover;
 
   const formatDateMonth = d => d3.timeFormat('%b')(d)
@@ -18,7 +18,7 @@ async function drawRadarWeatherChart() {
   /* CHART DIMENSIONS */
   const dimensions = {
     size: 600,
-    margin: 80,
+    margin: 100,
   };
 
   dimensions.boundedSize = dimensions.size - (dimensions.margin * 2);
@@ -84,8 +84,8 @@ async function drawRadarWeatherChart() {
       .append('text')
       .attr('transform', d => {
         const angle = angleScale(d) - Math.PI / 2;
-        const x = Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.6)
-        const y = Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.6)
+        const x = Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.75)
+        const y = Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.75)
 
         return `translate(${x} ${y})`
       })
@@ -170,8 +170,75 @@ async function drawRadarWeatherChart() {
       .attr('d', temperatureAreaGenerator(dataset))
       .attr('fill', `url(#${gradientId})`)
 
+    const uvIndexGroup = bounds.append('g')
+    const uvIndexThreshold = 8;
+    const uvIndexData = dataset.filter(d => uvIndexAccessor(d) >= uvIndexThreshold)
+    const uvIndexStrokeLength = (radiusScale(temperatureTicks[1]) - radiusScale(temperatureTicks[0])) / 2;
+    const uvIndexY = radiusScale(temperatureTicks[temperatureTicks.length - 1]) - uvIndexStrokeLength / 2
+
+    uvIndexGroup
+      .selectAll('path')
+      .data(uvIndexData)
+      .enter()
+      .append('path')
+      .attr('transform', d => `rotate(${angleScale(dateAccessor(d)) * 180 / Math.PI})`)
+      .attr('d', `M 0 -${uvIndexY} v -${uvIndexStrokeLength}`)
+      .attr('fill', 'none')
+      .attr('stroke', '#feca57')
+      .attr('stroke-width', 3)
    
+
+    const cloudCoverRadiusScale = d3.scaleSqrt()
+    .domain(d3.extent(dataset, cloudCoverAccessor))
+    .range([1, 10])
+
+  const cloudCoverGroup = bounds.append('g');
+
+  cloudCoverGroup
+    .selectAll('circle')
+    .data(dataset)
+    .enter()
+    .append('circle')
+    .attr('transform', d => {
+      const angle = angleScale(dateAccessor(d)) - Math.PI / 2;
+      const x = Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.5);
+      const y = Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.5);
+
+      return `translate(${x} ${y})`
+    })
+    .attr('fill', '#c8d6e5')
+    .attr('r', d => cloudCoverRadiusScale(cloudCoverAccessor(d)))
+    .attr('opacity', 0.5)
+
   
+    const precipProbabilityRadiusScale = d3.scaleSqrt()
+    .domain(d3.extent(dataset, precipProbabilityAccessor))
+    .range([1, 8])
+
+    const precipTypes = ['rain', 'sleet', 'snow'];
+
+    const precipTypeColorScale = d3.scaleOrdinal()
+      .domain(precipTypes)
+      .range(["#54a0ff","#636e72","#b2bec3"])
+
+      const precipGroup = bounds.append('g');
+
+      precipGroup
+        .selectAll('circle')
+        .data(dataset.filter(precipTypeAccessor))
+        .enter()
+        .append('circle')
+        .attr('transform', d => {
+          const angle = angleScale(dateAccessor(d)) - Math.PI / 2;
+          const x = Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.3);
+          const y = Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.3);
+    
+          return `translate(${x} ${y})`
+        })
+        .attr('fill', d => precipTypeColorScale(precipTypeAccessor(d)))
+        .attr('r', (d, i) => precipProbabilityRadiusScale(precipProbabilityAccessor(d)))
+        .attr('opacity', 0.5)
+
 }
 
 drawRadarWeatherChart();
