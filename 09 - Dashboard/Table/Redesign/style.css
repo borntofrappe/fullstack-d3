@@ -69,12 +69,3 @@ table tbody tr:nth-of-type(2n) {
 table tbody tr:hover {
   background: hsl(210, 72%, 90%);
 }
-
-table svg {
-  width: 1em;
-  height: auto;
-}
-
-table span svg {
-  margin: 0 0.25em;
-}

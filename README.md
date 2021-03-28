@@ -1800,7 +1800,7 @@ In the script, the content is updated as follows:
 
 - the column describing the precipitation type is substituted with one detailing the presence, or lack, of snow. Snow is signalled with an icon instead of a label
 
-- the time describing the maximum temperature is represented through the horizontal position of a line instead of a label describing the hour
+- the time describing the maximum temperature is represented through the horizontal position of a line instead of a label describing the hour. Take notice that the field `temperatureMaxTime` details the number of seconds since the UNIX epoch, and as per [d3 own documentation](https://github.com/d3/d3-time-format#locale_format), it's possible to parse a date with the `%s` directive. The table designed in the book seems to use the `apparentTemperatureMaxTime` field, which explains the differences in the position of the line
 
 _Please note:_ considering the entire dataset, the risk is to having the table exceedingly wide. This is mostly due to two fields: summary and UV index. For the first field, the solution is to limit the width of the associated text. For the second field, one solution is to limit the number of icons associated with the index, and highlight a greater value with another visual.
 

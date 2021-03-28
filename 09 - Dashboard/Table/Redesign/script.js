@@ -16,19 +16,21 @@ async function drawDashboard() {
  `,
   };
 
-  const timeParseMilliseconds = d3.timeParse('%Q');
-  const timeFormatMilliseconds = d3.timeFormat('%-I %p');
+  const timeParseSeconds = d3.timeParse('%s');
   const timeParseDate = d3.timeParse('%Y-%m-%d');
+
   const timeFormatDate = d3.timeFormat('%-m/%d');
   const timeFormatHour = d3.timeFormat('%-H');
+  const timeFormatHourTwelveHours = d3.timeFormat('%-I %p');
 
   const formatTemperatureMax = d3.format('.1f');
   const formatWindSpeed = d3.format('.2f');
 
+  const strokeWidth = 1;
   const positionScale = d3
     .scaleLinear()
     .domain([0, 23])
-    .range([0, 100]);
+    .range([strokeWidth / 2, 100 - strokeWidth / 2]);
 
   const colorTemperatureMaxScale = d3
     .scaleLinear()
@@ -65,16 +67,16 @@ async function drawDashboard() {
       render: d => formatTemperatureMax(d),
     },
     {
-      key: 'temperatureMaxTime',
+      key: 'apparentTemperatureMaxTime',
       label: 'Max Temp Time',
       align: 'center',
-      // render: d => timeFormatMilliseconds(timeParseMilliseconds(d))
+      // render: d => timeFormatHourTwelveHours(timeParseSeconds(d)),
       render: d =>
-        `<span aria-label="${timeFormatMilliseconds(
-          timeParseMilliseconds(d)
+        `<span aria-label="${timeFormatHourTwelveHours(
+          timeParseSeconds(d)
         )}"><svg width="100" height="10" viewBox="0 0 100 10" style="width: 100%; height: auto;"><g transform="translate(${positionScale(
-          parseInt(timeFormatHour(timeParseMilliseconds(d)))
-        )} 0)"><path fill="none" stroke="currentColor" stroke-width="1" d="M 0 0 v 10" /></g></svg></span>`,
+          parseInt(timeFormatHour(timeParseSeconds(d)))
+        )} 0)"><path fill="none" stroke="currentColor" stroke-width="${strokeWidth}" d="M 0 0 v 10" /></g></svg></span>`,
     },
     {
       key: 'windSpeed',
