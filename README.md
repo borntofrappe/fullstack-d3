@@ -2113,35 +2113,232 @@ _Plese note:_ there are parts I elected not to document, hoping to focus on the 
 
 ### Radar Weather Chart
 
-The second complex visualization focuses on a radial line chart, studying the weather dataset through multiple metrics.
+The second complex visualization focuses on a radial line chart, studying the weather dataset through multiple metrics. The code is well worth a read, and what follows is but a few notes on the structure of the visualization and the D3 library.
 
 #### Peripherals
 
-- d3.timeMonths to create the months
+Before the actual data, the goal is to show the axis with a series of lines radiating from the center and describing the months of the dataset.
 
-- rotate path element to create angle lines (instead of computing the coordinates with cosine and sine functions)
+`d3.timeMonths` is useful to create an array of date objects, one for each month between the start and end date.
 
-- translate text elements at the end of the lines
+```js
+const months = d3.timeMonths(...angleScale.domain());
+```
 
-- grid lines based on the temperature, `ticks` function to create an array of values based on the scale
+Instead of computing the `x` and `y` coordinate of where the lines should end, the `<path>` element draws a straight line upwards, and then rotates the line from the center of the visualization.
+
+```js
+.attr('transform', d => `rotate(${(angleScale(d) * 180) / Math.PI})`)
+```
+
+The name of the months is included with a `<text>` element, and while it would be possible to position the elements with the `transform` attribute, the cosine and sine function are helpful to locate the rightful coordinates.
+
+```js
+const angle = angleScale(d) - Math.PI / 2;
+const x =
+  Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.62);
+const y =
+  Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.62);
+```
+
+The `text-anchor` attribute is modified to have the text aligned left, center or right according to its horizontal position.
+
+```js
+return Math.abs(x) < 5 ? 'middle' : x > 0 ? 'start' : 'end';
+```
+
+Past the axis, grid lines are included with a series of `<circle>` element, for a set of arbitrary temperatures. `d3.ticks` creates an array of values based on a scale, and it is here helpful to find the radius of the circles.
 
 ```js
 const temperatureTicks = radiusScale.ticks(4); // [20, 40, 60, 80, 100]
 ```
 
-- grid numbers with a solid background
+The ticks are represented with circles, but also `<text>` elements, positioned vertically and above a solid rectangle. The rectangle provides a background to avoid a visual conflict between labels and grid lines.
 
-#### Temperature
+#### Data
 
-- freezing temperature, conditional
+The radar chart describes multiple metrics, like the temperature, UV index, cloud cover and precipitation registered in the year.
 
-- radial area generator function
-
-- radial gradient with chromatic scale
+For the temperature, `d3.areaRadial` helps to build an area chart around the center.
 
 ```js
-temperatureGroup
-.append('circle')
-.attr('r', dimensions.boundedRadius)
-.attr('fill', `url(#${gradientId})`)
+const temperatureAreaGenerator = d3
+  .areaRadial()
+  .innerRadius((d) => radiusScale(temperatureMinAccessor(d)))
+  .outerRadius((d) => radiusScale(temperatureMaxAccessor(d)));
+```
+
+`innerRadius` and `outerRadius` describe the area below the line so that the visualization highlights the maximum and minimum temperatures.
+
+```js
+const temperatureAreaGenerator = d3
+  .areaRadial()
+  .angle((d) => angleScale(dateAccessor(d)));
+```
+
+`angle` refers to the date of each observation to complete the full circle one point at a time.
+
+The generator function already plots the desired shape.
+
+```js
+temperatureGroup.append('path').attr('d', temperatureAreaGenerator(dataset));
+```
+
+Instead of a solid fill, however, the code introduces a `<radialGradient>` element, similarly to the `<linearGradient>` of previous demos. The most important feature of the gradient is that the colors are picked from a chromatic scale of the `d3-scale-chromatic` module.
+
+```js
+const gradientColorScale = d3.interpolateYlOrRd;
+```
+
+For the UV index, the visualization focuses on a subset of the dataset, and those observations with an index greater than an arbitrary threshold.
+
+```js
+const uvIndexThreshold = 8;
+const uvIndexData = dataset.filter(
+  (d) => uvIndexAccessor(d) >= uvIndexThreshold
+);
+```
+
+The index is finally highlighted with `<path>` elements at the very edge of the chart.
+
+```js
+.append('path')
+.attr('d', `M 0 -${uvIndexY} v -${uvIndexStrokeLength}`)
+```
+
+Cloud cover is represented with `<circle>` elements of varying radius. The radius is relative to the value, as per the domain.
+
+```js
+.domain(d3.extent(dataset, cloudCoverAccessor))
+```
+
+It is important to highlight that the scale is here `scaleSqrt`. This is because the size of a circle is better understood in terms of area, and it is therefore preferable to change the radius with by squaring the metric.
+
+```js
+const cloudCoverRadiusScale = d3
+  .scaleSqrt()
+  .domain(d3.extent(dataset, cloudCoverAccessor))
+  .range([1, 10]);
+```
+
+pi is a constant, so that it is possible to focus on the squared relationship between area and radius.
+
+```code
+A = Math.PI * r ^ 2
+```
+
+Precipitation is described with `<circle>` elements, and through two metrics: type and probability. Starting with the probability, the metric is mapped to the size of the circles exactly like cloud cover.
+
+```js
+const precipProbabilityRadiusScale = d3
+  .scaleSqrt()
+  .domain(d3.extent(dataset, precipProbabilityAccessor))
+  .range([1, 8]);
+```
+
+The type is however included in the color of the circles, in the `fill` attribute, mapping the vlaue of the three known types (rain, sleet and snow).
+
+```js
+const precipTypes = ['rain', 'sleet', 'snow'];
+
+const precipTypeColorScale = d3
+  .scaleOrdinal()
+  .domain(precipTypes)
+  .range(['#54a0ff', '#636e72', '#b2bec3']);
+```
+
+The types are included with an ordinal scale, which maps a discrete domain to a discrete range (for instance `rain` is mapped to `#54a0ff`).
+
+#### Annotations
+
+Annotations are included a `<path>` and `<text>` element. The text is positioned outside of the radar chart, while the path points from a feature of the radar chart to the label itself. `drawAnnotation` is helpful to repeat the instructions for the different metrics.
+
+```js
+function drawAnnotation(angle, offset, text) {}
+```
+
+`offset` describe where the line should start, while `angle` refers to the position around the radar. Instead of using hard-coded angles, I opted to pick the angle from the dataset. This allows to point to actual values.
+
+```js
+drawAnnotation(
+  angleScale(dateAccessor(dataset[22])),
+  dimensions.boundedRadius + dimensions.margin * 0.5,
+  'Cloud Cover'
+);
+```
+
+The label for the UV index tends to exceed the limits of the `<svg>` container, and a quick solution is to alter the `overflow` property on the wrapping element.
+
+```css
+#wrapper svg {
+  overflow: visible;
+}
+```
+
+#### Interaction
+
+The tooltip highlilghts a specific date and its multiple metrics. The solution is different from that of the book, but again starts with a `<circle>` element with a transparent fill is overlaid on the radar chart, so that it is possible to listen to mouse events anywhere in the visualization.
+
+```js
+bounds
+  .append('circle')
+  .attr('r', dimensions.boundedRadius + dimensions.margin)
+  .attr('fill', 'transparent')
+  .on('mousemove', onMouseMove)
+  .on('mouseleave', onMouseLeave);
+```
+
+In the `event` received by the `mousemove` listener, it is possible to obtain the angle from the given `x` and `y` coordinates.
+
+```js
+const [x, y] = d3.pointer(event);
+const theta = Math.atan2(y, x);
+```
+
+`Math.atan2` provides the angle in radians, but in the `[-Math.PI, Math.PI]` range and starting from the left of the radar chart. For the visualization, it is however helpful for the value to be always positive, and starting from the top of the chart, as to describe an angle in the domain of the angle scale.
+
+```js
+let angle = theta + Math.PI / 2;
+if (angle < 0) {
+  angle += Math.PI * 2;
+}
+```
+
+A date is finally computed with the angle scale through the `invert` method.
+
+```js
+const date = angleScale.invert(angle);
+```
+
+The position of the tooltip is made relative to the center of the visualization.
+
+```js
+const translateX = `calc(${
+  dimensions.boundedRadius + dimensions.margin + tooltipX
+}px - 50%)`;
+
+const translateY = `calc(${
+  dimensions.boundedRadius + dimensions.margin + tooltipY
+}px - 50%)`;
+```
+
+The tooltip is then set to describe the metrics with a series of HTML elements:
+
+- a header describes the date through the month and day
+
+- a paragraph details the temperature ranges
+
+- a description list highlights the UV index, cloud cover and precipitation metrics. The `<dl>` element is helpful to nest the set of key-value pairs
+
+_Please note:_ instead of changing the color of the elements in the tooltip, I opted to change the color of a border. This is but a preference as I felt the text is more legible with a fixed, dark hue.
+
+_Please note:_ the angle is also used to generate the syntax for the `<path>` element connecting the tooltip to the center of the visualization. `d3.arc` function is here helpful to create the arc, considering the inner, outer radii and the start and end angles.
+
+```js
+const arcGenerator = d3
+  .arc()
+  .innerRadius(0)
+  .outerRadius(tooltipDistance)
+  .startAngle(angle - 0.02)
+  .endAngle(angle + 0.02);
 ```

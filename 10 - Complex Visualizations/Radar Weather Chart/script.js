@@ -1,3 +1,4 @@
+/* globals d3 */
 async function drawRadarWeatherChart() {
   /* ACCESS DATA */
   const dataset = await d3.json('../../nyc_weather_data.json');
@@ -53,14 +54,16 @@ async function drawRadarWeatherChart() {
 
   const defs = wrapper.append('defs');
   const gradientId = 'tempereature-gradient';
-  const stops = 10;
   const gradientColorScale = d3.interpolateYlOrRd;
+
+  const stops = 10;
   const stopData = Array(stops)
     .fill()
     .map((d, i, { length }) => ({
       color: gradientColorScale(i / (length - 1)),
       offset: `${(i * 100) / (length - 1)}%`,
     }));
+
   defs
     .append('radialGradient')
     .attr('id', gradientId)
@@ -71,10 +74,12 @@ async function drawRadarWeatherChart() {
     .attr('stop-color', d => d.color)
     .attr('offset', d => d.offset);
 
+  /* PERIPHERALS / 1 */
   const peripheralsGroup = bounds.append('g');
-  const axisGroup = peripheralsGroup.append('g');
 
+  const axisGroup = peripheralsGroup.append('g');
   const months = d3.timeMonths(...angleScale.domain());
+
   axisGroup
     .append('g')
     .selectAll('path')
@@ -166,6 +171,7 @@ async function drawRadarWeatherChart() {
     .attr('dominant-baseline', 'middle')
     .attr('opacity', 0.75);
 
+  /* DATA */
   const temperatureGroup = bounds.append('g');
   const freezingTemperature = 32;
   if (radiusScale.domain()[0] <= freezingTemperature) {
@@ -203,21 +209,21 @@ async function drawRadarWeatherChart() {
     .data(uvIndexData)
     .enter()
     .append('path')
+    .attr('d', `M 0 -${uvIndexY} v -${uvIndexStrokeLength}`)
     .attr(
       'transform',
       d => `rotate(${(angleScale(dateAccessor(d)) * 180) / Math.PI})`
     )
-    .attr('d', `M 0 -${uvIndexY} v -${uvIndexStrokeLength}`)
     .attr('fill', 'none')
     .attr('stroke', '#feca57')
     .attr('stroke-width', 3);
+
+  const cloudCoverGroup = bounds.append('g');
 
   const cloudCoverRadiusScale = d3
     .scaleSqrt()
     .domain(d3.extent(dataset, cloudCoverAccessor))
     .range([1, 10]);
-
-  const cloudCoverGroup = bounds.append('g');
 
   cloudCoverGroup
     .selectAll('circle')
@@ -237,6 +243,7 @@ async function drawRadarWeatherChart() {
     .attr('r', d => cloudCoverRadiusScale(cloudCoverAccessor(d)))
     .attr('opacity', 0.5);
 
+  const precipGroup = bounds.append('g');
   const precipProbabilityRadiusScale = d3
     .scaleSqrt()
     .domain(d3.extent(dataset, precipProbabilityAccessor))
@@ -248,8 +255,6 @@ async function drawRadarWeatherChart() {
     .scaleOrdinal()
     .domain(precipTypes)
     .range(['#54a0ff', '#636e72', '#b2bec3']);
-
-  const precipGroup = bounds.append('g');
 
   precipGroup
     .selectAll('circle')
@@ -269,6 +274,7 @@ async function drawRadarWeatherChart() {
     .attr('r', d => precipProbabilityRadiusScale(precipProbabilityAccessor(d)))
     .attr('opacity', 0.5);
 
+  /* PERIPHERALS / 2 */
   const annotationsGroup = bounds.append('g');
 
   function drawAnnotation(angle, offset, text) {
@@ -361,12 +367,12 @@ async function drawRadarWeatherChart() {
     .append('path')
     .attr('fill', '#8395a7')
     .attr('fill-opacity', 0.4);
-  // .style('mix-blend-mode', 'multiply')
 
+  const tooltipDistance = dimensions.boundedRadius + dimensions.margin + 50;
   const arcGenerator = d3
     .arc()
     .innerRadius(0)
-    .outerRadius(dimensions.boundedRadius + dimensions.margin * 0.8);
+    .outerRadius(tooltipDistance);
 
   const temperatureColorScale = d3
     .scaleSequential()
@@ -392,28 +398,20 @@ async function drawRadarWeatherChart() {
     );
 
     if (d) {
-      arcGenerator.startAngle(angle - 0.025).endAngle(angle + 0.025);
+      arcGenerator.startAngle(angle - 0.02).endAngle(angle + 0.02);
 
       highlightPath.style('opacity', 1).attr('d', arcGenerator);
 
-      const tooltipX =
-        Math.cos(theta) * (dimensions.boundedRadius + dimensions.margin * 0.7);
-      const tooltipY =
-        Math.sin(theta) * (dimensions.boundedRadius + dimensions.margin * 0.7);
+      const tooltipX = Math.cos(theta) * tooltipDistance;
+      const tooltipY = Math.sin(theta) * tooltipDistance;
 
-      let translateX = `${dimensions.boundedRadius +
+      const translateX = `calc(${dimensions.boundedRadius +
         dimensions.margin +
-        tooltipX}px`;
-      if (tooltipX < 0) {
-        translateX = `calc(${translateX} - 100%)`;
-      }
+        tooltipX}px - 50%)`;
 
-      let translateY = `${dimensions.boundedRadius +
+      const translateY = `calc(${dimensions.boundedRadius +
         dimensions.margin +
-        tooltipY}px`;
-      if (tooltipY < 0) {
-        translateY = `calc(${translateY} - 100%)`;
-      }
+        tooltipY}px - 50%)`;
 
       tooltip
         .style('opacity', 1)
@@ -455,10 +453,10 @@ async function drawRadarWeatherChart() {
         },
         {
           title: 'Precipitation Type',
-          description: precipTypeAccessor(d),
+          description: precipTypeAccessor(d) || '',
           color: precipTypeAccessor(d)
             ? precipTypeColorScale(precipTypeAccessor(d))
-            : '',
+            : '#bccad2',
         },
       ];
 
