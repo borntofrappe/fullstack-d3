@@ -92,6 +92,7 @@ async function drawScatterplot() {
 
     bounds
       .append('circle')
+      .style('pointer-events', 'none')
       .attr('id', 'tooltipCircle')
       .attr('fill', 'maroon')
       .attr('r', 6)
