@@ -53,10 +53,10 @@ async function drawAnimatedSankey() {
 
   const dimensions = {
     width: 1000,
-    height: 500,
+    height: 520,
     margin: {
       top: 10,
-      right: 200,
+      right: 180,
       bottom: 10,
       left: 120,
     },
@@ -114,10 +114,105 @@ const bounds = wrapper
   // .attr('d', d => linkGenerator(d))
   .attr('d', linkGenerator)
   .attr('fill', 'none')
-  .attr('stroke', 'currentColor')
+  .attr('stroke', 'white')
   .attr('stroke-width', dimensions.pathHeight)
 
+  /* PERIPHERALS */
+  const peripheralsGroup = bounds.append('g')
+  const startLabelGroup = peripheralsGroup.append('g').attr('transform', 'translate(-8, 0)')
+  .attr('text-anchor', 'end')
+  .attr('fill', 'currentColor')
+  
+  const startLabel = startLabelGroup
+    .append('text')
+    .attr('font-size', 12)
+    .attr('y', startYScale(sesIds[sesIds.length - 1]) - 64)
+    
+  startLabel
+    .append('tspan')
+    .text('Socioeconomic')
+  startLabel
+    .append('tspan')
+    .attr('x', 0)
+    .attr('dy', 16)
+    .text('Status')
 
+  startLabelGroup
+    .append('g')
+    .attr('dominant-baseline', 'middle')
+    .attr('font-size', 15)
+    .selectAll('text')
+    .data(sesIds)
+    .enter()
+    .append('text')
+    .text(d => sesNames[d])
+    .attr('y', d => startYScale(d))
+    .style('text-transform', 'capitalize')
+
+    const endLabelGroup = peripheralsGroup.append('g').attr('transform', `translate(${dimensions.boundedWidth + 12}, 0)`)
+    .attr('text-anchor', 'start')
+    .attr('fill', 'currentColor')
+    
+    const endLabelGroups = endLabelGroup
+      .selectAll('g')
+      .data(educationIds)
+      .enter()
+      .append('g')
+      .attr('transform', d => `translate(0 ${endYScale(d) - dimensions.pathHeight / 2 + 12})`);
+
+      endLabelGroups
+      .append('text')
+      .attr('font-size', 15)
+      .text(d => educationNames[d])
+      .style('text-transform', 'capitalize')
+
+      const endLabelFemaleGroup = endLabelGroups
+        .append('g')
+        .attr('transform', 'translate(5 14)')
+
+      endLabelFemaleGroup
+      .append('circle')
+      .attr('opacity', 0.5)
+      .attr('r', 5)
+
+      endLabelFemaleGroup
+      .append('g')
+      .attr('transform', 'translate(20 1)')
+      .attr('font-size', 12)
+      .attr('dominant-baseline', 'middle')
+      .selectAll('text')
+      .data(d => Array(sesIds.length).fill().map((datum, i) => `v--1--${i}--${d}`))
+      .enter()
+      .append('text')
+      .attr('id', d => d)
+      .text(0)
+      .attr('transform', (d, i) => `translate(${24 * i} 0)`)
+
+      const endLabelMaleGroup = endLabelGroups
+      .append('g')
+      .attr('transform', 'translate(5 30)');
+
+
+      endLabelMaleGroup
+      .append('path')
+      .attr('opacity', 0.5)
+      .attr('d', 'M -6 5 L 6 5 0 -5')
+
+      endLabelMaleGroup
+      .append('g')
+      .attr('transform', 'translate(20 1)')
+      .attr('font-size', 12)
+      .attr('dominant-baseline', 'middle')
+      .selectAll('text')
+      .data(d => Array(sesIds.length).fill().map((datum, i) => `v--0--${i}--${d}`))
+      .enter()
+      .append('text')
+      .attr('id', d => d)
+      .text(0)
+      .attr('transform', (d, i) => `translate(${24 * i} 0)`)
+
+
+      d3.select('#v--0--0--5').text(12)
 }
 
 drawAnimatedSankey();

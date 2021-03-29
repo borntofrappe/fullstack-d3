@@ -2402,3 +2402,9 @@ bounds
 - d3.merge to create the necessary combinations; the function is useful to flatten nested arrays
 
 - d3.curveMonotoneX to smoothen the paths (linear interpolation by default)
+
+- peripherals
+  
+  - start coordinates, values with an heading explaining the values (socioeconomic status)
+  
+  - end coordinates, values, but also additional text elements to populate with the visualization results (one number for each person, distinguished by gender and socio-economic status). `id` attribute distinguishing the labels with the combination 'v--0--0--0' describing the value for gender, economic status and finally educational attainment 
