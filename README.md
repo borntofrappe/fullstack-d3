@@ -2348,3 +2348,25 @@ const arcGenerator = d3
 - dataset from https://nces.ed.gov/programs/digest/d14/tables/dt14_104.91.asp
 
 - education.json describing the starting data; for each category (sex and socio-economic status) the object details the percentages of achieved education (totalling 100%)
+
+- the goal is to create a person with three integer values
+
+```js
+{
+  sex: 0,
+  ses: 0,
+  education: 0
+}
+```
+
+This particular person is a female with low economic status who left the education system before high school
+
+helpful to have integers for scales
+
+- data accessors for sex; create an array describing the possible values, an array mapping integers to said values (based on their index, with d3.range())
+
+- similar accessor for education and economic status
+
+- `generatePerson` considering the cumulative probability of the education levels. `Math.random() < cumulative`
+
+- d3.bisect returns the index of where the value would fit in the array
