@@ -2342,3 +2342,9 @@ const arcGenerator = d3
   .startAngle(angle - 0.02)
   .endAngle(angle + 0.02);
 ```
+
+### Animated Sankey Diagram
+
+- dataset from https://nces.ed.gov/programs/digest/d14/tables/dt14_104.91.asp
+
+- education.json describing the starting data; for each category (sex and socio-economic status) the object details the percentages of achieved education (totalling 100%)

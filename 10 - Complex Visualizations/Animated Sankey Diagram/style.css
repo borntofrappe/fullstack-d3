@@ -1,0 +1,19 @@
+@font-face {
+  font-family: 'Inter var';
+  src: url('../../Inter.var.woff2');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: hsl(200, 17%, 92%);
+  color: hsl(210, 29%, 15%);
+  font-family: 'Inter var', sans-serif;
+}
