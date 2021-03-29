@@ -2370,3 +2370,35 @@ helpful to have integers for scales
 - `generatePerson` considering the cumulative probability of the education levels. `Math.random() < cumulative`
 
 - d3.bisect returns the index of where the value would fit in the array
+
+- draw path with thick stroke; three starting y coordinates, six y ending positions, connected with a curved line
+
+- x scale plotting the progress from 0 to 1 to the width, clamped
+
+- one y scale (starting point) considering the socioeconomic status; evenly spaced one value before/after the actual domain ([3, -1], to also map higher statuses higher)
+
+- one y scale (ending point) considering the educational attainment; again expanding the domain
+
+- d3.line to create the necessary syntax, mapping the possible combinations (0 to 0, 0 to 1, ... 1 to 0 and so forth); line made of 6 points, where the first three map to the starting y value, the last three to the ending coordinate; line function receives an array with the socioeconomic and education values
+
+```js
+const example = [
+  [0, 5],
+  [0, 5],
+  [0, 5],
+  [0, 5],
+  [0, 5],
+  [0, 5],
+];
+
+bounds
+  .append('path')
+  .attr('d', linkGenerator(example))
+  .attr('fill', 'none')
+  .attr('stroke', 'currentColor')
+  .attr('stroke-width', dimensions.pathHeight);
+```
+
+- d3.merge to create the necessary combinations; the function is useful to flatten nested arrays
+
+- d3.curveMonotoneX to smoothen the paths (linear interpolation by default)

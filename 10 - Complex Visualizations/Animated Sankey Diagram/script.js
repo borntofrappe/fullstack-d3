@@ -1,7 +1,7 @@
 async function drawAnimatedSankey() {
+  /* ACCESS DATA */
   const dataset = await d3.json('./education.json');
 
-  
   const sexAccessor = d => d.sex;
   const sexNames = ['female', 'male']
   const sexIds = d3.range(sexNames.length)
@@ -28,8 +28,6 @@ async function drawAnimatedSankey() {
     return accDataset;
   }, {});
 
-  console.table(stackedProbabilities);
-
 
   const getRandomValue = (array) => array[Math.floor(Math.random() * array.length)];
 
@@ -50,9 +48,74 @@ async function drawAnimatedSankey() {
     }
 
   }
-  
-  console.table(generatePerson())
 
+  /* CHART DIMENSIONS */
+
+  const dimensions = {
+    width: 1000,
+    height: 500,
+    margin: {
+      top: 10,
+      right: 200,
+      bottom: 10,
+      left: 120,
+    },
+    pathHeight: 50
+  }
+
+  dimensions.boundedWidth = dimensions.width - (dimensions.margin.left + dimensions.margin.right)
+  dimensions.boundedHeight = dimensions.height - (dimensions.margin.top + dimensions.margin.bottom)
+
+  /* SCALES */
+  const xScale = d3.scaleLinear()
+    .domain([0, 1])
+    .range([0, dimensions.boundedWidth])
+    .clamp(true);
+
+    const startYScale = d3.scaleLinear()
+    .domain([sesIds.length, -1])
+    .range([0, dimensions.boundedHeight])
+
+    const endYScale = d3.scaleLinear()
+    .domain([educationIds.length, -1])
+    .range([0, dimensions.boundedHeight])
+
+  const linkPoints = 6;
+  const linkGenerator = d3
+    .line()
+    .x((d, i) => i * dimensions.boundedWidth / (linkPoints - 1))
+    .y((d, i) => i < linkPoints / 2 ? startYScale(d[0]) : endYScale(d[1]))
+    .curve(d3.curveMonotoneX)
+
+  const linkOptions = d3.merge(sesIds.map(startId => educationIds.map(endId => Array(linkPoints).fill([startId, endId]))))
+
+  /* DRAW DATA */
+  const wrapper = d3
+  .select('#wrapper')
+  .append('svg')
+  .attr('width', dimensions.width)
+  .attr('height', dimensions.height)
+  .attr('viewBox', [0, 0, dimensions.width, dimensions.height]);
+
+const bounds = wrapper
+  .append('g')
+  .attr(
+    'transform',
+    `translate(${dimensions.margin.left} ${dimensions.margin.top})`
+  )
+
+  const linksGroup = bounds.append('g')
+
+  linksGroup
+  .selectAll('path')
+  .data(linkOptions)
+  .enter()
+  .append('path')
+  // .attr('d', d => linkGenerator(d))
+  .attr('d', linkGenerator)
+  .attr('fill', 'none')
+  .attr('stroke', 'currentColor')
+  .attr('stroke-width', dimensions.pathHeight)
 
 
 }
