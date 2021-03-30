@@ -70,6 +70,11 @@ async function drawAnimatedSankey() {
   dimensions.boundedHeight = dimensions.height - (dimensions.margin.top + dimensions.margin.bottom)
 
   /* SCALES */
+  const colorScale = d3.scaleLinear()
+  .domain(d3.extent(sesIds))
+  .range(['#12CBC4', '#B53471'])
+  .interpolate(d3.interpolateHcl);
+
   const xScale = d3.scaleLinear()
     .domain([0, 1])
     .range([0, dimensions.boundedWidth])
@@ -122,7 +127,7 @@ const bounds = wrapper
 
   /* PERIPHERALS */
   const peripheralsGroup = bounds.append('g')
-  const startLabelGroup = peripheralsGroup.append('g').attr('transform', 'translate(-8, 0)')
+  const startLabelGroup = peripheralsGroup.append('g').attr('transform', 'translate(-16, 0)')
   .attr('text-anchor', 'end')
   .attr('fill', 'currentColor')
   
@@ -186,27 +191,32 @@ const bounds = wrapper
       .attr('font-size', 12)
       .attr('dominant-baseline', 'middle')
       .selectAll('text')
-      .data(d => Array(sesIds.length).fill().map((datum, i) => `v--1--${i}--${d}`))
+      .data(d => Array(sesIds.length).fill().map((datum, i) => ({
+        id: `v--1--${i}--${d}`,
+        ses: i,
+        offset: 24 * i
+      })))
       .enter()
       .append('text')
-      .attr('id', d => d)
+      .attr('fill', d => colorScale(sesAccessor(d)))
+      .attr('id', d => d.id)
       .text(0)
-      .attr('transform', (d, i) => `translate(${24 * i} 0)`)
+      .attr('transform', (d) => `translate(${d.offset} 0)`)
 
       const endLabelMaleGroup = endLabelGroups
       .append('g')
       .attr('transform', 'translate(5 30)');
 
-      const pathTriangle = [
+      const pointsTriangle = [
         [-6, 5],
         [6, 5],
         [0, -5],
       ].join(',')
 
       endLabelMaleGroup
-      .append('path')
+      .append('polygon')
       .attr('opacity', 0.5)
-      .attr('d', `M ${pathTriangle}`)
+      .attr('points', pointsTriangle)
 
       endLabelMaleGroup
       .append('g')
@@ -214,12 +224,17 @@ const bounds = wrapper
       .attr('font-size', 12)
       .attr('dominant-baseline', 'middle')
       .selectAll('text')
-      .data(d => Array(sesIds.length).fill().map((datum, i) => `v--0--${i}--${d}`))
+      .data(d => Array(sesIds.length).fill().map((datum, i) => ({
+        id: `v--0--${i}--${d}`,
+        ses: i,
+        offset: 24 * i
+      })))
       .enter()
       .append('text')
-      .attr('id', d => d)
+      .attr('fill', d => colorScale(sesAccessor(d)))
+      .attr('id', d => d.id)
       .text(0)
-      .attr('transform', (d, i) => `translate(${24 * i} 0)`)
+      .attr('transform', (d) => `translate(${d.offset} 0)`)
 
 
     const markersGroup = bounds.append('g');
@@ -239,23 +254,29 @@ const bounds = wrapper
       people.push(generatePerson(elapsed));
       const updateFemales = markersGroup
         .selectAll('.marker-circle')
-        .data(people.filter(d =>sexAccessor(d) === 0));
+        .data(people.filter(d =>sexAccessor(d) === 0 && xProgressAccessor(elapsed, d) < 1));
 
       updateFemales
         .enter()
         .append('circle')
+        .attr('fill', d => colorScale(sesAccessor(d)))
         .attr('class', 'marker marker-circle')
         .attr('r', radiusCircle)
 
+      updateFemales
+        .exit()
+        .remove()
+
       const updateMale = markersGroup
         .selectAll('.marker-triangle')
-        .data(people.filter(d =>sexAccessor(d) === 1));
+        .data(people.filter(d =>sexAccessor(d) === 1 && xProgressAccessor(elapsed, d) < 1));
 
       updateMale
         .enter()
-        .append('path')
+        .append('polygon')
+        .attr('fill', d => colorScale(sesAccessor(d)))
         .attr('class', 'marker marker-triangle')
-        .attr('d', `M ${pathTriangle}`)
+        .attr('points', pointsTriangle)
 
       
       d3.selectAll('.marker')
@@ -274,10 +295,38 @@ const bounds = wrapper
       
 
       
-      if(elapsed > time * 2) {
+      if(elapsed > time * 1.5) {
         timer.stop()
       }
     }
+
+
+
+    const barsWidth = 14;
+    const barsGroup = bounds.append('g').attr('fill', 'currentColor');
+    barsGroup
+      .append('g')
+      .selectAll('rect')
+      .data(sesIds)
+      .enter()
+      .append('rect')
+      .attr('fill', d => colorScale(d))
+      .attr('x', -barsWidth / 2)
+      .attr('width', barsWidth)
+      .attr('y', d => startYScale(d) - dimensions.pathHeight / 2)
+      .attr('height', dimensions.pathHeight)
+
+      // barsGroup
+      // .append('g')
+      // .selectAll('rect')
+      // .data(educationIds)
+      // .enter()
+      // .append('rect')
+      // .attr('x', dimensions.boundedWidth -barsWidth / 2)
+      // .attr('width', barsWidth)
+      // .attr('y', d => endYScale(d) - dimensions.pathHeight / 2)
+      // .attr('height', dimensions.pathHeight)
+
 
 }
 
