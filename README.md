@@ -2442,3 +2442,7 @@ yprogress
 ! probabilities is off by one, as the array considers 0
 
 - color scale with an interpolate function to have the color in the hcl (same perceived lightness) space
+
+- id to differentiate data binding (otherwise d3 recycles existing elements, repositioning them back at the beginning)
+
+- id to target text labels
