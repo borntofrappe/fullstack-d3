@@ -73,12 +73,13 @@ async function drawAnimatedSankey() {
     height: 520,
     margin: {
       top: 10,
-      right: 180,
+      right: 200,
       bottom: 10,
       left: 120,
     },
     pathHeight: 50,
     barWidth: 14,
+    barPadding: 2,
   };
 
   dimensions.boundedWidth =
@@ -184,7 +185,7 @@ async function drawAnimatedSankey() {
 
   const endLabelGroup = peripheralsGroup
     .append('g')
-    .attr('transform', `translate(${dimensions.boundedWidth + 20}, 0)`)
+    .attr('transform', `translate(${dimensions.boundedWidth + 32}, 0)`)
     .attr('text-anchor', 'start')
     .attr('fill', 'currentColor');
 
@@ -204,73 +205,100 @@ async function drawAnimatedSankey() {
     .text(d => educationNames[d])
     .style('text-transform', 'capitalize');
 
-  const endLabelFemaleGroup = endLabelGroups
-    .append('g')
-    .attr('transform', 'translate(5 14)');
-
   const radiusCircle = 5;
 
-  endLabelFemaleGroup
+  endLabelGroups
     .append('circle')
     .attr('opacity', 0.5)
-    .attr('r', radiusCircle);
-
-  endLabelFemaleGroup
-    .append('g')
-    .attr('transform', 'translate(20 1)')
-    .attr('font-size', 12)
-    .attr('dominant-baseline', 'middle')
-    .selectAll('text')
-    .data(d =>
-      Array(sesIds.length)
-        .fill()
-        .map((datum, i) => ({
-          id: `v--0--${i}--${d}`,
-          ses: i,
-          offset: 24 * i,
-        }))
-    )
-    .enter()
-    .append('text')
-    .attr('fill', d => colorScale(sesAccessor(d)))
-    .attr('id', d => d.id)
-    .text(0)
-    .attr('transform', d => `translate(${d.offset} 0)`);
-
-  const endLabelMaleGroup = endLabelGroups
-    .append('g')
-    .attr('transform', 'translate(5 30)');
+    .attr('r', radiusCircle)
+    .attr('transform', 'translate(5 14)');
 
   const pointsTriangle = [[-6, 5], [6, 5], [0, -5]].join(',');
 
-  endLabelMaleGroup
+  endLabelGroups
     .append('polygon')
     .attr('opacity', 0.5)
-    .attr('points', pointsTriangle);
-
-  endLabelMaleGroup
-    .append('g')
-    .attr('transform', 'translate(20 1)')
-    .attr('font-size', 12)
-    .attr('dominant-baseline', 'middle')
-    .selectAll('text')
-    .data(d =>
-      Array(sesIds.length)
-        .fill()
-        .map((datum, i) => ({
-          id: `v--1--${i}--${d}`,
-          ses: i,
-          offset: 24 * i,
-        }))
-    )
-    .enter()
-    .append('text')
-    .attr('fill', d => colorScale(sesAccessor(d)))
-    .attr('id', d => d.id)
-    .text(0)
-    .attr('transform', d => `translate(${d.offset} 0)`);
+    .attr('points', pointsTriangle)
+    .attr('transform', 'translate(5 30)');
 
   const markersGroup = bounds.append('g');
+
+  const startingBarsGroup = bounds.append('g');
+  startingBarsGroup
+    .selectAll('rect')
+    .data(sesIds)
+    .enter()
+    .append('rect')
+    .attr('fill', d => colorScale(d))
+    .attr('x', -dimensions.barWidth / 2)
+    .attr('width', dimensions.barWidth)
+    .attr('y', d => startYScale(d) - dimensions.pathHeight / 2)
+    .attr('height', dimensions.pathHeight);
+
+  const legendGroup = bounds
+    .append('g')
+    .attr('fill', 'currentColor')
+    .attr(
+      'transform',
+      `translate(${dimensions.boundedWidth - dimensions.barWidth} ${endYScale(
+        educationIds[educationIds.length - 1]
+      ) -
+        dimensions.pathHeight / 2})`
+    );
+
+  const maleLegendGroup = legendGroup
+    .append('g')
+    .attr(
+      'transform',
+      `translate(${dimensions.barWidth +
+        dimensions.barPadding +
+        dimensions.barWidth / 2} 0)`
+    );
+  maleLegendGroup
+    .append('path')
+    .attr('d', 'M 0 -5 v -15')
+    .attr('fill', 'none')
+    .attr('stroke', 'currentColor')
+    .attr('stroke-width', 0.5);
+
+  maleLegendGroup
+    .append('polygon')
+    .attr('transform', `translate(0 -30)`)
+    .attr('points', pointsTriangle)
+    .attr('opacity', 0.5);
+
+  maleLegendGroup
+    .append('text')
+    .attr('transform', `translate(12 -30)`)
+    .attr('text-anchor', 'start')
+    .attr('dominant-baseline', 'middle')
+    .attr('font-size', 11)
+    .text('Male');
+
+  const femaleLegendGroup = legendGroup
+    .append('g')
+    .attr('transform', `translate(${dimensions.barWidth / 2} 0)`);
+  femaleLegendGroup
+    .append('path')
+    .attr('d', 'M 0 -5 v -15')
+    .attr('fill', 'none')
+    .attr('stroke', 'currentColor')
+    .attr('stroke-width', 0.5);
+
+  femaleLegendGroup
+    .append('circle')
+    .attr('transform', `translate(0 -30)`)
+    .attr('r', radiusCircle)
+    .attr('opacity', 0.5);
+
+  femaleLegendGroup
+    .append('text')
+    .attr('transform', `translate(-12 -30)`)
+    .attr('text-anchor', 'end')
+    .attr('dominant-baseline', 'middle')
+    .attr('font-size', 11)
+    .text('Female');
+
   let people = [];
 
   let timer;
@@ -281,7 +309,91 @@ async function drawAnimatedSankey() {
     .clamp(true);
 
   const time = 5000;
+  const generations = 5;
   const xProgressAccessor = (elapsed, d) => (elapsed - d.startTime) / time;
+
+  const dataMetrics = educationIds.map(() =>
+    sexIds.map(() => sesIds.map(() => 0))
+  );
+
+  const metricsGroup = bounds
+    .append('g')
+    .attr('transform', `translate(${dimensions.boundedWidth} 0)`);
+
+  const heightScale = d3.scaleLinear().range([0, dimensions.pathHeight]);
+
+  function highlightMetrics(metrics) {
+    const data = d3.merge(
+      metrics.map((education, educationId) =>
+        d3.merge(
+          education.map((sex, sexId) => {
+            const total = sex.reduce((acc, curr) => acc + curr, 0);
+            heightScale.domain([0, total]);
+
+            return sex.reduce((acc, curr, sesId) => {
+              const height = heightScale(curr);
+              const y1 = acc[acc.length - 1] ? acc[acc.length - 1].y2 : 0;
+              const y2 = y1 + height;
+
+              return [
+                ...acc,
+                {
+                  sex: sexId,
+                  education: educationId,
+                  ses: sesId,
+                  count: curr,
+                  total,
+                  height,
+                  y1,
+                  y2,
+                },
+              ];
+            }, []);
+          })
+        )
+      )
+    );
+
+    metricsGroup
+      .selectAll('rect')
+      .data(data)
+      .join('rect')
+      // .style('transition','all 0.25s ease-out')
+      .attr(
+        'transform',
+        d =>
+          `translate(${-dimensions.barWidth +
+            (dimensions.barWidth + dimensions.barPadding) * d.sex} ${endYScale(
+            d.education
+          ) -
+            dimensions.pathHeight / 2})`
+      )
+      .attr('width', dimensions.barWidth)
+      .attr('fill', d => (d.total ? colorScale(d.ses) : '#dadadd'))
+      .attr('y', d => (d.total ? d.y1 : 0))
+      .attr('height', d => (d.total ? d.height : dimensions.pathHeight));
+
+    metricsGroup
+      .selectAll('text')
+      .data(data)
+      .join('text')
+      .text(d => d.count)
+      .attr(
+        'transform',
+        d =>
+          `translate(${32 + 28 + d.ses * 32} ${12 +
+            15 +
+            endYScale(d.education) -
+            dimensions.pathHeight / 2 +
+            16 * d.sex})`
+      )
+      .attr('fill', d => colorScale(d.ses))
+      .attr('font-size', 13)
+      .attr('font-weight', 500)
+      .attr('dominant-baseline', 'middle');
+  }
+
+  highlightMetrics(dataMetrics);
 
   function updateMarkers(elapsed) {
     people = [
@@ -324,8 +436,10 @@ async function drawAnimatedSankey() {
       .exit()
       .merge(updateMale.exit())
       .each(({ sex, ses, education }) => {
-        const id = `#v--${sex}--${ses}--${education}`;
-        d3.select(id).text(parseInt(d3.select(id).text()) + 1);
+        dataMetrics[education][sex][ses] += 1;
+      })
+      .call(() => {
+        highlightMetrics(dataMetrics);
       })
       .remove();
 
@@ -341,25 +455,12 @@ async function drawAnimatedSankey() {
       return `translate(${x} ${y})`;
     });
 
-    if (elapsed > time * 1.5) {
+    if (elapsed > time * generations) {
       timer.stop();
     }
   }
 
   timer = d3.timer(updateMarkers);
-
-  const barsGroup = bounds.append('g').attr('fill', 'currentColor');
-  barsGroup
-    .append('g')
-    .selectAll('rect')
-    .data(sesIds)
-    .enter()
-    .append('rect')
-    .attr('fill', d => colorScale(d))
-    .attr('x', -dimensions.barWidth / 2)
-    .attr('width', dimensions.barWidth)
-    .attr('y', d => startYScale(d) - dimensions.pathHeight / 2)
-    .attr('height', dimensions.pathHeight);
 }
 
 drawAnimatedSankey();
