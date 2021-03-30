@@ -91,7 +91,7 @@ async function drawAnimatedSankey() {
   const colorScale = d3
     .scaleLinear()
     .domain(d3.extent(sesIds))
-    .range(['#12CBC4', '#B53471'])
+    .range(['hsl(178, 84%, 43%)', 'hsl(332, 55%, 46%)'])
     .interpolate(d3.interpolateHcl);
 
   const xScale = d3
@@ -162,6 +162,7 @@ async function drawAnimatedSankey() {
   const startLabel = startLabelGroup
     .append('text')
     .attr('font-size', 12)
+    .attr('fill', ' hsl(215, 10%, 56%)')
     .attr('y', startYScale(sesIds[sesIds.length - 1]) - 64);
 
   startLabel.append('tspan').text('Socioeconomic');
@@ -175,6 +176,7 @@ async function drawAnimatedSankey() {
     .append('g')
     .attr('dominant-baseline', 'middle')
     .attr('font-size', 15)
+    .attr('font-weight', 700)
     .selectAll('text')
     .data(sesIds)
     .enter()
@@ -202,6 +204,7 @@ async function drawAnimatedSankey() {
   endLabelGroups
     .append('text')
     .attr('font-size', 15)
+    .attr('font-weight', 700)
     .text(d => educationNames[d])
     .style('text-transform', 'capitalize');
 
@@ -209,7 +212,7 @@ async function drawAnimatedSankey() {
 
   endLabelGroups
     .append('circle')
-    .attr('opacity', 0.5)
+    .attr('fill', 'hsl(215, 10%, 56%)')
     .attr('r', radiusCircle)
     .attr('transform', 'translate(5 14)');
 
@@ -217,7 +220,7 @@ async function drawAnimatedSankey() {
 
   endLabelGroups
     .append('polygon')
-    .attr('opacity', 0.5)
+    .attr('fill', 'hsl(215, 10%, 56%)')
     .attr('points', pointsTriangle)
     .attr('transform', 'translate(5 30)');
 
@@ -237,7 +240,7 @@ async function drawAnimatedSankey() {
 
   const legendGroup = bounds
     .append('g')
-    .attr('fill', 'currentColor')
+    .attr('fill', ' hsl(215, 10%, 56%)')
     .attr(
       'transform',
       `translate(${dimensions.boundedWidth - dimensions.barWidth} ${endYScale(
@@ -265,7 +268,7 @@ async function drawAnimatedSankey() {
     .append('polygon')
     .attr('transform', `translate(0 -30)`)
     .attr('points', pointsTriangle)
-    .attr('opacity', 0.5);
+    .attr('fill', 'hsl(215, 10%, 56%)');
 
   maleLegendGroup
     .append('text')
@@ -289,7 +292,7 @@ async function drawAnimatedSankey() {
     .append('circle')
     .attr('transform', `translate(0 -30)`)
     .attr('r', radiusCircle)
-    .attr('opacity', 0.5);
+    .attr('fill', 'hsl(215, 10%, 56%)');
 
   femaleLegendGroup
     .append('text')
@@ -358,7 +361,7 @@ async function drawAnimatedSankey() {
       .selectAll('rect')
       .data(data)
       .join('rect')
-      // .style('transition','all 0.25s ease-out')
+      .style('transition','all 0.25s ease-out')
       .attr(
         'transform',
         d =>
@@ -369,7 +372,7 @@ async function drawAnimatedSankey() {
             dimensions.pathHeight / 2})`
       )
       .attr('width', dimensions.barWidth)
-      .attr('fill', d => (d.total ? colorScale(d.ses) : '#dadadd'))
+      .attr('fill', d => (d.total ? colorScale(d.ses) : 'hsl(240, 4%, 86%)'))
       .attr('y', d => (d.total ? d.y1 : 0))
       .attr('height', d => (d.total ? d.height : dimensions.pathHeight));
 
@@ -389,7 +392,7 @@ async function drawAnimatedSankey() {
       )
       .attr('fill', d => colorScale(d.ses))
       .attr('font-size', 13)
-      .attr('font-weight', 500)
+      .attr('font-weight', 600)
       .attr('dominant-baseline', 'middle');
   }
 

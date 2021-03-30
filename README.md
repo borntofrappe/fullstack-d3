@@ -2445,4 +2445,6 @@ yprogress
 
 - id to differentiate data binding (otherwise d3 recycles existing elements, repositioning them back at the beginning)
 
-- id to target text labels
+- data updated every time d3 removes the exit selection
+
+- updatemetrics responsible for flattening the dataset and including/managing rectangle elements and text elements for every combination

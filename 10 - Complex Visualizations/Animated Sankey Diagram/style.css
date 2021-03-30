@@ -14,6 +14,41 @@ body {
   display: grid;
   place-items: center;
   background: hsl(200, 17%, 92%);
-  color: hsl(210, 29%, 15%);
+  color: hsl(212, 17%, 20%);
   font-family: 'Inter var', sans-serif;
+}
+
+#root {
+  margin: 1rem;
+}
+
+#root > * + * {
+  margin-top: 1rem;
+}
+
+header {
+  text-align: center;
+}
+
+h2 {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+p {
+  margin: 1rem auto;
+  max-width: 550px;
+  line-height: 1.5;
+  font-size: 0.95rem;
+  color: hsl(215, 10%, 56%);
+}
+
+footer {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: hsl(215, 10%, 56%);
+}
+
+a {
+  color: inherit;
 }
