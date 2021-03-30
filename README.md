@@ -2408,3 +2408,36 @@ bounds
   - start coordinates, values with an heading explaining the values (socioeconomic status)
   
   - end coordinates, values, but also additional text elements to populate with the visualization results (one number for each person, distinguished by gender and socio-economic status). `id` attribute distinguishing the labels with the combination 'v--0--0--0' describing the value for gender, economic status and finally educational attainment 
+
+- d3.timer to update the position of markers (circles and triangles). First argument a callback function, called until the timer is stopped with .stop(). Function receives as argument the number of milliseconds elapsed since start; d3.timer leans on requestAnimationFrame
+
+```js
+const timer = d3.timer(updateMarkers)
+function updateMarkers(elapsed) {
+  // add, update markers
+
+  if(elapsed > 1000) {
+    timer.stop();
+  }
+
+}
+```
+
+- generatePerson receives the elapsed number of milliseconds as a start time, to then compare with elapsed to move persons at different times
+
+```js
+d3.selectAll('.marker')
+  .attr('transform', (d) => `translate(${-10 + (elapsed - d.startTime)} ${startYScale(sesAccessor(d))})`)
+```
+
+vertically the idea is to follow one of the paths. With a scale convert the [0, 1] progress to a y coordinate. Map to a percentage insteead of a coordinate, to later use the percentage in the vertical offset
+
+asssuming a fixed number of seconds
+
+xprogress
+yprogress
+
+! probabilities is off by one, as the array considers 0
+
+
+

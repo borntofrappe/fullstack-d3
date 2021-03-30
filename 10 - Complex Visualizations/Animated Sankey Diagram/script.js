@@ -24,14 +24,15 @@ async function drawAnimatedSankey() {
     const probabilities = educationNames.reduce((accEducation, currEducation, i) => {
       return [...accEducation, i < educationNames.length - 1 ? accEducation[accEducation.length - 1] + currDataset[currEducation] / 100 : 1];
     }, [0]);
-    accDataset[key] = probabilities;
+    accDataset[key] = probabilities.slice(1);
     return accDataset;
   }, {});
 
 
   const getRandomValue = (array) => array[Math.floor(Math.random() * array.length)];
+  const getRandomNumberInRange = (min, max) => Math.random() * (max - min) + min;
 
-  function generatePerson() {
+  function generatePerson(elapsed) {
     const sex = getRandomValue(sexIds);
     const ses = getRandomValue(sesIds);
 
@@ -44,7 +45,9 @@ async function drawAnimatedSankey() {
     return {
       sex,
       ses,
-      education
+      education,
+      startTime: elapsed,
+      yJitter: getRandomNumberInRange(-15, 15)
     }
 
   }
@@ -170,10 +173,12 @@ const bounds = wrapper
         .append('g')
         .attr('transform', 'translate(5 14)')
 
+      const radiusCircle = 5;
+
       endLabelFemaleGroup
       .append('circle')
       .attr('opacity', 0.5)
-      .attr('r', 5)
+      .attr('r', radiusCircle)
 
       endLabelFemaleGroup
       .append('g')
@@ -192,11 +197,16 @@ const bounds = wrapper
       .append('g')
       .attr('transform', 'translate(5 30)');
 
+      const pathTriangle = [
+        [-6, 5],
+        [6, 5],
+        [0, -5],
+      ].join(',')
 
       endLabelMaleGroup
       .append('path')
       .attr('opacity', 0.5)
-      .attr('d', 'M -6 5 L 6 5 0 -5')
+      .attr('d', `M ${pathTriangle}`)
 
       endLabelMaleGroup
       .append('g')
@@ -212,7 +222,63 @@ const bounds = wrapper
       .attr('transform', (d, i) => `translate(${24 * i} 0)`)
 
 
-      d3.select('#v--0--0--5').text(12)
+    const markersGroup = bounds.append('g');
+    let people = [];
+
+    const timer = d3.timer(updateMarkers)
+
+    const yProgressScale = d3.scaleLinear()
+      .domain([0.45, 0.55])
+      .range([0, 1])
+      .clamp(true);
+
+      const time = 5000;
+    const xProgressAccessor = (elapsed, d) => (elapsed - d.startTime) / time
+
+    function updateMarkers(elapsed) {
+      people.push(generatePerson(elapsed));
+      const updateFemales = markersGroup
+        .selectAll('.marker-circle')
+        .data(people.filter(d =>sexAccessor(d) === 0));
+
+      updateFemales
+        .enter()
+        .append('circle')
+        .attr('class', 'marker marker-circle')
+        .attr('r', radiusCircle)
+
+      const updateMale = markersGroup
+        .selectAll('.marker-triangle')
+        .data(people.filter(d =>sexAccessor(d) === 1));
+
+      updateMale
+        .enter()
+        .append('path')
+        .attr('class', 'marker marker-triangle')
+        .attr('d', `M ${pathTriangle}`)
+
+      
+      d3.selectAll('.marker')
+        .attr('transform', (d) => {
+          const xProgress = xProgressAccessor(elapsed, d);
+          const x = xScale(xProgress)
+          const yStart = startYScale(sesAccessor(d))
+          const yEnd = endYScale(educationAccessor(d))
+          const yGap = yEnd - yStart;
+          const yProgress = yProgressScale(xProgress);
+          const y = yStart + (yGap * yProgress) + d.yJitter
+          
+          return `translate(${x} ${y})`
+        })
+
+      
+
+      
+      if(elapsed > time * 2) {
+        timer.stop()
+      }
+    }
+
 }
 
 drawAnimatedSankey();
