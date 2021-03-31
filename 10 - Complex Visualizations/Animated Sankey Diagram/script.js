@@ -67,7 +67,6 @@ async function drawAnimatedSankey() {
   }
 
   /* CHART DIMENSIONS */
-
   const dimensions = {
     width: 1000,
     height: 520,
@@ -145,7 +144,6 @@ async function drawAnimatedSankey() {
     .data(linkOptions)
     .enter()
     .append('path')
-    // .attr('d', d => linkGenerator(d))
     .attr('d', linkGenerator)
     .attr('fill', 'none')
     .attr('stroke', 'white')
@@ -212,6 +210,7 @@ async function drawAnimatedSankey() {
 
   endLabelGroups
     .append('circle')
+    .attr('opacity', 0.5)
     .attr('fill', 'hsl(215, 10%, 56%)')
     .attr('r', radiusCircle)
     .attr('transform', 'translate(5 14)');
@@ -220,11 +219,13 @@ async function drawAnimatedSankey() {
 
   endLabelGroups
     .append('polygon')
+    .attr('opacity', 0.5)
     .attr('fill', 'hsl(215, 10%, 56%)')
     .attr('points', pointsTriangle)
     .attr('transform', 'translate(5 30)');
 
   const markersGroup = bounds.append('g');
+  const metricsGroup = bounds.append('g');
 
   const startingBarsGroup = bounds.append('g');
   startingBarsGroup
@@ -249,6 +250,31 @@ async function drawAnimatedSankey() {
         dimensions.pathHeight / 2})`
     );
 
+  const femaleLegendGroup = legendGroup
+    .append('g')
+    .attr('transform', `translate(${dimensions.barWidth / 2} 0)`);
+  femaleLegendGroup
+    .append('path')
+    .attr('d', 'M 0 -5 v -15')
+    .attr('fill', 'none')
+    .attr('stroke', 'currentColor')
+    .attr('stroke-width', 0.5);
+
+  femaleLegendGroup
+    .append('circle')
+    .attr('opacity', 0.5)
+    .attr('transform', `translate(0 -30)`)
+    .attr('r', radiusCircle)
+    .attr('fill', 'hsl(215, 10%, 56%)');
+
+  femaleLegendGroup
+    .append('text')
+    .attr('transform', `translate(-12 -30)`)
+    .attr('text-anchor', 'end')
+    .attr('dominant-baseline', 'middle')
+    .attr('font-size', 11)
+    .text('Female');
+
   const maleLegendGroup = legendGroup
     .append('g')
     .attr(
@@ -266,6 +292,7 @@ async function drawAnimatedSankey() {
 
   maleLegendGroup
     .append('polygon')
+    .attr('opacity', 0.5)
     .attr('transform', `translate(0 -30)`)
     .attr('points', pointsTriangle)
     .attr('fill', 'hsl(215, 10%, 56%)');
@@ -278,50 +305,12 @@ async function drawAnimatedSankey() {
     .attr('font-size', 11)
     .text('Male');
 
-  const femaleLegendGroup = legendGroup
-    .append('g')
-    .attr('transform', `translate(${dimensions.barWidth / 2} 0)`);
-  femaleLegendGroup
-    .append('path')
-    .attr('d', 'M 0 -5 v -15')
-    .attr('fill', 'none')
-    .attr('stroke', 'currentColor')
-    .attr('stroke-width', 0.5);
-
-  femaleLegendGroup
-    .append('circle')
-    .attr('transform', `translate(0 -30)`)
-    .attr('r', radiusCircle)
-    .attr('fill', 'hsl(215, 10%, 56%)');
-
-  femaleLegendGroup
-    .append('text')
-    .attr('transform', `translate(-12 -30)`)
-    .attr('text-anchor', 'end')
-    .attr('dominant-baseline', 'middle')
-    .attr('font-size', 11)
-    .text('Female');
-
-  let people = [];
-
-  let timer;
-  const yProgressScale = d3
-    .scaleLinear()
-    .domain([0.45, 0.55])
-    .range([0, 1])
-    .clamp(true);
-
-  const time = 5000;
-  const generations = 5;
-  const xProgressAccessor = (elapsed, d) => (elapsed - d.startTime) / time;
-
+  /* METRICS */
   const dataMetrics = educationIds.map(() =>
     sexIds.map(() => sesIds.map(() => 0))
   );
 
-  const metricsGroup = bounds
-    .append('g')
-    .attr('transform', `translate(${dimensions.boundedWidth} 0)`);
+  metricsGroup.attr('transform', `translate(${dimensions.boundedWidth} 0)`);
 
   const heightScale = d3.scaleLinear().range([0, dimensions.pathHeight]);
 
@@ -335,8 +324,9 @@ async function drawAnimatedSankey() {
 
             return sex.reduce((acc, curr, sesId) => {
               const height = heightScale(curr);
-              const y1 = acc[acc.length - 1] ? acc[acc.length - 1].y2 : 0;
-              const y2 = y1 + height;
+              const y = acc[acc.length - 1]
+                ? acc[acc.length - 1].y - height
+                : dimensions.pathHeight - height;
 
               return [
                 ...acc,
@@ -347,8 +337,7 @@ async function drawAnimatedSankey() {
                   count: curr,
                   total,
                   height,
-                  y1,
-                  y2,
+                  y,
                 },
               ];
             }, []);
@@ -361,7 +350,7 @@ async function drawAnimatedSankey() {
       .selectAll('rect')
       .data(data)
       .join('rect')
-      .style('transition','all 0.25s ease-out')
+      .style('transition', 'all 0.25s ease-out')
       .attr(
         'transform',
         d =>
@@ -373,7 +362,7 @@ async function drawAnimatedSankey() {
       )
       .attr('width', dimensions.barWidth)
       .attr('fill', d => (d.total ? colorScale(d.ses) : 'hsl(240, 4%, 86%)'))
-      .attr('y', d => (d.total ? d.y1 : 0))
+      .attr('y', d => (d.total ? d.y : 0))
       .attr('height', d => (d.total ? d.height : dimensions.pathHeight));
 
     metricsGroup
@@ -396,7 +385,19 @@ async function drawAnimatedSankey() {
       .attr('dominant-baseline', 'middle');
   }
 
-  highlightMetrics(dataMetrics);
+  /* PEOPLE */
+  let people = [];
+
+  let timer;
+  const yProgressScale = d3
+    .scaleLinear()
+    .domain([0.45, 0.55])
+    .range([0, 1])
+    .clamp(true);
+
+  const time = 5000;
+  const generations = 5;
+  const xProgressAccessor = (elapsed, d) => (elapsed - d.startTime) / time;
 
   function updateMarkers(elapsed) {
     people = [
@@ -411,9 +412,10 @@ async function drawAnimatedSankey() {
     updateFemales
       .enter()
       .append('circle')
-      .attr('fill', d => colorScale(sesAccessor(d)))
       .attr('class', 'marker marker-circle')
+      .attr('fill', d => colorScale(sesAccessor(d)))
       .attr('r', radiusCircle)
+      .style('mix-blend-mode', 'multiply')
       .style('opacity', 0)
       .transition()
       .duration(200)
@@ -426,10 +428,10 @@ async function drawAnimatedSankey() {
     updateMale
       .enter()
       .append('polygon')
-      .style('mix-blend-mode', 'multiply')
-      .attr('fill', d => colorScale(sesAccessor(d)))
       .attr('class', 'marker marker-triangle')
+      .attr('fill', d => colorScale(sesAccessor(d)))
       .attr('points', pointsTriangle)
+      .style('mix-blend-mode', 'multiply')
       .style('opacity', 0)
       .transition()
       .duration(200)
@@ -463,6 +465,7 @@ async function drawAnimatedSankey() {
     }
   }
 
+  highlightMetrics(dataMetrics);
   timer = d3.timer(updateMarkers);
 }
 

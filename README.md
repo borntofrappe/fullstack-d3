@@ -2345,11 +2345,13 @@ const arcGenerator = d3
 
 ### Animated Sankey Diagram
 
-- dataset from https://nces.ed.gov/programs/digest/d14/tables/dt14_104.91.asp
+The third visualization tries to convey data by animating a series of elements. Starting from [data examining educational attainment as a function of gender and socioeconomic status](https://nces.ed.gov/programs/digest/d14/tables/dt14_104.91.asp), the goal is to have circles and triangles move from one end of the screen to the other following a specific path. The path connects the economic status (one of three possible options) to the education level (one of six options) .
 
-- education.json describing the starting data; for each category (sex and socio-economic status) the object details the percentages of achieved education (totalling 100%)
+#### Data
 
-- the goal is to create a person with three integer values
+The mentioned source provides the data behind `education.json`. For each category describing the starting data; for each combination of gender and socioeconomic status, an object details the level of education achieved. The level is expressed through a percentage, so that all possible categories tally to 100%.
+
+From `education.json`, the goal is to create a person with an object describing the three metrics: sex, socioeconomic status (henceforth ses) and education. The metrics are repurposed to be integers, which helps mapping the value to the visualization.
 
 ```js
 {
@@ -2359,27 +2361,88 @@ const arcGenerator = d3
 }
 ```
 
-This particular person is a female with low economic status who left the education system before high school
+The person in the snippet is a female with low economic status who left the education system before high school.
 
-helpful to have integers for scales
+Data accessor functions are accompanied with two arrays, one describing the possible options, in the desired order, and one describing the integer values.
 
-- data accessors for sex; create an array describing the possible values, an array mapping integers to said values (based on their index, with d3.range())
+```js
+const sexAccessor = (d) => d.sex;
+const sexNames = ['female', 'male'];
+const sexIds = d3.range(sexNames.length);
+```
 
-- similar accessor for education and economic status
+`d3.range` helps creating an array of integer starting from `0` up to, and not including, the input integer.
 
-- `generatePerson` considering the cumulative probability of the education levels. `Math.random() < cumulative`
+To create a person, `generatePerson` picks a random value for the sex and ses metrics. For the education then, it considers the cumulative probability of the education for the specific sex-ses combination. `stackedProbabilities` uses a `reduce` function to describe the probabilities of each combination with an object.
 
-- d3.bisect returns the index of where the value would fit in the array
+```js
+{
+  ["female--high"]: [
+    0,
+    0.018000000000000002,
+    0.21900000000000003,
+    0.281,
+    0.34,
+    1
+  ],
+  // ...
+}
+```
 
-- draw path with thick stroke; three starting y coordinates, six y ending positions, connected with a curved line
+With the computed values, it is enough for `generatePerson` to compute a random value between zero and one, and then find where the value would fit in the array. `d3.bisect` returns this index.
 
-- x scale plotting the progress from 0 to 1 to the width, clamped
+```js
+// stacked probabilities for the specific sex-ses combination
+const probabilities = stackedProbabilities[key];
+// 0-1
+const probability = Math.random();
+// index
+const education = d3.bisect(probabilities, probability);
+```
 
-- one y scale (starting point) considering the socioeconomic status; evenly spaced one value before/after the actual domain ([3, -1], to also map higher statuses higher)
+#### Paths
 
-- one y scale (ending point) considering the educational attainment; again expanding the domain
+The idea is to draw lines connecting the edges of the visualization, connecting every possible ses to every possible education level. This is achieved with three scales:
 
-- d3.line to create the necessary syntax, mapping the possible combinations (0 to 0, 0 to 1, ... 1 to 0 and so forth); line made of 6 points, where the first three map to the starting y value, the last three to the ending coordinate; line function receives an array with the socioeconomic and education values
+- an horizontal scale mapping values in the `[0, 1]` interval to the bounded width
+
+  ```js
+  const xScale = d3
+    .scaleLinear()
+    .domain([0, 1])
+    .range([0, dimensions.boundedWidth])
+    .clamp(true);
+  ```
+
+  The domain is chosen to have the progress of the shapes describe their position. From zero to one, from the left to the right of the bounded dimensions.
+
+  `.clamp` helps to constrain the value to the range. Smaller values than `0` will still be mapped to `0` while greater values than `1` will be mapped to `dimensions.boundedWidth`
+
+- a vertical scale describing the starting coordinate
+
+  ```js
+  const startYScale = d3
+    .scaleLinear()
+    .domain([sesIds.length, -1])
+    .range([0, dimensions.boundedHeight]);
+  ```
+
+  The scale is based on the ses value.
+
+- a vertical scale describing the ending `y` position
+
+  ```js
+  const endYScale = d3
+    .scaleLinear()
+    .domain([educationIds.length, -1])
+    .range([0, dimensions.boundedHeight]);
+  ```
+
+  The scale is based on the education level.
+
+Both vertical scales include a domain which exceeds the dimensions of the array, to ultimately provide some padding on either side.
+
+With these scales, the line generator function receives an array of points. The points are created with an arbitrary number of arrays, connecting the values by repeating the ses and education values. For instance, the link connecting the `low` ses to the `Bachelor and Up` education is represented as follows.
 
 ```js
 const example = [
@@ -2390,7 +2453,19 @@ const example = [
   [0, 5],
   [0, 5],
 ];
+```
 
+Receiving these points, `d3.line` uses the index for the horizontal coordinate, while choosing the first or second value for the vertical counterpart.
+
+```js
+const linkGenerator = d3
+  .line()
+  .y((d, i) => (i < linkPoints / 2 ? startYScale(d[0]) : endYScale(d[1])));
+```
+
+For the first half the function considers the start scale, while the rest of the points are mapped with the end scale, effectively connecting the desired pair.
+
+```js
 bounds
   .append('path')
   .attr('d', linkGenerator(example))
@@ -2399,52 +2474,331 @@ bounds
   .attr('stroke-width', dimensions.pathHeight);
 ```
 
-- d3.merge to create the necessary combinations; the function is useful to flatten nested arrays
-
-- d3.curveMonotoneX to smoothen the paths (linear interpolation by default)
-
-- peripherals
-
-  - start coordinates, values with an heading explaining the values (socioeconomic status)
-
-  - end coordinates, values, but also additional text elements to populate with the visualization results (one number for each person, distinguished by gender and socio-economic status). `id` attribute distinguishing the labels with the combination 'v--0--0--0' describing the value for gender, economic status and finally educational attainment
-
-- d3.timer to update the position of markers (circles and triangles). First argument a callback function, called until the timer is stopped with .stop(). Function receives as argument the number of milliseconds elapsed since start; d3.timer leans on requestAnimationFrame
+`d3.merge` helps to create the necessary combinations, as it is useful to flatten a 2D array considering the ses and education values.
 
 ```js
-const timer = d3.timer(updateMarkers);
-function updateMarkers(elapsed) {
-  // add, update markers
-
-  if (elapsed > 1000) {
-    timer.stop();
-  }
-}
-```
-
-- generatePerson receives the elapsed number of milliseconds as a start time, to then compare with elapsed to move persons at different times
-
-```js
-d3.selectAll('.marker').attr(
-  'transform',
-  (d) =>
-    `translate(${-10 + (elapsed - d.startTime)} ${startYScale(sesAccessor(d))})`
+d3.merge(
+  sesIds.map((startId) =>
+    educationIds.map((endId) => Array(linkPoints).fill([startId, endId]))
+  )
 );
 ```
 
-vertically the idea is to follow one of the paths. With a scale convert the [0, 1] progress to a y coordinate. Map to a percentage insteead of a coordinate, to later use the percentage in the vertical offset
+`d3.curveMonotoneX` is finally useful to smoothen the lines, in favor of the default linear interpolation.
 
-asssuming a fixed number of seconds
+```j
+d3
+  .line()
+  .curve(d3.curveMonotoneX);
+```
 
-xprogress
-yprogress
+_Please note:_ the following two lines are equivalent.
 
-! probabilities is off by one, as the array considers 0
+```js
+// .attr('d', d => linkGenerator(d))
+.attr('d', linkGenerator)
+```
 
-- color scale with an interpolate function to have the color in the hcl (same perceived lightness) space
+`linkGenerator` receives the array of points to return the desired syntax. The second option is more concise, while the first is more clear as to the argument of the function.
 
-- id to differentiate data binding (otherwise d3 recycles existing elements, repositioning them back at the beginning)
+#### Peripherals
 
-- data updated every time d3 removes the exit selection
+Text elements are included at either end of the visualization, describing the ses and education values.
 
-- updatemetrics responsible for flattening the dataset and including/managing rectangle elements and text elements for every combination
+Additional elements are included later as metrics, with a series of bars and text labels highlighting how many reached the specific end.
+
+#### People
+
+People are described through two basic shapes:
+
+- circles with a given radius
+
+  ```html
+  <circle r="5" />
+  ```
+
+- triangles with a series of points
+
+  ```html
+  <polygon points="-6,5,6,5,0,-5" />
+  ```
+
+The idea is to create a person in a loop, and map the specific gender to either shape. `d3.timer` is here the essential function; it receives as argument a callback function which is called iteratively until the timer is stopped.
+
+```js
+d3.timer(updateMarkers);
+```
+
+The function itself receives as argument the number of milliseconds elapsed since the timer is first initiated.
+
+```js
+function updateMarkers(elapsed) {}
+```
+
+_Please note:_ in the code I've chosen to stop the timer after a fixed number of generations.
+
+```js
+const time = 5000;
+const generations = 5;
+let timer;
+function updateMarkers(elapsed) {
+  if (elapsed > time * generations) {
+    timer.stop();
+  }
+}
+
+timer = d3.timer(updateMarkers);
+```
+
+`time` is used to describe the amount of time it takes for a shape to move from end to end. The horizontal coordinate is increased through the `elapsed` number of milliseconds divided by `5000`, meaning a complete animation last roughly five seconds.
+
+Horizontally, the position is updated through the mentioned `elapsed` argument and the arbitrary `time` value. However, and in order to move shapes independent of each other, it is necessary to attribute each shape a starting time. The value is passed to `generatePerson` so that the difference between `elapsed` and `startTime` provides the time for the specific circle or triangle.
+
+```js
+function generatePerson(elapsed) {
+  eturn {
+    // previous fields
+    startTime: elapsed,
+  };
+}
+```
+
+Based on the difference, `xProgressAccessor` computes a value in the `[0, 1]` interval which is then passed to the horizontal scale.
+
+Vertically, the code is slightly more complex, but can be understood as follows: the shapes need to consider first the coordinate of the ses value, then that of the education level. The idea is to:
+
+- use the `y` coordinate of where the shape should start
+
+  ```js
+  const yStart = startYScale(sesAccessor(d));
+  ```
+
+- compute the difference in height, between the final and starting position
+
+  ```js
+  const yEnd = endYScale(educationAccessor(d));
+  const yGap = yEnd - yStart;
+  ```
+
+- incorporate the gap gradually and in the central portion of the visualization.
+
+  ```js
+  const yProgress = yProgressScale(xProgress);
+  const y = yStart + yGap * yProgress;
+  ```
+
+  This last step contemplates a scale, mapping the horizontal coordinate to `[0, 1]`, between a value of `0.45` and `0.55`
+
+  ```js
+  const yProgressScale = d3
+    .scaleLinear()
+    .domain([0.45, 0.55])
+    .range([0, 1])
+    .clamp(true);
+  ```
+
+  By clamping the value, the function returns `0` up until the horizontal coordinate reaches 45% of the bounded width. The value is then interpolated up to `1`, where it stays from 55% to the end of the visualization.
+
+It is not immediately clear, but it is helpful to compare the scale to the horizontal scale. Just as `xScale` applies the `[0,1]` progress to the bounded width, `yProgressScale` applies the `[0,1]` progress to the vertical gap.
+
+#### Data Binding
+
+`people` is created as an array to consider every possible person. It is updated in the function called by `d3.timer` to include a new person at every iteration.
+
+```js
+people = [...people, generatePerson(elapsed)];
+```
+
+The collection is also modified to filter out the shapes which have completed the horizontal translation.
+
+```js
+people = [
+  ...people.filter((d) => xProgressAccessor(elapsed, d) < 1),
+  generatePerson(elapsed),
+];
+```
+
+By filtering out the elements, data binding introduces an enter, update and exit selection. Enter for new shapes, update for existing ones (to-be-moved horizontally) and exit for those no longer represented.
+
+```js
+markersGroup.selectAll('.marker-circle').data(people);
+```
+
+The selection is actually split in two, so to represent the male and female category with different shapes.
+
+```js
+const updateFemales = markersGroup
+  .selectAll('.marker-circle')
+  .data(people.filter((d) => sexAccessor(d) === 0));
+```
+
+For new shapes, the enter selections introduce circles and triangles with a specific class of `.marker`
+
+```js
+updateFemales.enter().append('circle').attr('class', 'marker marker-circle');
+
+updateMale.enter().append('polygon').attr('class', 'marker marker-triangle');
+```
+
+The class is helpful to target the shapes, regardless of gender, and udpate their position.
+
+```js
+d3.selectAll('.marker').attr('transform', (d) => {
+  // compute x and y
+  return `translate(${x} ${y})`;
+});
+```
+
+For old shapes, the exit selections are merged so to remove both circles and triangles which have completed their path.
+
+```js
+updateFemales.exit().merge(updateMale.exit()).remove();
+```
+
+This is enough to have D3 manage a collection of elements of equal size of `people`. However, it is essential to stress how the data is bound in the update selection. Beside the data, included as an array of either male/female persons, the `.data` function receives a key accessor function, which defaults to the index in the array.
+
+```js
+const updateFemales = markersGroup.selectAll('.marker-circle').data(
+  people.filter((d) => sexAccessor(d) === 0),
+  (d, i) => i
+);
+```
+
+By using the index, the library essentially recycles old elements instead of creating new ones. For the project, the end result is that the shapes flicker in color, as the circles and triangles are repositioned from the end of the visualization.
+
+To assign elements to a single data point, the code is updated so that the key accessor function refers to a unique id.
+
+```js
+const updateFemales = markersGroup.selectAll('.marker-circle').data(
+  people.filter((d) => sexAccessor(d) === 0),
+  (d) => d.id
+);
+```
+
+The `id` is included for each person as a unique value.
+
+```js
+let currentPersonId = 0;
+function generatePerson(elapsed) {
+  currentPersonId += 1;
+  return {
+    // previous fields
+    id: currentPersonId,
+  };
+}
+```
+
+#### Metrics
+
+While the movement of the people is already informative <!-- and intriguing -->, it is helpful to highlight the number of people by highlighting their different status. This is achieved in two ways:
+
+- with `<text>` labels, included below each education level and separated vertically by gender, horizontally and through color by ses
+
+- with `<rect>` elements, stacked above each other in two bar charts. The goal is to have the ses for each gender highlighted with stacked rectangles
+
+Metrics are actually a point where the implementation of this repository differs from that of the book. `highlightMetrics` is the function responsible for creating and updating the different elements. The function is called each time D3 removes the element of the exit selection, taking advantage of the `selection.call` method.
+
+```js
+updateFemales
+  .exit()
+  .merge(updateMale.exit())
+  .call(() => {
+    highlightMetrics(dataMetrics);
+  });
+```
+
+For the data, `dataMetrics` is created to describe every possible combination in layers: education, gender, ses.
+
+```js
+const dataMetrics = educationIds.map(() =>
+  sexIds.map(() => sesIds.map(() => 0))
+);
+```
+
+The three dimensional array is then updated with the exit selection, but this time through the `selection.each` method. The function is called for every element, and increments the data by index.
+
+```js
+updateFemales
+  .exit()
+  .merge(updateMale.exit())
+  .each(({ sex, ses, education }) => {
+    dataMetrics[education][sex][ses] += 1;
+  });
+```
+
+The end result is finally passed `highlightMetrics`, which proceeds to massage the data in a one-dimensional array.
+
+The goal is to here have an array with one object for every possible combination, describing gender, ses, education, but also additional helper values.
+
+```js
+/*
+{
+  sex,
+  education,
+  ses,
+  count,
+  total,
+  height,
+  y,
+}
+*/
+```
+
+I'll refer you to the code for how the values are computed — especially the `height` value and `y` coordinate, using a scale with a variable domain — but in order of usefulness:
+
+- `count` is helpful to describe how many people are registered in the specific object
+
+- `total` considers every person with the same ses, and is useful to change the color of the stacked columns. It is only with people in the same gender/education pair that the rectangles are colored and sectioned according to economic status
+
+- `height`, `y` allow to position the rectangle elements
+
+#### Final remarks
+
+The visualization includes other features I elected not to document in detail:
+
+- shapes are modified in their `y` coordinate to avoid excessive overlap. This is achieved by assigning an arbitrary offset once a person is generated
+
+```js
+function generatePerson(elapsed) {
+  return {
+    // previous fields
+    yJitter: getRandomNumberInRange(-15, 15),
+  };
+}
+```
+
+- a color scale maps the ses value to a color between two values
+
+  ```js
+  const colorScale = d3
+    .scaleLinear()
+    .domain(d3.extent(sesIds))
+    .range(['hsl(178, 84%, 43%)', 'hsl(332, 55%, 46%)']);
+  ```
+
+  An interpolator function is useful to have the color in the hcl color space, which means the choices have the same perceived lightness
+
+  ```js
+  const colorScale = d3.scaleLinear().interpolate(d3.interpolateHcl);
+  ```
+
+- a legend is included above the rectangles describing the stacked bars. This one highlights the split between male (triangles) and female (circles) category
+
+- the rectangles and text elements responsible for the metrics are included with the `.join` method.
+
+  ```js
+  metricsGroup.selectAll('rect').data(data).join('rect');
+
+  metricsGroup.selectAll('text').data(data).join('text');
+  ```
+
+  The function works as a conveinence method for the update-enter-exit pattern. `join` allows to append the necessary element, as through the enter selection, and update their position, as through the update selection.
+
+- the rectangles making up the stacked bars are instructed to animate in every property.
+
+  The effect depends on browser support, but helps to transition the size, position and even color of the shapes
+
+  ```js
+  .join('rect')
+  .style('transition', 'all 0.25s ease-out')
+  ```
