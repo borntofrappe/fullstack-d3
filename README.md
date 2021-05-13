@@ -1,6 +1,6 @@
-# Fullstack D3
+# Fullstack d3
 
-[_Fullstack D3_](https://www.newline.co/fullstack-d3) is an incredibly informative book from [_Amelia Wattenberger_](https://wattenberger.com/) devoted to the D3 library. With this folder I replicate the examples provided in the book, and annotate the lessons learned in the process.
+[_Fullstack d3_](https://www.newline.co/fullstack-d3) is an incredibly informative book from [_Amelia Wattenberger_](https://wattenberger.com/) devoted to the d3 library. With this folder I replicate the examples provided in the book, and annotate the lessons learned in the process.
 
 _Please note:_
 
@@ -24,7 +24,11 @@ _Please note:_
 
   This helps to provide an overview of the parts of the library actually being used, but is also important to stress the structure of d3. In a production environment you'd include the necessary modules instead of the entire library.
 
-## Setup
+## 01 - Line Chart
+
+The book begins immediately with a line chart. It is useful to introduce d3, but also the flow for every visualization.
+
+### Live Server
 
 At least for the first few visualizations, data is retrieved from a file in `.json` format. To bypass the CORS safety restriction, it is first necessary to set up a server. The node package `live-server` readily accommodates for this need.
 
@@ -38,11 +42,26 @@ Once installed, `live-server` provides an environment on `http://localhost:8080/
 live-server # go to localhost
 ```
 
-## 01 - Line Chart
+### Async Function
 
-The book begins immediately with a line chart. It is useful to introduce D3, but also the flow for every visualization.
+The script calls an `async` function to create the visualization.
+f
 
-### Accessor functions
+```js
+async function drawLineChart() {}
+
+drawLineChart();
+```
+
+Having a dedicate function allows to have variables scoped to the body of the function. Having an `async` function helps to `await` the data, which is retrieved with the `d3.json` function from the `d3-fetch` module.
+
+```js
+async function drawLineChart() {
+  const dataset = await json('../nyc_weather_data.json');
+}
+```
+
+### Accessor Functions
 
 Accessor functions are useful to retrieve specific values from the input data.
 
@@ -72,7 +91,7 @@ The construct is useful to access the data, throughout the visualization. Consid
 
 Included at the top of the script, accessor functions are also useful to provide a hint as to the topic of the visualization.
 
-### Wrapper and bounds
+### Wrapper and Bounds
 
 The line chart is included in an SVG element `<svg>` and it is furthermore nested in a group element `<g>`.
 
@@ -110,9 +129,19 @@ dimensions.boundedHeight =
   dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 ```
 
+### Line
+
+`d3.line` provides a generator function which takes as input the data and returns the syntax for the `d` attribute of `<path>` elements. Two functions allow to describe the coordinates of the points in the line, in the horizontal and vertical dimenions.
+
+```js
+function lineGenerator = d3.line()
+  .x(d => xScale(xAccessor(d)))
+  .y(d => yScale(yAccessor(d)))
+```
+
 ### Axis
 
-To include an axis, you first create the peripheral with the `d3-axis` module.
+To include an axis you first create the peripheral with the `d3-axis` module.
 
 ```js
 const yAxisGenerator = d3.axisLeft().scale(yScale);
@@ -135,13 +164,13 @@ bounds.append('g').call(yAxisGenerator);
 
 The second visualization is useful to repeat the concepts introduced with the line chart and also describe the concept of a data join.
 
-| Module (`d3-`) | Function (`d3.`)                    |
-| -------------- | ----------------------------------- |
-| selection      | selectAll, enter, exit, merge, join |
+### Purpose
+
+A scatterplot is helpful to describe the relationship between two metrics, like the dew point and humidity recorded in the weather dataset.
 
 ### Data Join
 
-The visualization includes one circle for each data point, mapping the dew point to the axis, the humidity to the `y` axis, and the cloud cover to the `fill`, the color of the shape.
+The visualization includes one circle for each data point, mapping the dew point to the axis, the humidity to the `y` axis, and the cloud cover to the `fill`, the color, of the shape.
 
 It is technically possible to append the circles with a for loop, for instance with a `forEach` iterator.
 
@@ -151,13 +180,13 @@ dataset.forEach((point) => {
 });
 ```
 
-However, D3 provide the concept of a data join to bind the data to DOM elements. With this binding, each element is linked to a data point, and the visualization can be updated knowing which value is already included.
+However, d3 introduces the concept of a data join to bind the data to DOM elements. With this binding, each element is linked to a data point, and the visualization can be updated knowing which value is already included.
 
 The binding can be implemented in at least two ways.
 
 1. select, data, enter
 
-   Start by selecting every circle. As no circle is included in the visualization, D3 now describes an empty selection.
+   Start by selecting every circle. As no circle is included in the visualization, d3 now describes an empty selection.
 
    ```js
    groupCircles.selectAll('circle');
@@ -187,7 +216,7 @@ The binding can be implemented in at least two ways.
      .attr('r', 5);
    ```
 
-   While the implementation may seem convoluted, it helps to know that, when you use the `data` function, the selection returned by D3 differentiates the elements with a `_enter` and `_exit` key. The first type describes items which are not represented in the visualizations, data points which are not already mapped to a circle. The second type describes items which were represented, but should no longer be, circles exceeding the sufficient amount.
+   While the implementation may seem convoluted, it helps to know that when you use the `data` function, the selection returned by d3 differentiates the elements with a `_enter` and `_exit` key. The first type describes items which are not represented in the visualizations, data points which are not already mapped to a circle; the second type describes items which were represented, but should no longer be, circles exceeding the sufficient amount.
 
    ```js
    const update = groupCircles.selectAll('circle').data(dataset);
@@ -199,10 +228,10 @@ The binding can be implemented in at least two ways.
      // other defining attributes
      .attr('r', 5);
 
-   // exit = update.exit();
+   // const exit = update.exit();
    ```
 
-   To consider both new and existing elements, for instance, to attribute a color to all elements in the visualization, the `.merge` function marries the enter and update selection.
+   To consider both new and existing elements, for instance to attribute a color to all elements in the visualization, the `.merge` function units the input selection with the current one.
 
    ```js
    enter
@@ -215,7 +244,7 @@ The binding can be implemented in at least two ways.
 
 2. join
 
-   Introduced in a later version of `d3-selection` module ([v1.4.0](https://github.com/d3/d3-selection/releases/tag/v1.4.0)), the `.join` function provides a different interface for data binding.
+   Introduced in a later version of the `d3-selection` module ([v1.4.0](https://github.com/d3/d3-selection/releases/tag/v1.4.0)), the `.join` function provides a different interface for data binding.
 
    In the specific example, it allows to draw one circle for each data point by calling directly the desired shape.
 
@@ -228,7 +257,7 @@ The binding can be implemented in at least two ways.
      .attr('r', 5);
    ```
 
-   In a more structured manner, the `join()` function allows to target the different selections with a series of callback functions.
+   In a more structured example, the `join()` function allows to target the different selections with a series of callback functions.
 
    ```js
    groupCircles
@@ -249,7 +278,7 @@ The binding can be implemented in at least two ways.
 
 _Please note_:
 
-- try to log the value returned by a function to understand what said function does This is useful, for instance, to see how D3 manages the selection following the `data()` function, the `_enter` and `_exit` keys.
+- try to log the value returned by a function to understand what said function does. `console.log` proves to be very useful for instance to see how d3 manages the selection following the `data()` function, the `_enter` and `_exit` keys.
 
   ```js
   const update = groupCircles.selectAll('circle').data(dataset);
@@ -258,16 +287,34 @@ _Please note_:
 
 - in the script I implemented data binding with the first approach, but continued exploring the concept with other instructions. These are commented out, but fundamentally create the same visualizatio as the first one.
 
+### Linear Scales
+
+A linear scale is able to interpolate between numerical values, but also colors.
+
+```js
+const colorScale = scaleLinear()
+  .domain(extent(dataset, colorAccessor))
+  .range(['skyblue', 'darkslategrey']);
+```
+
+The `.nice()` allows makes it possible to round the values of the scale's intervals.
+
+```js
+const xScale = scaleLinear()
+  .domain(extent(dataset, xAccessor))
+  .range([0, dimensions.boundedWidth])
+  .nice();
+```
+
+### Peripherals
+
+Beside the axis, included with a limited set of ticks, the group responsible for the peripherals includes two `<text />` elements to provide a label.
+
 ## 03 - Bar Charts
 
 The project is useful to introduce another generator function in `d3.bin`, and a couple helper functions in `d3.mean` and `selection.filter`.
 
 The chapter is also and extremely useful in terms of accessibility, with a first set of attributes to make the visualization accessible for screen readers.
-
-| Module (`d3-`) | Function (`d3.`) |
-| -------------- | ---------------- |
-| array          | bin, mean        |
-| selection      | filter           |
 
 ### ~Histogram~ Bin
 
@@ -345,9 +392,9 @@ The visualization is made accessible for screen readers with a selection of elem
 
 ## 04 - Animation and Transitions
 
-The chapter describes three methods to smoothly change a value over time, with the `<animate>` element (SVG), the`transition` property (CSS) and the `transition` method (D3). With the project folder, I elected to focus on the last approach only.
+The chapter describes three methods to smoothly change a value over time, with the `<animate>` element (SVG), the`transition` property (CSS) and the `transition` method (d3). With the project folder, I elected to focus on the last approach only.
 
-D3 provides a `.transition` method to interpolate between a start and end state. Essentially, it is enough to apply a transition as follows:
+d3 provides a `.transition` method to interpolate between a start and end state. Essentially, it is enough to apply a transition as follows:
 
 ```js
 d3.select('rect').attr('width', 0).transition().attr('width', 100);
@@ -365,7 +412,7 @@ The function creating the visualization is divided between static and dynamic in
 
 #### Data Join
 
-The concept of the data join, as introduced in the second chapter _02 - Scatterplot_, allows to bind data to DOM element, and it is here essential to have D3 manage the transition new, existing and old elements.
+The concept of the data join, as introduced in the second chapter _02 - Scatterplot_, allows to bind data to DOM element, and it is here essential to have d3 manage the transition new, existing and old elements.
 
 `drawHistogram` begins by selecting group elements `<g>` and binding the data provided by the bins.
 
@@ -505,7 +552,7 @@ For the line, however, the same solution produces the undesired effect of a wrig
 line.transition(transition).attr('d', lineGenerator(data));
 ```
 
-This is because D3 is updating the `d` attribute of the line point by point. Consider the following example, where the line is described with a series of points (`L`, or _line to_, instructs the path element to continue the line toward a certain (`x`, `y`) pairing).
+This is because d3 is updating the `d` attribute of the line point by point. Consider the following example, where the line is described with a series of points (`L`, or _line to_, instructs the path element to continue the line toward a certain (`x`, `y`) pairing).
 
 ```html
 <!-- assuming y coordinates (0, -5, -10, -8)  -->
@@ -613,7 +660,7 @@ const lineGroup = bounds
 
 ## 05 - Interactions
 
-_Please note:_ version 6 of the D3 library revised event handlers considerably. Where needed, I try to highlight the code for both version 6 and version 5, used in the book.
+_Please note:_ version 6 of the d3 library revised event handlers considerably. Where needed, I try to highlight the code for both version 6 and version 5, used in the book.
 
 ### Events
 
@@ -637,7 +684,7 @@ rectangles.on('mouseenter', function (event, d) {
 
 In this example, the function is executed as the mouse enters in a rectangle. `event` provides details behind the event, like the `x`, `y` coordinates of the event, while `d` the individual date bound to the specific rectangle.
 
-_Please note:_ prior to D3 version 6, the callback function is called with three values: the datum bound to the selection, the index and the collection to which the element belongs.
+_Please note:_ prior to d3 version 6, the callback function is called with three values: the datum bound to the selection, the index and the collection to which the element belongs.
 
 ```js
 rectangles.on('mouseenter', function (d, i, nodes) {
@@ -710,7 +757,7 @@ _Please note:_ The property overrides the `fill` attribute.
 rectangles.attr('fill', 'cornflowerblue');
 ```
 
-Had the color been set inline and with the `.style` method, the solution would not have worked (at least without the `!important` keyword). This relates to CSS specificity and not to D3 itself.
+Had the color been set inline and with the `.style` method, the solution would not have worked (at least without the `!important` keyword). This relates to CSS specificity and not to d3 itself.
 
 ```js
 rectangles
@@ -720,7 +767,7 @@ rectangles
 
 #### Tooltip
 
-Past the stylistic update, D3 manages the contents and position of a tooltip as included in a `<div>` container. The markup is modified from the solution created in the third chapter to nest each bar chart in a wrapping `<div>` element.
+Past the stylistic update, d3 manages the contents and position of a tooltip as included in a `<div>` container. The markup is modified from the solution created in the third chapter to nest each bar chart in a wrapping `<div>` element.
 
 ```html
 <div id="root">
@@ -758,9 +805,9 @@ In the stylesheet, the tooltip is modified with a series of property value pairs
 
 - `pointer-events` set to `none` avoids mouse events on the element. This is so that when the user hovers on a rectangle, invoking the tooltip, the tooltip itself doesn't block mouse interaction
 
-- `opacity` set to `0` hides the tooltip. The idea is to change the opacity through D3 and in the script
+- `opacity` set to `0` hides the tooltip. The idea is to change the opacity through d3 and in the script
 
-In the script, D3 finally manages the tooltip as the mouse hovers on a rectangle, and using the event handlers introduced in this chapter.
+In the script, d3 finally manages the tooltip as the mouse hovers on a rectangle, and using the event handlers introduced in this chapter.
 
 ```js
 binGroups
@@ -1506,7 +1553,7 @@ It is important to note the following:
 
 - sequential, diverging, cyclical scales create a scale like `d3.scaleLinear`, with a domain (`[0, 1]`) and a range (an array of colors). Consider `d3.interpolateBlues()`. You obtain a color by calling the function with a specific number, like `d3.interpolateBlues(0.5)`
 
-- when interpolating between two or more colors D3 supports both the scale and array syntax. `d3.interpolateBlues()`, for instance, creates a proper scale, while `d3.interpolateBlues[n]` creates an array of `n` colors in the prescribed range
+- when interpolating between two or more colors d3 supports both the scale and array syntax. `d3.interpolateBlues()`, for instance, creates a proper scale, while `d3.interpolateBlues[n]` creates an array of `n` colors in the prescribed range
 
 - functions from `d3-interpolate` interpolate between two colors in a given color space. In this light, it is helpful to have a brief overview of the different formats:
 
@@ -1526,7 +1573,7 @@ The chapter introduces a few types of data visualizations with the goal of provi
 
 A candlestick chart highlights stock prices through the open, close, high and low metric.
 
-A few highlights in terms of the D3 library:
+A few highlights in terms of the d3 library:
 
 - `d3.csv` considers the comma separated values the describing hypothetical prices
 
@@ -1546,7 +1593,7 @@ Taking inspiration from the visualization highlighting profile contributions on 
 
 The visualization itself includes a button to cycle through different metrics, similarly to the bar charts developed innthe fifth chapter, _05 - Interactions_.
 
-In terms of D3, the project is an excellent exercise with the `d3-time` module, specifically `d3.timeWeeks`, `d3.timeMonths` and few directives included in the parsing, formatting functions.
+In terms of d3, the project is an excellent exercise with the `d3-time` module, specifically `d3.timeWeeks`, `d3.timeMonths` and few directives included in the parsing, formatting functions.
 
 ### Radar
 
@@ -1663,7 +1710,7 @@ With a box plot it is possible to study the distribution of a numerical value. T
   outliers
 ```
 
-For the D3 library:
+For the d3 library:
 
 - `d3.scaleBand` provides the horizontal coordinate by mapping a discrete domain (an array describing the months) to a continuous range (the bounded width)
 
@@ -1693,7 +1740,7 @@ The redesign works to show how the dashboard can be improved by providing more c
 
 It is important to note a distinction introduced with the `drawMetric` function. The script initially sets up the dashboard with the necessary HTML and SVG elements. In `drawMetric`, then, the idea is to change the contents, the appearance of the elements with the specific day.
 
-The project highlights a few methods from the D3 library:
+The project highlights a few methods from the d3 library:
 
 - `d3.scaleQuantize` is helpful to create a scale mapping a continuous domain to a discrete range.
 
@@ -1820,7 +1867,7 @@ The folder highlight how a dashboard works best when it focuses on providing a c
 
 The folder focuses on two questions essential to the design of a dashboard: how familar are users with the provided data, how much time do user spend with the visualization. Already, these issues compel a different visualization. Consider for instance how inexperienced users might benefit from a short explanation (first demo), or again how time-sensitive readers might prefer a single metric instead of an elaborate visualization (second demo).
 
-In terms of D3, it is helpful to note how the elaborate visualization in the second demo leans on the `d3-force` module to have the circles describing the observations separated from one another. With `d3.simulation`, the project sets up a series of forces to have the points tend toward the desired `x` coordinate.
+In terms of d3, it is helpful to note how the elaborate visualization in the second demo leans on the `d3-force` module to have the circles describing the observations separated from one another. With `d3.simulation`, the project sets up a series of forces to have the points tend toward the desired `x` coordinate.
 
 ```js
 d3.forceSimulation(simulationData)
@@ -2088,7 +2135,7 @@ function isWithinRange(datum, d1, d2) {
 }
 ```
 
-The function is used to hide/show the data matching the selection, but also and finally to create mini-histogram. This last step showcases the usefulness of D3 and its generator functions. What is necessary is to:
+The function is used to hide/show the data matching the selection, but also and finally to create mini-histogram. This last step showcases the usefulness of d3 and its generator functions. What is necessary is to:
 
 - consider the data in the range
 
@@ -2121,7 +2168,7 @@ _Plese note:_ there are parts I elected not to document, hoping to focus on the 
 
 ### Radar Weather Chart
 
-The second complex visualization focuses on a radial line chart, studying the weather dataset through multiple metrics. The code is well worth a read, and what follows is but a few notes on the structure of the visualization and the D3 library.
+The second complex visualization focuses on a radial line chart, studying the weather dataset through multiple metrics. The code is well worth a read, and what follows is but a few notes on the structure of the visualization and the d3 library.
 
 #### Peripherals
 
@@ -2663,7 +2710,7 @@ For old shapes, the exit selections are merged so to remove both circles and tri
 updateFemales.exit().merge(updateMale.exit()).remove();
 ```
 
-This is enough to have D3 manage a collection of elements of equal size of `people`. However, it is essential to stress how the data is bound in the update selection. Beside the data, included as an array of either male/female persons, the `.data` function receives a key accessor function, which defaults to the index in the array.
+This is enough to have d3 manage a collection of elements of equal size of `people`. However, it is essential to stress how the data is bound in the update selection. Beside the data, included as an array of either male/female persons, the `.data` function receives a key accessor function, which defaults to the index in the array.
 
 ```js
 const updateFemales = markersGroup.selectAll('.marker-circle').data(
@@ -2704,7 +2751,7 @@ While the movement of the people is already informative <!-- and intriguing -->,
 
 - with `<rect>` elements, stacked above each other in two bar charts. The goal is to have the ses for each gender highlighted with stacked rectangles
 
-Metrics are actually a point where the implementation of this repository differs from that of the book. `highlightMetrics` is the function responsible for creating and updating the different elements. The function is called each time D3 removes the element of the exit selection, taking advantage of the `selection.call` method.
+Metrics are actually a point where the implementation of this repository differs from that of the book. `highlightMetrics` is the function responsible for creating and updating the different elements. The function is called each time d3 removes the element of the exit selection, taking advantage of the `selection.call` method.
 
 ```js
 updateFemales

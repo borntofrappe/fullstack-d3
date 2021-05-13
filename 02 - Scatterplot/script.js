@@ -1,6 +1,15 @@
+const { 
+  json, 
+  extent, 
+  scaleLinear, 
+  select, 
+  axisBottom, 
+  axisLeft 
+} = d3;
+
 async function drawScatterplot() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../nyc_weather_data.json');
+  const dataset = await json('../nyc_weather_data.json');
 
   const xAccessor = d => d.dewPoint;
   const yAccessor = d => d.humidity;
@@ -24,25 +33,22 @@ async function drawScatterplot() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const xScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, xAccessor))
+  const xScale = scaleLinear()
+    .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth])
     .nice();
 
-  const yScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, yAccessor))
-    .range([dimensions.boundedHeight, 0]);
+  const yScale = scaleLinear()
+    .domain(extent(dataset, yAccessor))
+    .range([dimensions.boundedHeight, 0])
+    .nice();
 
-  const colorScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, colorAccessor))
+  const colorScale = scaleLinear()
+    .domain(extent(dataset, colorAccessor))
     .range(['skyblue', 'darkslategrey']);
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -65,7 +71,7 @@ async function drawScatterplot() {
     .attr('cy', d => yScale(yAccessor(d)))
     .attr('fill', d => colorScale(colorAccessor(d)));
 
-  /*
+  /* // update enter exit
   const updateSelection = bounds
     .append('g')
     .selectAll('circle')
@@ -83,7 +89,7 @@ async function drawScatterplot() {
     .attr('fill', d => colorScale(colorAccessor(d)));
   */
 
-  /*
+  /* // join
   bounds
     .append('g')
     .selectAll('circle')
@@ -95,7 +101,7 @@ async function drawScatterplot() {
     .attr('fill', d => colorScale(colorAccessor(d)));
   */
 
-  /*
+  /* // join selections
   bounds
     .append('g')
     .selectAll('circle')
@@ -111,7 +117,7 @@ async function drawScatterplot() {
   */
 
   /* PERIPHERALS */
-  const xAxisGenerator = d3.axisBottom().scale(xScale);
+  const xAxisGenerator = axisBottom().scale(xScale).ticks(4);
   const xAxis = bounds
     .append('g')
     .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
@@ -125,7 +131,7 @@ async function drawScatterplot() {
     .attr('font-size', 15)
     .attr('fill', 'currentColor');
 
-  const yAxisGenerator = d3.axisLeft().scale(yScale);
+  const yAxisGenerator = axisLeft().scale(yScale).ticks(4);
   const yAxis = bounds.append('g').call(yAxisGenerator);
 
   yAxis
