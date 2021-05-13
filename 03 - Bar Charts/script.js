@@ -171,6 +171,10 @@ async function drawBarCharts() {
       .attr('y', dimensions.margin.bottom - 10)
       .attr('font-size', 15)
       .attr('fill', 'currentColor');
+
+    wrapper
+      .selectAll('text')
+      .attr('aria-hidden', 'true');
   }
 
   // call drawHistogram to draw a bar chart for each metric

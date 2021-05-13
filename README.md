@@ -367,7 +367,7 @@ const textGroups = binGroups.filter((d) => yAccessor(d) !== 0);
 
 ### Accessibility
 
-The visualization is made accessible for screen readers with a few elements and attributes.
+The visualization is made accessible for screen readers with a few elements and attributes:
 
 - the `title` element introduces the visualization
 
@@ -381,29 +381,34 @@ The visualization is made accessible for screen readers with a few elements and 
 
   In the individual bar chart, the idea is to focus on the SVG container, the group element nesting all the histogram bars, and the group element responsible for the individual bars
 
-  ```html
-  <svg tabindex="0">
-    <!-- group nesting all the bars -->
-    <g tabindex="0">
-      <!-- groups nesting the individual bars -->
-      <g tabindex="0"></g>
-      <g tabindex="0"></g>
-      <!-- ... -->
-    </g>
-  </svg>
+  ```js
+  wrapper.attr('tabindex', '0');
+  binsGroup.attr('tabindex', '0');
+  binGroups.attr('tabindex', '0');
   ```
 
-- the `role` attribute identifies the specific purpose of the select-able elements, while `aria-label` provides an informative label
+- the `role` attribute identifies the specific purpose of the select-able elements
 
-  ```html
-  <svg role="figure">
-    <g role="list" aria-label="Histogram bars">
-      <g role="listitem" aria-label="Describe bar"></g>
-      <g role="listitem" aria-label="Describe bar"></g>
-      <!-- ... -->
-    </g>
-  </svg>
+  ```js
+  wrapper.attr('role', 'figure');
+  binsGroup.attr('role', 'list');
+  binGroups.attr('role', 'listitem');
   ```
+
+- the `aria-label` attribute provides an informative label
+
+  ```js
+  binsGroup.attr('aria-label', 'Histogram bars');
+  binGroups.attr('aria-label', (d) => `...`);
+  ```
+
+- `aria-hidden` set to `true` hides elements from screen readers
+
+  ```js
+  wrapper.selectAll('text').attr('aria-hidden', 'true');
+  ```
+
+  In the specific demo the labels included on the group elements are enough to describe the bar charts, and the `<text/>` elements overload screen readers with too many values (a screen reader would also read the ticks of the axis)
 
 ### Metrics
 
