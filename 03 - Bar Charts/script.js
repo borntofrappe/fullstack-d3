@@ -1,9 +1,20 @@
-/* global d3 */
+const {
+  json,
+  extent,
+  max,
+  scaleLinear,
+  // histogram,
+  bin,
+  select,
+  mean,
+  axisBottom
+} = d3;
+
 async function drawBarCharts() {
   /* ACCESS DATA
   the accessor function depends on the metric of the individual bar chart
   */
-  const dataset = await d3.json('../nyc_weather_data.json');
+  const dataset = await json('../nyc_weather_data.json');
 
   /* CHART DIMENSIONS */
   const dimensions = {
@@ -27,22 +38,19 @@ async function drawBarCharts() {
     const metricAccessor = d => d[metric];
 
     /* SCALES */
-    const xScale = d3
-      .scaleLinear()
-      .domain(d3.extent(dataset, metricAccessor))
+    const xScale = scaleLinear()
+      .domain(extent(dataset, metricAccessor))
       .range([0, dimensions.boundedWidth])
       .nice();
 
     /*
-    const binGenerator = d3
-      .histogram()
+    const binGenerator = histogram()
       .domain(xScale.domain())
       .value(metricAccessor)
       .thresholds(12);
     */
 
-    const binGenerator = d3
-      .bin()
+    const binGenerator = bin()
       .domain(xScale.domain())
       .value(metricAccessor)
       .thresholds(12);
@@ -50,15 +58,13 @@ async function drawBarCharts() {
     const bins = binGenerator(dataset);
 
     const yAccessor = d => d.length;
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(bins, yAccessor)])
+    const yScale = scaleLinear()
+      .domain([0, max(bins, yAccessor)])
       .range([dimensions.boundedHeight, 0])
       .nice();
 
     /* DRAW DATA */
-    const wrapper = d3
-      .select('#wrapper')
+    const wrapper = select('#wrapper')
       .append('svg')
       .attr('width', dimensions.width)
       .attr('height', dimensions.height);
@@ -107,7 +113,7 @@ async function drawBarCharts() {
       .append('rect')
       .attr('x', d => xScale(d.x0) + barPadding / 2)
       .attr('width', d =>
-        d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding])
+        max([0, xScale(d.x1) - xScale(d.x0) - barPadding])
       )
       .attr('y', d => yScale(yAccessor(d)))
       .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)))
@@ -125,11 +131,11 @@ async function drawBarCharts() {
       .style('font-size', 12)
       .style('font-family', 'sans-serif');
 
-    const mean = d3.mean(dataset, metricAccessor);
+    const meanValue = mean(dataset, metricAccessor);
 
     const meanGroup = bounds
       .append('g')
-      .style('transform', `translate(${xScale(mean)}px, 0px)`);
+      .style('transform', `translate(${xScale(meanValue)}px, 0px)`);
 
     meanGroup
       .append('line')
@@ -151,7 +157,7 @@ async function drawBarCharts() {
       .style('font-family', 'sans-serif');
 
     /* PERIPHERALS */
-    const xAxisGenerator = d3.axisBottom().scale(xScale);
+    const xAxisGenerator = axisBottom().scale(xScale);
     const xAxis = bounds
       .append('g')
       .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)

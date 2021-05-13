@@ -316,6 +316,10 @@ The project is useful to introduce another generator function in `d3.bin`, and a
 
 The chapter is also and extremely useful in terms of accessibility, with a first set of attributes to make the visualization accessible for screen readers.
 
+### Purpose
+
+A bar chart is effective to consider the distribution of a variable. The idea is to segment the values in a series of bins and plot their frequency on the `y` axis.
+
 ### ~Histogram~ Bin
 
 The book describes the `d3.histogram` function to create a series of bins, a series of arrays in which to slot the data points. [Since version 6](https://github.com/d3/d3/blob/master/CHANGES.md#breaking-changes), however, the function has been renamed to `d3.bin`.
@@ -328,6 +332,17 @@ const binGenerator = d3.bin();
 
 According to details in [the migration guide](https://observablehq.com/@d3/d3v6-migration-guide#bin), it seems `d3.histogram` is preserved as an alias, but it is ultimately deprecated.
 
+The function creates a series of bins based on the domain of the horizontal scale.
+
+```js
+const binGenerator = bin()
+  .domain(xScale.domain())
+  .value(metricAccessor)
+  .thresholds(12);
+```
+
+`threshold` describes the number of bins, but the instruction is not mandatory. d3 will consider a number of groups based on the number of observations and the values of the domain.
+
 ### Mean
 
 `d3-array` provides a few helper functions for summary statistics, among which `d3.mean`. In the visualization, the function is used to highlight the mean with a line and text label.
@@ -338,7 +353,7 @@ const mean = d3.mean(dataset, metricAccessor);
 
 ### Filter
 
-A selection can be filtered according to a function. In the specific project, it is used to have the text label for the histogram bars only on the bars describing at least one observation.
+A selection can be filtered according to a function. In the specific project, the `filter()` function is used to have the text label for the histogram bars only on the bars describing at least one observation.
 
 ```js
 const textGroups = binGroups.filter(yAccessor);
@@ -352,7 +367,7 @@ const textGroups = binGroups.filter((d) => yAccessor(d) !== 0);
 
 ### Accessibility
 
-The visualization is made accessible for screen readers with a selection of elements and attributes.
+The visualization is made accessible for screen readers with a few elements and attributes.
 
 - the `title` element introduces the visualization
 
@@ -389,6 +404,15 @@ The visualization is made accessible for screen readers with a selection of elem
     </g>
   </svg>
   ```
+
+### Metrics
+
+`drawBarCharts` is responsible for fetching the data and describing the dimensions of the visualization. The visualization is then included in a `drawHistogram` function. This structure allows to draw multiple bar charts by calling `drawHistogram` with a different argument.
+
+```js
+drawHistogram('windSpeed');
+drawHistogram('moonPhase');
+```
 
 ## 04 - Animation and Transitions
 
