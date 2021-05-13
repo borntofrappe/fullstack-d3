@@ -1,12 +1,28 @@
 # Fullstack D3
 
-[_Fullstack D3_](https://www.newline.co/fullstack-d3) is an incredibly informative book from [_Amelia Wattenberger_](https://wattenberger.com/) centered on the D3 library. With this folder I replicate the examples provided in the book, and annotate the lessons learned in the process.
+[_Fullstack D3_](https://www.newline.co/fullstack-d3) is an incredibly informative book from [_Amelia Wattenberger_](https://wattenberger.com/) devoted to the D3 library. With this folder I replicate the examples provided in the book, and annotate the lessons learned in the process.
 
-_Please note_:
+_Please note:_
 
-- I am quite familiar with the D3 library already, and I approach the book with the goal of improving my workflow
+- while the book works with d3 in version **5**, this repository includes the library in version **6.5.0**. I highlight the differences as necessary
 
-- the visualizations are recreated D3 version 6, retrieved from [unpkg.com](https://unpkg.com/d3) on March 4th 2021
+- at the top of the script, consider `01 - Line Chart/script.js`, I extract the modules used in the visualizations
+
+  ```js
+  const {
+    json,
+    timeParse,
+    extent,
+    scaleTime,
+    scaleLinear,
+    select,
+    line,
+    axisLeft,
+    axisBottom,
+  } = d3;
+  ```
+
+  This helps to provide an overview of the parts of the library actually being used, but is also important to stress the structure of d3. In a production environment you'd include the necessary modules instead of the entire library.
 
 ## Setup
 
@@ -16,57 +32,49 @@ At least for the first few visualizations, data is retrieved from a file in `.js
 npm install -g live-server
 ```
 
-Once installed, `live-server` provides a live environment on `http://localhost:8080/` (default port).
+Once installed, `live-server` provides an environment on `http://localhost:8080/`, `8080` being the default port.
 
 ```bash
-live-server
+live-server # go to localhost
 ```
 
 ## 01 - Line Chart
 
 The book begins immediately with a line chart. It is useful to introduce D3, but also the flow for every visualization.
 
-| Module (`d3-`) | Function (`d3.`)       |
-| -------------- | ---------------------- |
-| fetch          | json                   |
-| selection      | select                 |
-| time-format    | timeParse              |
-| scale          | scaleLinear, scaleTime |
-| array          | extent                 |
-| shape          | line                   |
-| axis           | axisLeft, axisBottom   |
-
 ### Accessor functions
 
-Accessor functions are functions detailing which values to use in the visualization.
+Accessor functions are useful to retrieve specific values from the input data.
 
 ```js
 const yAccessor = (d) => d.temperatureMax;
 ```
 
-Such a construct is useful to access the data, for instance when describing the domain of a scale.
+The construct is useful to access the data, throughout the visualization. Consider for instance:
 
-```js
-const yScale = d3
-  .scaleLinear()
-  // .domain(d3.extent(dataset, d => d.temperatureMax))
-  .domain(d3.extent(dataset, yAccessor));
-```
+- the domain of the scales, like `yScale`
 
-Or again, for the coordinates for the line generator function.
+  ```js
+  const yScale = d3
+    .scaleLinear()
+    // .domain(d3.extent(dataset, d => d.temperatureMax))
+    .domain(d3.extent(dataset, yAccessor));
+  ```
 
-```js
-const lineGenerator = d3
-  .line()
-  // .y((d) => yScale(d.temperature))
-  .y((d) => yScale(yAccessor(d)));
-```
+- the coordinates for the line generator function
 
-Included at the top of the script, accessor functions are also useful to contextualize the visualization, to highlight which metric is analysed.
+  ```js
+  const lineGenerator = d3
+    .line()
+    // .y((d) => yScale(d.temperatureMax))
+    .y((d) => yScale(yAccessor(d)));
+  ```
+
+Included at the top of the script, accessor functions are also useful to provide a hint as to the topic of the visualization.
 
 ### Wrapper and bounds
 
-The line chart is included in an SVG element `<svg>` and it is furthermore inside of a group element `<g>`.
+The line chart is included in an SVG element `<svg>` and it is furthermore nested in a group element `<g>`.
 
 ```html
 <!-- wrapper -->
@@ -78,7 +86,7 @@ The line chart is included in an SVG element `<svg>` and it is furthermore insid
 
 This layered structure is useful to safely draw the visualization and peripherals (axis, labels), without fear of cropping the visuals. Anything falling outside of the `<svg>` SVG element `<svg>` is indeed not rendered.
 
-The wrapping SVG element is attributed an arbitrary width, height and margin.
+The wrapping container is attributed an arbitrary width, height and margin.
 
 ```js
 const dimensions = {
@@ -102,7 +110,7 @@ dimensions.boundedHeight =
   dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 ```
 
-### Axis and `call`
+### Axis
 
 To include an axis, you first create the peripheral with the `d3-axis` module.
 
@@ -2802,3 +2810,5 @@ function generatePerson(elapsed) {
   .join('rect')
   .style('transition', 'all 0.25s ease-out')
   ```
+
+## 11 - Framework

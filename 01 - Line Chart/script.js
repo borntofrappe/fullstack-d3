@@ -1,15 +1,27 @@
+const {
+  json,
+  timeParse,
+  extent,
+  scaleTime,
+  scaleLinear,
+  select,
+  line,
+  axisLeft,
+  axisBottom,
+} = d3;
+
 async function drawLineChart() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../nyc_weather_data.json');
+  const dataset = await json('../nyc_weather_data.json');
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
 
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => d.temperatureMax;
 
   /* CHART DIMENSIONS */
   const dimensions = {
-    width: 700,
+    width: 800,
     height: 400,
     margin: {
       top: 10,
@@ -25,19 +37,16 @@ async function drawLineChart() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const xScale = d3
-    .scaleTime()
-    .domain(d3.extent(dataset, xAccessor))
+  const xScale = scaleTime()
+    .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth]);
 
-  const yScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, yAccessor))
+  const yScale = scaleLinear()
+    .domain(extent(dataset, yAccessor))
     .range([dimensions.boundedHeight, 0]);
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -58,8 +67,7 @@ async function drawLineChart() {
     .attr('height', dimensions.boundedHeight - freezingTemperatureY)
     .attr('fill', '#e0f3f3');
 
-  const lineGenerator = d3
-    .line()
+  const lineGenerator = line()
     .x(d => xScale(xAccessor(d)))
     .y(d => yScale(yAccessor(d)));
 
@@ -72,14 +80,14 @@ async function drawLineChart() {
 
   /* PERIPHERALS */
   /*
-  const yAxisGenerator = d3.axisLeft().scale(yScale);
+  const yAxisGenerator = axisLeft().scale(yScale);
   const yAxis = bounds.append('g')
   yAxisGenerator(yAxis);
   */
-  const yAxisGenerator = d3.axisLeft().scale(yScale);
+  const yAxisGenerator = axisLeft().scale(yScale);
   bounds.append('g').call(yAxisGenerator);
 
-  const xAxisGenerator = d3.axisBottom().scale(xScale);
+  const xAxisGenerator = axisBottom().scale(xScale);
 
   bounds
     .append('g')
