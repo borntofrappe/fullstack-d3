@@ -1,14 +1,28 @@
+const {
+  json,
+  timeParse,
+  select,
+  extent,
+  min,
+  scaleTime,
+  scaleLinear,
+  line,
+  transition,
+  axisLeft,
+  axisBottom,
+} = d3;
+
 async function drawLineChart() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../../nyc_weather_data.json');
-  const dateParser = d3.timeParse('%Y-%m-%d');
+  const dataset = await json('../../nyc_weather_data.json');
+  const dateParser = timeParse('%Y-%m-%d');
 
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => d.temperatureMax;
 
   /* CHART DIMENSIONS */
   const dimensions = {
-    width: 1200,
+    width: 800,
     height: 400,
     margin: {
       top: 10,
@@ -24,8 +38,7 @@ async function drawLineChart() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* DRAW DATA (STATIC) */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -65,7 +78,7 @@ async function drawLineChart() {
     .append('g')
     .attr('clip-path', 'url(#bounds-clip-path)');
 
-  const line = lineGroup
+  const linePath = lineGroup
     .append('path')
     .attr('fill', 'none')
     .attr('stroke', '#af9358')
@@ -73,49 +86,46 @@ async function drawLineChart() {
 
   function drawDays(data) {
     /* SCALES */
-    const xScale = d3
-      .scaleTime()
-      .domain(d3.extent(data.slice(1), xAccessor))
+    const xScale = scaleTime()
+      .domain(extent(data.slice(1), xAccessor))
       .range([0, dimensions.boundedWidth]);
 
-    const yScale = d3
-      .scaleLinear()
-      .domain(d3.extent(data, yAccessor))
+    const yScale = scaleLinear()
+      .domain(extent(data, yAccessor))
       .range([dimensions.boundedHeight, 0]);
 
     /* DRAW DATA (DYNAMIC) */
-    const lineGenerator = d3
-      .line()
+    const lineGenerator = line()
       .x(d => xScale(xAccessor(d)))
       .y(d => yScale(yAccessor(d)));
 
-    const transition = d3.transition().duration(1000);
+    const lineTransition = transition().duration(1000);
 
-    const freezingTemperatureY = d3.min([dimensions.boundedHeight, yScale(32)]);
+    const freezingTemperatureY = min([dimensions.boundedHeight, yScale(32)]);
     rectangle
-      .transition(transition)
+      .transition(lineTransition)
       .attr('y', freezingTemperatureY)
       .attr('height', dimensions.boundedHeight - freezingTemperatureY);
 
-    const pixelsBetweenSuccessivePoints =
-      xScale(xAccessor(data[1])) - xScale(xAccessor(data[0]));
+    const lastTwoPoints = data.slice(-2);
+    const pixelsBetweenLastPoints = xScale(xAccessor(lastTwoPoints[1])) - xScale(xAccessor(lastTwoPoints[0]));
 
     /*
-    line
-      .transition(transition)
+    linePath
+      .transition(lineTransition)
       .attr('d', lineGenerator(data))
     */
-    line
+    linePath
       .attr('d', lineGenerator(data))
-      .style('transform', `translate(${pixelsBetweenSuccessivePoints}px, 0px)`)
-      .transition(transition)
+      .style('transform', `translate(${pixelsBetweenLastPoints}px, 0px)`)
+      .transition(lineTransition)
       .style('transform', 'translate(0px, 0px)');
 
-    const yAxisGenerator = d3.axisLeft().scale(yScale);
-    yAxisGroup.transition(transition).call(yAxisGenerator);
+    const yAxisGenerator = axisLeft().scale(yScale);
+    yAxisGroup.transition(lineTransition).call(yAxisGenerator);
 
-    const xAxisGenerator = d3.axisBottom().scale(xScale);
-    xAxisGroup.transition(transition).call(xAxisGenerator);
+    const xAxisGenerator = axisBottom().scale(xScale);
+    xAxisGroup.transition(lineTransition).call(xAxisGenerator);
   }
 
   let initialDay = 0;

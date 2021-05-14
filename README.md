@@ -421,15 +421,26 @@ drawHistogram('moonPhase');
 
 ## 04 - Animation and Transitions
 
-The chapter describes three methods to smoothly change a value over time, with the `<animate>` element (SVG), the`transition` property (CSS) and the `transition` method (d3). With the project folder, I elected to focus on the last approach only.
+The chapter describes three methods to smoothly change a value over time:
+
+1. the native SVG element `<animate />`
+
+2. the CSS `transition` property (CSS)
+
+3. d3.js `transition` method
+
+In folder I elected to focus on the last approach.
 
 d3 provides a `.transition` method to interpolate between a start and end state. Essentially, it is enough to apply a transition as follows:
 
 ```js
-d3.select('rect').attr('width', 0).transition().attr('width', 100);
+d3.select('rect')
+  .attr('transform', 'scale(0)')
+  .transition()
+  .attr('transform', 'scale(1)');
 ```
 
-In this instance, the selected rectangle is updated to have a final width of `100`.
+In this instance the selected rectangle is transition to its full size.
 
 ### Bar Chart
 
@@ -437,11 +448,15 @@ Before introducing the `transition` method in the context of a bar chart, it is 
 
 #### Static and Dynamic
 
-The function creating the visualization is divided between static and dynamic instructions. Static are those lines included regardless of the state of the visualization: the object describing the dimensions of the SVG element `<svg>`, the SVG wrapper itself, the group element making up the bounds. Dynamic are those lines which change depending on the input data, and in the specific example the metric chosen for the histogram: the scales, the position and height of the rectangles.
+The function creating the visualization is divided between static and dynamic instructions.
+
+Static are those lines included regardless of the state of the visualization: the object describing the dimensions of the SVG element `<svg>`, the SVG wrapper itself, the group element making up the bounds.
+
+Dynamic are those lines which change depending on the input data, and in the specific example the metric chosen for the histogram: the scales, the position and dimensions of the rectangles.
 
 #### Data Join
 
-The concept of the data join, as introduced in the second chapter _02 - Scatterplot_, allows to bind data to DOM element, and it is here essential to have d3 manage the transition new, existing and old elements.
+The concept of the data join, as introduced in the second chapter `02 - Scatterplot`, allows to bind data to DOM element, and it is here essential to have d3 manage the transition for new, existing and old elements.
 
 `drawHistogram` begins by selecting group elements `<g>` and binding the data provided by the bins.
 
@@ -464,7 +479,7 @@ With this structure, it is finally possible to update the visualization as neede
   oldBinGroups.remove();
   ```
 
-- new elements are included through a group element
+- new elements are included with a group element
 
   ```js
   const newBinGroups = binGroups.enter().append('g');
@@ -542,10 +557,8 @@ With this structure the necessary transitions are initialised ahead of time, and
 
 ```js
 binGroups.select('rect').transition(updateTransition);
-// ...
 
 binGroups.filter(yAccessor).select('text').transition(updateTransition);
-// ...
 ```
 
 Multiple transitions can then be chained to have the change happen in sequence.
@@ -556,9 +569,11 @@ const exitTransition = d3.transition().duration(500);
 const updateTransition = exitTransition.transition().duration(1000);
 ```
 
+In this instance `updateTransition` will occur after `exitTransition`.
+
 ### Line
 
-The goal is to update the line chart introduced in the first chapter, _01 Line Chart_, in order to show a fixed number of days. The days are then modified to have the line progress through the year, and analyse the contribution of each passing day.
+The goal is to update the line chart introduced in the first chapter, `01 Line Chart`, in order to show a fixed number of days. The days are then modified to have the line progress through the year and analyse the contribution of each passing day.
 
 _Please note:_ the code might differ from that proposed in the book, as I attempted to create the transition on my own.
 
@@ -575,7 +590,7 @@ yAxisGroup.transition().call(yAxisGenerator);
 xAxisGroup.transition().call(xAxisGenerator);
 ```
 
-For the line, however, the same solution produces the undesired effect of a wriggle.
+For the line, the `transition` method produces the undesired effect of a wriggle.
 
 ```js
 line.transition(transition).attr('d', lineGenerator(data));
@@ -618,17 +633,12 @@ There are two important aspects I left out, but I thought of explaining the conc
 
 2. how to show the points only in the area described by `dimensions.boundedWidth` and `dimensions.boundedHeight`
 
-To tackle the first issue, the line is translated by the space between two successive points. The book picks the very last two points, to stress the importance of the new data, but ideally any pair of points would do (this is knowing that the data points are all separated by 1 day).
+To tackle the first issue, the line is translated by the space between two successive points. The book picks the very last two points, to stress the importance of the new data, but ideally any pair of points would do. This is based on the assumption that the data points are all separated by one day.
 
 ```js
 const lastTwoPoints = data.slice(-2);
 const pixelsBetweenLastPoints =
-  xScale(xAccessor(data[1])) - xScale(xAccessor(data[0]));
-
-// equivalent measure
-
-const pixelsBetweenSuccessivePoints =
-  xScale(xAccessor(data[1])) - xScale(xAccessor(data[0]));
+  xScale(xAccessor(lastTwoPoints[1])) - xScale(xAccessor(lastTwoPoints[0]));
 ```
 
 To fix the second issue, it is instead necessary to introduce a new SVG element in `<clipPath>`. Defined in the a `<defs>` element, the clip describes the area in which elements are actually shown. In the instance of the line chart, it describes a rectangle spanning the bounded width and height.
@@ -642,7 +652,7 @@ bounds
   .attr('height', dimensions.boundedHeight);
 ```
 
-With an identifier, it is then possible to link the clip to the group element nesting the line, so that the line is shown only in the prescribed rectangle.
+With an identifier, it is then possible to referemce the clip in the group element nesting the line, so that the line is shown only in the prescribed area.
 
 ```js
 bounds.append('defs').append('clipPath').attr('id', 'bounds-clip-path');
@@ -689,7 +699,7 @@ const lineGroup = bounds
 
 ## 05 - Interactions
 
-_Please note:_ version 6 of the d3 library revised event handlers considerably. Where needed, I try to highlight the code for both version 6 and version 5, used in the book.
+_Please note:_ version 6 of the d3 library revised event handlers considerably.
 
 ### Events
 
