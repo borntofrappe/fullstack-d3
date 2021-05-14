@@ -1,6 +1,19 @@
+const {
+  json,
+  scaleLinear,
+  extent,
+  select,
+  timeParse,
+  timeFormat,
+  format,
+  Delaunay,
+  axisBottom,
+  axisLeft,
+} = d3;
+
 async function drawScatterplot() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await json('../../nyc_weather_data.json');
 
   const xAccessor = d => d.dewPoint;
   const yAccessor = d => d.humidity;
@@ -24,27 +37,23 @@ async function drawScatterplot() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const xScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, xAccessor))
+  const xScale = scaleLinear()
+    .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth])
     .nice();
 
-  const yScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, yAccessor))
+  const yScale = scaleLinear()
+    .domain(extent(dataset, yAccessor))
     .range([dimensions.boundedHeight, 0]);
 
-  const colorScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, colorAccessor))
+  const colorScale = scaleLinear()
+    .domain(extent(dataset, colorAccessor))
     .range(['skyblue', 'darkslategrey']);
 
   /* DRAW DATA */
-  const tooltip = d3.select('#wrapper #tooltip');
+  const tooltip = select('#wrapper #tooltip');
 
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -69,9 +78,9 @@ async function drawScatterplot() {
 
   /* INTERACTION */
   function onMouseEnter(event, d) {
-    const parseDate = d3.timeParse('%Y-%m-%d');
-    const formatDate = d3.timeFormat('%B %A %-d, %Y');
-    const formatMetric = d3.format('.2f');
+    const parseDate = timeParse('%Y-%m-%d');
+    const formatDate = timeFormat('%B %A %-d, %Y');
+    const formatMetric = format('.2f');
 
     const x = xScale(xAccessor(d));
     const y = yScale(yAccessor(d));
@@ -87,8 +96,12 @@ async function drawScatterplot() {
       .style('opacity', 1);
 
     tooltip.select('h2').text(formatDate(parseDate(d.date)));
-    tooltip.select('p:nth-of-type(1)').text(`Humidity: ${formatMetric(yAccessor(d))}`);
-    tooltip.select('p:nth-of-type(2)').text(`Dew point: ${formatMetric(xAccessor(d))}`);
+    tooltip
+      .select('p:nth-of-type(1)')
+      .text(`Humidity: ${formatMetric(yAccessor(d))}`);
+    tooltip
+      .select('p:nth-of-type(2)')
+      .text(`Dew point: ${formatMetric(xAccessor(d))}`);
 
     bounds
       .append('circle')
@@ -106,7 +119,7 @@ async function drawScatterplot() {
     bounds.select('#tooltipCircle').remove();
   }
 
-  const delaunay = d3.Delaunay.from(
+  const delaunay = Delaunay.from(
     dataset,
     d => xScale(xAccessor(d)),
     d => yScale(yAccessor(d))
@@ -129,7 +142,7 @@ async function drawScatterplot() {
     .on('mouseleave', onMouseLeave);
 
   /* PERIPHERALS */
-  const xAxisGenerator = d3.axisBottom().scale(xScale);
+  const xAxisGenerator = axisBottom().scale(xScale);
   const xAxis = bounds
     .append('g')
     .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
@@ -143,7 +156,7 @@ async function drawScatterplot() {
     .attr('font-size', 15)
     .attr('fill', 'currentColor');
 
-  const yAxisGenerator = d3.axisLeft().scale(yScale);
+  const yAxisGenerator = axisLeft().scale(yScale);
   const yAxis = bounds.append('g').call(yAxisGenerator);
 
   yAxis

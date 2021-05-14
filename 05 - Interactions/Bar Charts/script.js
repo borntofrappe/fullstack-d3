@@ -1,8 +1,19 @@
+const {
+  json,
+  select,
+  extent,
+  max,
+  scaleLinear,
+  bin,
+  format,
+  axisBottom
+} = d3;
+
 async function drawBarCharts() {
   /* ACCESS DATA
   the accessor function depends on the metric of the individual bar chart
   */
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await json('../../nyc_weather_data.json');
 
   /* CHART DIMENSIONS */
   const dimensions = {
@@ -22,8 +33,7 @@ async function drawBarCharts() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   function drawHistogram(metric) {
-    const container = d3
-      .select('#root')
+    const container = select('#root')
       .append('div')
       .attr('class', `wrapper`);
 
@@ -37,14 +47,12 @@ async function drawBarCharts() {
     const metricAccessor = d => d[metric];
 
     /* SCALES */
-    const xScale = d3
-      .scaleLinear()
-      .domain(d3.extent(dataset, metricAccessor))
+    const xScale = scaleLinear()
+      .domain(extent(dataset, metricAccessor))
       .range([0, dimensions.boundedWidth])
       .nice();
 
-    const binGenerator = d3
-      .bin()
+    const binGenerator = bin()
       .domain(xScale.domain())
       .value(metricAccessor)
       .thresholds(12);
@@ -52,9 +60,8 @@ async function drawBarCharts() {
     const bins = binGenerator(dataset);
 
     const yAccessor = d => d.length;
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(bins, yAccessor)])
+    const yScale = scaleLinear()
+      .domain([0, max(bins, yAccessor)])
       .range([dimensions.boundedHeight, 0])
       .nice();
 
@@ -106,7 +113,7 @@ async function drawBarCharts() {
 
     /* INTERACTION */
     function onMouseEnter(event, d) {
-      const formatRange = d3.format('.2f');
+      const formatRange = format('.2f');
 
       const x =
         xScale(d.x0) +
@@ -139,7 +146,7 @@ async function drawBarCharts() {
     binGroups
       .append('rect')
       .attr('x', d => xScale(d.x0) + barPadding / 2)
-      .attr('width', d => d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding]))
+      .attr('width', d => max([0, xScale(d.x1) - xScale(d.x0) - barPadding]))
       .attr('y', d => yScale(yAccessor(d)))
       .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)))
       .attr('fill', 'cornflowerblue')
@@ -147,7 +154,7 @@ async function drawBarCharts() {
       .on('mouseleave', onMouseLeave);
 
     /* PERIPHERALS */
-    const xAxisGenerator = d3.axisBottom().scale(xScale);
+    const xAxisGenerator = axisBottom().scale(xScale);
     const xAxis = bounds
       .append('g')
       .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)

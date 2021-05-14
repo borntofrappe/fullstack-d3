@@ -1,8 +1,24 @@
+const {
+  json,
+  timeParse,
+  extent,
+  scaleTime,
+  scaleLinear,
+  select,
+  line,
+  axisLeft,
+  axisBottom,
+  timeFormat,
+  format,
+  pointer,
+  least,
+} = d3;
+
 async function drawLineChart() {
   /* ACCESS DATA */
-  const data = await d3.json('../../nyc_weather_data.json');
+  const data = await json('../../nyc_weather_data.json');
   const dataset = data.slice(0, 100);
-  const dateParser = d3.timeParse('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
 
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => d.temperatureMax;
@@ -25,19 +41,16 @@ async function drawLineChart() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const xScale = d3
-    .scaleTime()
-    .domain(d3.extent(dataset, xAccessor))
+  const xScale = scaleTime()
+    .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth]);
 
-  const yScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, yAccessor))
+  const yScale = scaleLinear()
+    .domain(extent(dataset, yAccessor))
     .range([dimensions.boundedHeight, 0]);
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -58,8 +71,7 @@ async function drawLineChart() {
     .attr('height', dimensions.boundedHeight - freezingTemperatureY)
     .attr('fill', '#e0f3f3');
 
-  const lineGenerator = d3
-    .line()
+  const lineGenerator = line()
     .x(d => xScale(xAccessor(d)))
     .y(d => yScale(yAccessor(d)));
 
@@ -72,11 +84,11 @@ async function drawLineChart() {
 
   /* PERIPHERALS */
   /*
-  const yAxisGenerator = d3.axisLeft().scale(yScale);
+  const yAxisGenerator = axisLeft().scale(yScale);
   const yAxis = bounds.append('g')
   yAxisGenerator(yAxis);
   */
-  const yAxisGenerator = d3.axisLeft().scale(yScale);
+  const yAxisGenerator = axisLeft().scale(yScale);
   const yAxis = bounds.append('g').call(yAxisGenerator);
 
   yAxis
@@ -91,7 +103,7 @@ async function drawLineChart() {
         2}) rotate(-90)`
     );
 
-  const xAxisGenerator = d3.axisBottom().scale(xScale);
+  const xAxisGenerator = axisBottom().scale(xScale);
 
   bounds
     .append('g')
@@ -99,7 +111,7 @@ async function drawLineChart() {
     .call(xAxisGenerator);
 
   /* INTERACTIONS */
-  const tooltip = d3.select('#wrapper #tooltip');
+  const tooltip = select('#wrapper #tooltip');
   const tooltipCircle = bounds
     .append('circle')
     .attr('opacity', 0)
@@ -109,12 +121,12 @@ async function drawLineChart() {
     .attr('r', 4);
 
   function onMouseMove(event) {
-    const formatDate = d3.timeFormat('%B %A %-d, %Y');
-    const formatValue = d3.format('.1f');
+    const formatDate = timeFormat('%B %A %-d, %Y');
+    const formatValue = format('.1f');
 
-    const [xHover] = d3.pointer(event);
+    const [xHover] = pointer(event);
     const hoverDate = xScale.invert(xHover);
-    const d = d3.least(
+    const d = least(
       dataset,
       (a, b) =>
         Math.abs(xAccessor(a) - hoverDate) - Math.abs(xAccessor(b) - hoverDate)

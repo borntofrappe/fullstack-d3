@@ -703,7 +703,7 @@ _Please note:_ version 6 of the d3 library revised event handlers considerably.
 
 ### Events
 
-Listen to events through the `on` method. On a selection, this method describes the event and a callback function.
+Listen to events through the `on` method. On a selection, the method specifies the event and a callback function.
 
 ```js
 selection.on('mouseenter', function () {
@@ -721,7 +721,7 @@ rectangles.on('mouseenter', function (event, d) {
 });
 ```
 
-In this example, the function is executed as the mouse enters in a rectangle. `event` provides details behind the event, like the `x`, `y` coordinates of the event, while `d` the individual date bound to the specific rectangle.
+In this example, the function is executed as the mouse enters in a rectangle. `event` provides details behind the event, like the `x`, `y` coordinates of the mouse pointer, while `d` describes the date bound to the specific rectangle.
 
 _Please note:_ prior to d3 version 6, the callback function is called with three values: the datum bound to the selection, the index and the collection to which the element belongs.
 
@@ -766,7 +766,7 @@ With the `on` keyword the library attaches event handlers to the selected elemen
 rectangles.on('mouseenter', null);
 ```
 
-The `dispatch` method finally allows to execute the code of a specific, input event handler.
+The `dispatch` method finally allows to execute the code of the input event handler.
 
 ```js
 rectangles.dispatch('mouseenter').on('mouseenter', null);
@@ -776,11 +776,11 @@ In this instance, the logic described in the callback function is executed befor
 
 ### Bar Chart
 
-The first interactive example is based on a bar chart, and I decided to use the visualization created for the third chapter, _03 Bar Charts_, as a basis.
+The first interactive example is based on a bar chart, and I decided to use the visualization created for the third chapter, `03 Bar Charts`, as a basis.
 
 #### Stylesheet
 
-The visualization is first updated with a stylesheet, which includes a first type of interaction through the `:hover` pseudo class.
+The visualization is first updated in the stylesheet, which includes a first type of interaction through the `:hover` pseudo class.
 
 ```css
 svg rect:hover {
@@ -820,9 +820,8 @@ Based on this solution, the idea is to include a tooltip for each visualization.
 
 ```html
 <div class="wrapper">
-  <div class="tooltip">
-    <!-- svg -->
-  </div>
+  <div class="tooltip"></div>
+  <!-- <svg /> -->
 </div>
 ```
 
@@ -867,7 +866,7 @@ In terms of style, the function also shows the tooltip modifying its opacity.
 tooltip.style('opacity', 1);
 ```
 
-Most importantly, the function updates the position of the tooltip so that it resides above the selected rectangle. The solution is not simple, so that it might help to explain the logic in details:
+Most importantly, the function updates the position of the tooltip so that it resides above the selected rectangle. The solution is not simple, and that it might help to explain the logic in steps:
 
 - `x` refers to the center of the selected rectangle, accessing the coordinates of the range described by `d.x0` and `d.y0`
 
@@ -897,7 +896,7 @@ Most importantly, the function updates the position of the tooltip so that it re
 
   This works, but the tooltip is positioned from the top left corner
 
-- again in the `transform` property, the `calc` function modifies the position to align the tooltip as wanted
+- again in the `transform` property, the `calc` function modifies the position to align the tooltip to achieve the desired alignment
 
   ```js
   tooltip.style(
@@ -947,7 +946,7 @@ Refer to the [`d3-format` module](https://github.com/d3/d3-format) for the compr
 
 ### Scatterplot
 
-The second interactive demo relates to the scatterplot introduced in the second chapter, _02 Scatterplot_, and I decided to actually create two folders, to focus on event handlers first, and Delaunay triangulation second (the concept is introduced to aid the selection of individual data points).
+The second interactive demo relates to the scatterplot introduced in the second chapter, `02 Scatterplot`, and I decided to actually create two folders to focus on event handlers first, and Delaunay triangulation second. The triangulation is introduced to aid the selection of individual data points.
 
 Event handlers are included on `<circle>` elements exactly like on rectangles.
 
@@ -976,7 +975,7 @@ Refer to the [`d3-time-format` module](https://github.com/d3/d3-time-format) for
 
 ### Delaunay
 
-The scatter plot from the previous demo is enhanced to have the mouse highlight a circle with a bit of leeway. Delaunay triangulation works by partitioning the chart in triangles, each responsible for an individual circle. The data is then shown when hovering on the triangles, and not the smaller, nested circle.
+The scatter plot from the previous demo is enhanced to have the mouse highlight a circle with a bit of leeway. Delaunay triangulation works by partitioning the chart in triangles, each responsible for an individual circle. The data is then shown when hovering on the triangles, and not the smaller circles.
 
 - create the triangulation with `d3.Delaunay.from`. The function accepts three arguments, for the dataset and two functions describing the `x` and `y` coordinate of the points
 
@@ -1013,7 +1012,7 @@ The scatter plot from the previous demo is enhanced to have the mouse highlight 
     .attr('d', (d, i) => voronoi.renderCell(i));
   ```
 
-By default, the path are rendered with a solid fill, so that the scatterplot is completely hidden. Setting a transparent fill, it is possible to conceal the elements, and still register mouse events.
+By default, the path are rendered with a solid fill, so that the scatterplot is completely hidden. Setting a transparent fill, it is possible to conceal the elements and still register mouse events.
 
 ```js
 .append('path')
@@ -1052,7 +1051,7 @@ bounds
 
 `x` and `y` are updated to refer to the coordinates of the selected data point.
 
-The identifier is finally set to then target and remove the element as the mouse leaves the elements.
+The identifier is useful to target and remove the element as the mouse leaves the elements.
 
 ```js
 bounds.select('#tooltipCircle').remove();
@@ -1060,7 +1059,7 @@ bounds.select('#tooltipCircle').remove();
 
 ### Line
 
-The final interactive demo provides more details for a line chart, a visualization similar to the one introduced in the first chapter, _01 Line Chart_. The biggest change is that the chart focuses on a subset of the entire data, on the first one hundred observations.
+The final interactive demo provides more details for a line chart, a visualization similar to the one introduced in the first chapter, `01 Line Chart`. The biggest change is that the chart focuses on a subset of the entire data, on the first one hundred observations.
 
 ```js
 const data = await d3.json('../../nyc_weather_data.json');
@@ -1117,7 +1116,7 @@ The book finally finds the closest data point with `d3.scan`, identifying the in
 const d = d3.least();
 ```
 
-The function is quite complex, but in the specific example, it works by comparing the items of the dataset two at a time.
+The function is quite complex, but in the context of the project, it works by comparing the items of the dataset two at a time.
 
 ```js
 const d = d3.least(dataset, (a, b) => {});
@@ -1133,7 +1132,7 @@ const d = d3.least(
 );
 ```
 
-In this manner the function creates a collection of differences, and returns the smallest value.
+In this manner the function creates a collection of differences, and returns the smallest value. In this manner `d3.least` identifies the data point with the date closest to the hovered point.
 
 ## 06 - Map
 
