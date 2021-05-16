@@ -1,7 +1,21 @@
+const {
+  json,
+  csv,
+  geoEqualEarth,
+  geoPath,
+  geoGraticule10,
+  extent,
+  max,
+  scaleLinear,
+  select,
+  format,
+  Delaunay,
+} = d3;
+
 async function drawMap() {
   /* DATA */
-  const countryShapes = await d3.json('./world-geojson.json');
-  const dataset = await d3.csv('./databank_data.csv');
+  const countryShapes = await json('./world-geojson.json');
+  const dataset = await csv('./databank_data.csv');
 
   /* for the elected metric create an object where the country is the key and the metric its accompanying value
   {
@@ -21,8 +35,8 @@ async function drawMap() {
   }, {});
 
   // ACCESSOR FUNCTIONS
-  const countryNameAccessor = d => d.properties.NAME;
-  const countryIdAccessor = d => d.properties.ADM0_A3_IS;
+  const countryNameAccessor = d => d.properties['NAME'];
+  const countryIdAccessor = d => d.properties['ADM0_A3_IS'];
 
   /* CHART DIMENSIONS / 1 */
   const dimensions = {
@@ -40,11 +54,9 @@ async function drawMap() {
 
   // SPHERE, PROJECTION and GENERATOR FUNCTION
   const sphere = { type: 'Sphere' };
-  const projection = d3
-    .geoEqualEarth()
-    .fitWidth(dimensions.boundedWidth, sphere);
+  const projection = geoEqualEarth().fitWidth(dimensions.boundedWidth, sphere);
 
-  const pathGenerator = d3.geoPath(projection);
+  const pathGenerator = geoPath(projection);
 
   /* CHART DIMENSIONS / 2 */
   const y1 = pathGenerator.bounds(sphere)[1][1];
@@ -56,16 +68,14 @@ async function drawMap() {
 
   /* SCALES */
   const metricValues = Object.values(metricDataByCountry);
-  const [min, max] = d3.extent(metricValues);
-  const maxChange = d3.max([Math.abs(min), Math.abs(max)]);
-  const colorScale = d3
-    .scaleLinear()
+  const [minValue, maxValue] = extent(metricValues);
+  const maxChange = max([Math.abs(minValue), Math.abs(maxValue)]);
+  const colorScale = scaleLinear()
     .domain([-maxChange, 0, maxChange])
     .range(['indigo', 'white', 'darkgreen']);
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -85,7 +95,7 @@ async function drawMap() {
     .attr('stroke', 'none');
 
   // graticulate
-  const graticuleJson = d3.geoGraticule10();
+  const graticuleJson = geoGraticule10();
   bounds
     .append('path')
     .attr('d', pathGenerator(graticuleJson))
@@ -132,6 +142,7 @@ async function drawMap() {
         2 +
         24}px)`
     );
+
   legendGroup
     .append('text')
     .text('Population Growth')
@@ -150,7 +161,7 @@ async function drawMap() {
   const legendWidth = 100;
   const legendHeight = 20;
 
-  const formatLegend = d3.format('.1f');
+  const formatLegend = format('.1f');
 
   const linearGradientId = 'linear-gradient-id';
 
@@ -192,11 +203,11 @@ async function drawMap() {
     .attr('font-size', 12);
 
   /* INTERACTIONS */
-  const tooltip = d3.select('#tooltip');
+  const tooltip = select('#tooltip');
 
   function onMouseEnter(event, d) {
     const [x, y] = pathGenerator.centroid(d);
-    const formatMetric = d3.format('.2f');
+    const formatMetric = format('.2f');
     const metricData = metricDataByCountry[countryIdAccessor(d)];
 
     tooltip
@@ -236,16 +247,16 @@ async function drawMap() {
   }
 
   function onMouseLeave() {
-    d3.select('#tooltip').style('opacity', 0);
-    d3.select('#tooltipCountry').remove();
-    d3.select('#tooltipCircle').remove();
+    select('#tooltip').style('opacity', 0);
+    select('#tooltipCountry').remove();
+    select('#tooltipCircle').remove();
   }
 
   // countries
   //   .on('mouseenter', onMouseEnter)
   //   .on('mouseleave', onMouseLeave)
 
-  const delaunay = d3.Delaunay.from(
+  const delaunay = Delaunay.from(
     countryShapes.features,
     d => pathGenerator.centroid(d)[0],
     d => pathGenerator.centroid(d)[1]

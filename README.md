@@ -1136,13 +1136,11 @@ In this manner the function creates a collection of differences, and returns the
 
 ## 06 - Map
 
-_Please note:_ geographical visualizations are a substantial topic, and one in which I still lack familiarity. In light of this, the notes for the chapter are likely to be more detailed than previous ones.
-
-The goal is to plot a chloropleth map, highlighting the population growth by applying a different color on the different countries.
+The goal is to plot a choropleth map, highlighting the population growth by applying a different color on the different countries.
 
 ### GeoJSON
 
-For geographical visualization, GeoJSON provides the necessary syntax to draw a map. For the project, the syntax is obtained as follows:
+geoJSON refers to the syntax necessary to draw a map. For the project, the syntax is obtained as follows:
 
 - download a shapefile from [Natural Earth Data](https://www.naturalearthdata.com/). An `.shp` file provides an alternative format to represent geographic data
 
@@ -1155,16 +1153,16 @@ const countryShapes = await d3.json('./world-geojson.json');
 console.log(countryShapes);
 ```
 
-Take notice of the `features` array, which describes a series of `Feature` objects for the countries. Each feature has a `geometry` and `properties` field. The first one describes the coordinates making up each country, while the latter details information on the country itself, like its name or continent.
+Take notice of the `features` array, which describes a series of `Feature` objects for the countries. Each feature has a `geometry` and `properties` field. The first one describes the coordinates making up each country, while the second one details information on the country itself, like its name or continent.
 
-In the specific project, the book introduces here two accessor functions to retrieve the country's name and identifier.
+In the specific project, the book introduces two accessor functions to retrieve the country's name and identifier.
 
 ```js
 const countryNameAccessor = (d) => d.properties['NAME'];
 const countryIdAccessor = (d) => d.properties['ADM0_A3_IS'];
 ```
 
-The name is useful to describe the country, and will become relevant in the moment the country is highlighted in a tooltip, while the identifier provides a link with which to connect the country and the data describing the populatiojn growth.
+The name is useful to describe the country, and will become relevant in the moment the country is highlighted in a tooltip, while the identifier provides a link with which to connect the country and the data describing the population growth.
 
 ### Data
 
@@ -1230,13 +1228,13 @@ const sphere = { type: 'Sphere' };
 
 ### Projection
 
-A projection describes how the map is approximated. It is indeed necessary to distort the three dimensional shape in order to draw the visual in two dimensions.
+A projection describes how the map is approximated. It is indeed necessary to distort the three dimensional shape in order to draw the world in two dimensions.
 
-There are several projections, each with its pros and cons, but the book argues for at least the following:
+There are several projections, each with its pros and cons, but the book motivates the following guidelines:
 
-- Mercator (`d3.geoMercator`) and specifically Transverse Mertcator (`d3.geoTransverseMercator`), especially for maps devoted to countries or smaller units
+- Mercator (`d3.geoMercator`) and specifically transverse mercator (`d3.geoTransverseMercator`) for maps devoted to countries or smaller geographical units
 
-- Winkel-Tripel (`d3.geoWinkel3`) and equal Earth (`d3.geoEqualEarth`), particularly for continents and the entire planet
+- Winkel-Tripel (`d3.geoWinkel3`) and equal Earth (`d3.geoEqualEarth`) for continents and the entire planet
 
 The documentation for [`d3-geo`](https://github.com/d3/d3-geo) highlights the projections included in the main library, while [`d3-geo-projection`](https://github.com/d3/d3-geo-projection) provides a module for additional types. Incidentally, `d3.geoWinkel3` is available from this additional module.
 
@@ -1254,13 +1252,13 @@ const projection = d3.geoEqualEarth().fitWidth(dimensions.boundedWidth, sphere);
 
 ### geoPath
 
-`d3.geoPath` provides a generator function similar to `d3.line` as introduced in the first chapter, _01 Line Chart_. It is initialized with the chosen projection.
+`d3.geoPath` provides a generator function similar to `d3.line` as introduced in the first chapter, `01 - Line Chart`. It is initialized with the chosen projection.
 
 ```js
 const pathGenerator = d3.geoPath(projection);
 ```
 
-It then receives a GeoJSON object to produce the necessary syntax for the `d` attribute of `<path>` elements. One of these objects, for instance, is the object of type `'Sphere'` introduced earlier.
+It then receives a geoJSON object to produce the necessary syntax for the `d` attribute of `<path>` elements. One of these objects, for instance, is the object of type `'Sphere'` introduced earlier.
 
 ```js
 console.log(pathGenerator(sphere)); // M ....
@@ -1268,7 +1266,7 @@ console.log(pathGenerator(sphere)); // M ....
 
 ### Chart Dimensions / 2
 
-Thanks to the generator function, it is finally possible to compute the vertical dimensions of the chart. `pathGenerator.bounds` provides a two dimensional array with the bounds of the input GeoJSON object. Through the sphere, the function highlights the bounds of the entire visualization: `[[x0, y0], [x1, y1]]`, and finally the height of the bounded area.
+Thanks to the generator function, it is possible to compute the vertical dimensions of the chart. `pathGenerator.bounds` provides a two dimensional array with the bounds of the input GeoJSON object. Through the sphere, the function highlights the bounds of the entire visualization: `[[x0, y0], [x1, y1]]`, and finally the height of the bounded area.
 
 ```js
 const y1 = pathGenerator.bounds(sphere)[1][1];
@@ -1337,7 +1335,7 @@ The map itself is drawn with the path generator function, and at least three typ
 
   `pathGenerator` works as a shorthand for `d => pathGenerator(d)`, meaning the generating function receives a feature to produce the necessary SVG syntax.
 
-To finally create the chloropleth map, the fill of each country considers the color scale and the population growth.
+To finally create the choropleth map, the fill of each country considers the color scale and the population growth.
 
 ```js
 .attr('fill', d => {
@@ -1350,7 +1348,7 @@ To finally create the chloropleth map, the fill of each country considers the co
 
 ### Navigator
 
-`Navigator` is Web APIs which provides detailed information regarding the user location, following the consent of said user. In the specific project, it is used to find the longitude and latitude to then draw a circle in the matching location.
+`Navigator` is a Web API which provides detailed information regarding the user location, pending consent. In the specific project, it is used to find the longitude and latitude to then draw a circle in the matching location.
 
 ```js
 navigator.geolocation.getCurrentPosition(position => {
@@ -1358,7 +1356,7 @@ navigator.geolocation.getCurrentPosition(position => {
 }
 ```
 
-The porjection is useful for the path generator, but also as a standalone function, to provide the `x` and `y` dimensions for a given set of real-world coordinates.
+The projection proves to be useful as a standalone function to provide the `x` and `y` dimensions for a given set of real-world coordinates.
 
 ```js
 const [x, y] = projection([longitude, latitude]);
@@ -1372,7 +1370,7 @@ bounds.append('g').append('circle').attr('cx', x).attr('cy', y).attr('r', 6);
 
 ### Peripherals
 
-Instead of axis, peripherals are included in the form of a legend, with a label, a byline and a rectangle describing the color scale. Two labels are included as previous projects, to describe the metric and a short description. Below this visuals, however, the legend details a rectangle to highlightc color scale. The scale is specifically through the fill of the rectangle, which is not a solid color, but a gradient with three colors (the same colors of the range of the color sale).
+Instead of axis, peripherals are included in the form of a legend, with a label, a byline and a rectangle describing the color scale. Labels are included as in previous projects to describe the metric and a short description. Below these visuals, however, the legend details a rectangle to highlightc color scale. The scale is shown specifically through the fill of the rectangle and a gradient with three colors (the same colors of the range of the color sale).
 
 In SVG, the `<linearGradient>` element works similarly to `<clipPath>`:
 
@@ -1405,7 +1403,7 @@ In the visualization, the `<stop>` elements are included dynamically, binding th
 console.log(colorScale.range()); // ["indigo", "white", "darkgreen"]
 ```
 
-The color is included in the `stop-color` attribute, while the offset is computed on the basis of the element's index, so that the `[0, 100]` interval is evenly split in three parts.
+The color is included in the `stop-color` attribute, while the offset is computed on the basis of the element's index so that the `[0, 100]` interval is evenly split in three parts.
 
 ```js
 linearGradient
@@ -1421,7 +1419,7 @@ linearGradient
 
 Interactions are included with a tooltip and a couple SVG shapes.
 
-In terms of SVG, the highlight is shown with a `<circle>`, but also a `<path>` element recreating the selected country (the country is actually rendered first, to eventually show the circle above it).
+In terms of SVG, the highlight is shown with a `<circle>`, but also a `<path>` element recreating the selected country. The country is rendered first, to eventually show the circle above it.
 
 The `<path>` is recreated with the path generator function.
 
@@ -1433,7 +1431,7 @@ bounds
   .attr('d', pathGenerator(d));
 ```
 
-The circle, instead, is positioned thanks to the `centroid` method, providing the center of a GeoJSON object and for a specific generator function.
+The circle is positioned thanks to the `centroid` method, providing the center of a GeoJSON object and for a specific generator function.
 
 ```js
 console.log(pathGenerator.centroid(sphere)); // [x, y]
