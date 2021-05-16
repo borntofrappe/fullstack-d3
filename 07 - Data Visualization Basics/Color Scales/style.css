@@ -33,8 +33,7 @@ article {
   line-height: 1.5;
   padding: 1rem 0.75rem;
   background: hsl(0, 0%, 100%);
-  border-radius: 1rem;
-  box-shadow: 0 2px 12px -8px hsl(210, 29%, 5%);
+  box-shadow: 0 1px 5px -4px hsl(210, 29%, 5%);
 }
 
 article > * + * {

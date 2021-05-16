@@ -1,8 +1,16 @@
+const {
+  json,
+  timeParse,
+  extent,
+  axisLeft,
+  axisBottom
+} = d3;
+
 async function drawLineChart() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await json('../../nyc_weather_data.json');
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
 
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => d.humidity;
@@ -27,12 +35,12 @@ async function drawLineChart() {
   /* SCALES */
   const xScale = d3
     .scaleTime()
-    .domain(d3.extent(dataset, xAccessor))
+    .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth]);
 
   const yScale = d3
     .scaleLinear()
-    .domain(d3.extent(dataset, yAccessor))
+    .domain(extent(dataset, yAccessor))
     .range([dimensions.boundedHeight, 0])
     .nice();
 
@@ -70,7 +78,7 @@ async function drawLineChart() {
 
   /* PERIPHERALS */
   const axisGroup = bounds.append('g');
-  const yAxisGenerator = d3.axisLeft().scale(yScale);
+  const yAxisGenerator = axisLeft().scale(yScale);
   const yAxisGroup = axisGroup.append('g').call(yAxisGenerator);
   yAxisGroup
     .selectAll('g.tick')
@@ -92,7 +100,7 @@ async function drawLineChart() {
         2}px) rotate(-90deg)`
     );
 
-  const xAxisGenerator = d3.axisBottom().scale(xScale);
+  const xAxisGenerator = axisBottom().scale(xScale);
 
   axisGroup
     .append('g')

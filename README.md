@@ -1567,7 +1567,7 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
 
   An additional (preceding) year is necessary to contemplate the winter season at the beginning of the dataset.
 
-  `d3.timeYears` produces an array of date object. A formatting function is then used to have `years` describe the intger value only.
+  `d3.timeYears` produces an array of date objects. A formatting function is then used to have `years` describe the integer value only.
 
   ```js
   const years = d3
@@ -1581,7 +1581,7 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
 
 ### Color Scales
 
-The project highlights how to include color through the `d3-scale-chromatic` and `d3-interpolate` modules.
+The project illustrates how to include color through the `d3-scale-chromatic` and `d3-interpolate` modules.
 
 It is important to note the following:
 
@@ -1589,7 +1589,7 @@ It is important to note the following:
 
 - sequential, diverging, cyclical scales create a scale like `d3.scaleLinear`, with a domain (`[0, 1]`) and a range (an array of colors). Consider `d3.interpolateBlues()`. You obtain a color by calling the function with a specific number, like `d3.interpolateBlues(0.5)`
 
-- when interpolating between two or more colors d3 supports both the scale and array syntax. `d3.interpolateBlues()`, for instance, creates a proper scale, while `d3.interpolateBlues[n]` creates an array of `n` colors in the prescribed range
+- when interpolating between two or more colors, d3 supports both the scale and array syntax. `d3.interpolateBlues()`, for instance, creates a proper scale, while `d3.interpolateBlues[n]` creates an array of `n` colors in the prescribed range
 
 - functions from `d3-interpolate` interpolate between two colors in a given color space. In this light, it is helpful to have a brief overview of the different formats:
 

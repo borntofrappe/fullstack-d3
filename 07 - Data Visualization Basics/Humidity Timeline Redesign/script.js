@@ -1,9 +1,19 @@
+const {
+  json,
+  timeParse,
+  timeFormat,
+  timeWeeks,
+  mean,
+  timeMonth,
+  extent
+} = d3;
+
 async function drawLineChart() {
   /* ACCESS DATA */
-  const data = await d3.json('../../nyc_weather_data.json');
+  const data = await json('../../nyc_weather_data.json');
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
-  const dateFormatter = d3.timeFormat('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
+  const dateFormatter = timeFormat('%Y-%m-%d');
 
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => d.humidity;
@@ -12,7 +22,7 @@ async function drawLineChart() {
   const dataset = data.sort((a, b) => xAccessor(a) - xAccessor(b));
 
   // downsample the data to consider one value per week (the average of the days in the week)
-  const weeks = d3.timeWeeks(
+  const weeks = timeWeeks(
     xAccessor(dataset[0]),
     xAccessor(dataset[dataset.length - 1])
   );
@@ -24,7 +34,7 @@ async function drawLineChart() {
       d => xAccessor(d) > weekStart && xAccessor(d) <= weekEnd
     );
     return {
-      humidity: d3.mean(days, yAccessor),
+      humidity: mean(days, yAccessor),
       date: dateFormatter(week),
     };
   });
@@ -34,8 +44,8 @@ async function drawLineChart() {
   const endDate = xAccessor(dataset[dataset.length - 1]);
   // 1 year more than the dataset, so to consider winter of the previous cycle
   const years = d3
-    .timeYears(d3.timeMonth.offset(startDate, -13), endDate)
-    .map(yearDate => parseInt(d3.timeFormat('%Y')(yearDate)));
+    .timeYears(timeMonth.offset(startDate, -13), endDate)
+    .map(yearDate => parseInt(timeFormat('%Y')(yearDate)));
 
   const seasons = [
     {
@@ -80,7 +90,7 @@ async function drawLineChart() {
           color,
           start: seasonStart,
           end: seasonEnd,
-          mean: d3.mean(days, yAccessor),
+          mean: mean(days, yAccessor),
         });
       }
     });
@@ -106,12 +116,12 @@ async function drawLineChart() {
   /* SCALES */
   const xScale = d3
     .scaleTime()
-    .domain(d3.extent(dataset, xAccessor))
+    .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth]);
 
   const yScale = d3
     .scaleLinear()
-    .domain(d3.extent(dataset, yAccessor))
+    .domain(extent(dataset, yAccessor))
     .range([dimensions.boundedHeight, 0])
     .nice();
 
