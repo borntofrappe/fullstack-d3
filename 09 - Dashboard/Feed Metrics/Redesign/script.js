@@ -1,7 +1,20 @@
+const {
+  csv,
+  timeParse,
+  timeFormat,
+  format,
+  scaleQuantize,
+  scaleLinear,
+  select,
+  mean,
+  color,
+  extent
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.csv('../data_feed.csv');
-  const dateParser = d3.timeParse('%d-%m-%Y');
-  const dateFormatter = d3.timeFormat('%B %-e');
+  const dataset = await csv('../data_feed.csv');
+  const dateParser = timeParse('%d-%m-%Y');
+  const dateFormatter = timeFormat('%B %-e');
   const dateAccessor = d => dateParser(d.date);
   
   const qualifiersMany   = ['many less', 'less', 'the same', 'more', 'many more'];
@@ -47,13 +60,13 @@ async function drawDashboard() {
       title: 'Views',
       note: (qualifier, date) => `There were <strong>${qualifier}</strong> views ${qualifier === 'the same' ? 'as usual' : 'than usual'} on ${dateFormatter(date)}.`,
       addendum: (value) => `People read articles related to <a href="#">Football</a> ${value} times. Every time someone reads an article, we count it as a view.`,
-      formatAverage: d => `${d3.format('.0f')(d / 1000)}k`,
-      formatValue: d => `${d3.format('.1f')(d / 1000)}k`,
+      formatAverage: d => `${format('.0f')(d / 1000)}k`,
+      formatValue: d => `${format('.1f')(d / 1000)}k`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifiersMany),
-        rotate: d3.scaleLinear().range(rotation),
-        color: d3.scaleLinear().range(colors),
-        strokeDashoffset: d3.scaleLinear().range(strokeDashoffset),
+        qualify: scaleQuantize().range(qualifiersMany),
+        rotate: scaleLinear().range(rotation),
+        colorScale: scaleLinear().range(colors),
+        strokeDashoffset: scaleLinear().range(strokeDashoffset),
       },
     },
     {
@@ -62,13 +75,13 @@ async function drawDashboard() {
       title: 'Articles',
       note: (qualifier, date) => `There were <strong>${qualifier}</strong> articles ${qualifier === 'the same' ? 'as usual' : 'than usual'} on ${dateFormatter(date)}.`,
       addendum: (value) => `There were ${value} articles read about <a href="#">Football</a>.`,
-      formatAverage: d => `${d3.format('.0f')(d)}`,
-      formatValue: d => `${d3.format('.0f')(d)}`,
+      formatAverage: d => `${format('.0f')(d)}`,
+      formatValue: d => `${format('.0f')(d)}`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifiersMany),
-        rotate: d3.scaleLinear().range(rotation),
-        color: d3.scaleLinear().range(colors),
-        strokeDashoffset: d3.scaleLinear().range(strokeDashoffset),
+        qualify: scaleQuantize().range(qualifiersMany),
+        rotate: scaleLinear().range(rotation),
+        colorScale: scaleLinear().range(colors),
+        strokeDashoffset: scaleLinear().range(strokeDashoffset),
       },
     },
     {
@@ -77,28 +90,28 @@ async function drawDashboard() {
       title: 'Demand',
       note: (qualifier, date) => `There was <strong>${qualifier}</strong> demand ${qualifier === 'the same' ? 'as usual' : 'than usual'} on ${dateFormatter(date)}.`,
       addendum: (value) => `On average people viewed an article related to <a href="#">Football</a> ${value} times. Demand is the average daily views per article`,
-      formatAverage: d => `${d3.format('.0f')(d)}`,
-      formatValue: d => `${d3.format('.1f')(d)}`,
+      formatAverage: d => `${format('.0f')(d)}`,
+      formatValue: d => `${format('.1f')(d)}`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifiersMuch),
-        rotate: d3.scaleLinear().range(rotation),
-        color: d3.scaleLinear().range(colors),
-        strokeDashoffset: d3.scaleLinear().range(strokeDashoffset),
+        qualify: scaleQuantize().range(qualifiersMuch),
+        rotate: scaleLinear().range(rotation),
+        colorScale: scaleLinear().range(colors),
+        strokeDashoffset: scaleLinear().range(strokeDashoffset),
       },
     },
   ];
 
-  const root = d3.select('#wrapper');
+  const root = select('#wrapper');
   let selectedDay = 0;
 
   function drawMetric(day, metric) {
     const { key, accessor, note, addendum, formatAverage, formatValue, scales } = metric;
-    const { qualify, rotate, color, strokeDashoffset } = scales;
+    const { qualify, rotate, colorScale, strokeDashoffset } = scales;
 
-    const average = d3.mean(dataset, accessor);
+    const average = mean(dataset, accessor);
     const value = accessor(dataset[day]);
 
-    const section = d3.select(`#section-${key}`);
+    const section = select(`#section-${key}`);
 
     section
       .select('p:nth-of-type(1)')
@@ -116,7 +129,7 @@ async function drawDashboard() {
       .transition()
       .duration(400)
       .attr('transform', `rotate(${rotate(value)})`)
-      .attr('fill', d3.color(color(value)).darker(1));
+      .attr('fill', color(colorScale(value)).darker(1));
 
     section
       .select('svg path.arrow')
@@ -129,8 +142,7 @@ async function drawDashboard() {
     .duration(400)
       .attr('stroke-dashoffset', function() {
         return (
-          d3
-            .select(this)
+          select(this)
             .node()
             .getTotalLength() * strokeDashoffset(value)
         );
@@ -140,7 +152,7 @@ async function drawDashboard() {
   metrics.forEach(metric => {
     const { key, accessor, title, scales } = metric;
 
-    const domain = d3.extent(dataset, accessor);
+    const domain = extent(dataset, accessor);
 
     Object.keys(scales).forEach(scale =>
       metric.scales[scale].domain(domain)
@@ -268,14 +280,12 @@ async function drawDashboard() {
       .attr('opacity', 2)
       .attr('stroke-linecap', 'round')
       .attr('stroke-dasharray', function() {
-        return d3
-          .select(this)
+        return select(this)
           .node()
           .getTotalLength();
       })
       .attr('stroke-dashoffset', function() {
-        return d3
-          .select(this)
+        return select(this)
           .node()
           .getTotalLength();
       });
@@ -295,9 +305,9 @@ async function drawDashboard() {
       .attr('class', 'bubble')
       .attr('r', radiusCircle)
       .attr('cx', -dimensions.boundedWidth / 2)
-      .attr('fill', d3.color(colors[0]).darker(1))
+      .attr('fill', color(colors[0]).darker(1))
       .attr('stroke-width', strokeWidthCircle)
-      .attr('stroke', d3.color(colors[1]).darker(1.5));
+      .attr('stroke', color(colors[1]).darker(1.5));
 
     drawMetric(selectedDay, metric);
   });

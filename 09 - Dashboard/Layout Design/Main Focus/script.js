@@ -1,14 +1,32 @@
+const {
+  json,
+  timeParse,
+  timeFormat,
+  format,
+  timeMonth,
+  scaleTime,
+  scaleLinear,
+  max,
+  extent,
+  line,
+  area,
+  curveCatmullRom,
+  select,
+  axisBottom,
+  axisLeft
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.json('../../../nyc_weather_data.json');
+  const dataset = await json('../../../nyc_weather_data.json');
   const selectedDay =
     dataset[Math.floor(Math.random() * (dataset.length - 31) + 31)];
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
-  const dateFormatter = d3.timeFormat('%B %-d, %Y');
+  const dateParser = timeParse('%Y-%m-%d');
+  const dateFormatter = timeFormat('%B %-d, %Y');
   const dateAccessor = d => dateParser(d.date);
-  const temperatureFormatter = d3.format('.1f');
+  const temperatureFormatter = format('.1f');
 
-  const root = d3.select('#root');
+  const root = select('#root');
   const header = root.append('header');
   header.append('h1').text('Weather in New York City');
   header.append('h2').text(dateFormatter(dateAccessor(selectedDay)));
@@ -24,7 +42,7 @@ async function drawDashboard() {
 
   const monthData = dataset.filter(
     d =>
-      dateAccessor(d) > d3.timeMonth.offset(dateAccessor(selectedDay), -1) &&
+      dateAccessor(d) > timeMonth.offset(dateAccessor(selectedDay), -1) &&
       dateAccessor(d) <= dateAccessor(selectedDay)
   );
 
@@ -45,35 +63,30 @@ async function drawDashboard() {
     dimensions.boundedHeight =
       dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
-    const xScale = d3
-      .scaleTime()
-      .domain(d3.extent(monthData, dateAccessor))
+    const xScale = scaleTime()
+      .domain(extent(monthData, dateAccessor))
       .range([0, dimensions.boundedWidth]);
 
-    const yScale = d3
-      .scaleLinear()
-      .domain([d3.max(monthData, d => d.temperatureMax), 0])
+    const yScale = scaleLinear()
+      .domain([max(monthData, d => d.temperatureMax), 0])
       .range([0, dimensions.boundedHeight])
       .nice();
 
-    const lineMinGenerator = d3
-      .line()
+    const lineMinGenerator = line()
       .x(d => xScale(dateAccessor(d)))
       .y(d => yScale(d.temperatureMin))
-      .curve(d3.curveCatmullRom);
+      .curve(curveCatmullRom);
 
-    const lineMaxGenerator = d3
-      .line()
+    const lineMaxGenerator = line()
       .x(d => xScale(dateAccessor(d)))
       .y(d => yScale(d.temperatureMax))
-      .curve(d3.curveCatmullRom);
+      .curve(curveCatmullRom);
 
-    const areaGenerator = d3
-      .area()
+    const areaGenerator = area()
       .x(d => xScale(dateAccessor(d)))
       .y0(d => yScale(d.temperatureMax))
       .y1(d => yScale(d.temperatureMin))
-      .curve(d3.curveCatmullRom);
+      .curve(curveCatmullRom);
 
     const wrapper = root
       .append('svg')
@@ -126,15 +139,13 @@ async function drawDashboard() {
       .attr('cy', yScale(selectedDay.temperatureMax))
       .attr('fill', 'hsl(0, 86%, 59%)');
 
-    const xAxisGenerator = d3
-      .axisBottom()
+    const xAxisGenerator = axisBottom()
       .scale(xScale)
       .ticks(4)
       .tickSize(0)
       .tickPadding(8);
 
-    const yAxisGenerator = d3
-      .axisLeft()
+    const yAxisGenerator = axisLeft()
       .scale(yScale)
       .ticks(3)
       .tickSize(0);

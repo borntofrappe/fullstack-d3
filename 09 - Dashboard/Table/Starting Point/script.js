@@ -1,5 +1,10 @@
+const {
+  json,
+  select
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.json('../../../nyc_weather_data.json');
+  const dataset = await json('../../../nyc_weather_data.json');
   const metrics = [
     {
       key: 'date',
@@ -31,7 +36,7 @@ async function drawDashboard() {
     },
   ]
 
-  const table = d3.select('#wrapper').append('table');
+  const table = select('#wrapper').append('table');
   table
     .append('thead')
     .append('tr')

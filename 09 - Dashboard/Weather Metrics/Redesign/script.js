@@ -1,11 +1,22 @@
-async function drawDashboard() {
-  const dataset = await d3.json('../../../nyc_weather_data.json');
+const {
+  json,
+  select,
+  color,
+  interpolateBlues,
+  format,
+  scaleQuantize,
+  scaleLinear,
+  extent
+} = d3;
 
-  const root = d3.select('#wrapper');
+async function drawDashboard() {
+  const dataset = await json('../../../nyc_weather_data.json');
+
+  const root = select('#wrapper');
 
   function drawMetric(day, metric) {
     const { text, fill, rotate, strokeDashoffset } = metric.scales;
-    const article = d3.select(`#article-${metric.key}`);
+    const article = select(`#article-${metric.key}`);
 
     article.select(`h2`).text(metric.label);
     article.select(`h3`).text(metric.measure);
@@ -20,7 +31,7 @@ async function drawDashboard() {
       .transition()
       .duration(400)
       .attr('transform', `rotate(${rotate(value)})`)
-      .attr('fill', d3.color(d3.interpolateBlues(fill(value))).darker(1.5));
+      .attr('fill', color(interpolateBlues(fill(value))).darker(1.5));
 
     article
       .select('svg path.arrow')
@@ -33,8 +44,7 @@ async function drawDashboard() {
       .duration(400)
       .attr('stroke-dashoffset', function() {
         return (
-          d3
-            .select(this)
+          select(this)
             .node()
             .getTotalLength() * strokeDashoffset(value)
         );
@@ -46,42 +56,39 @@ async function drawDashboard() {
       key: 'windSpeed',
       label: 'Wind Speed',
       measure: 'meters per second',
-      format: d => d3.format('.2f')(d),
+      format: d => format('.2f')(d),
       scales: {
-        text: d3
-          .scaleQuantize()
+        text: scaleQuantize()
           .range(['Very low', 'Low', 'Average', 'High', 'Very high']),
-        rotate: d3.scaleLinear().range([0, 180]),
-        fill: d3.scaleLinear().range([0.2, 1]),
-        strokeDashoffset: d3.scaleLinear().range([1, 0]),
+        rotate: scaleLinear().range([0, 180]),
+        fill: scaleLinear().range([0.2, 1]),
+        strokeDashoffset: scaleLinear().range([1, 0]),
       },
     },
     {
       key: 'visibility',
       label: 'Visibility',
       measure: 'kilometers',
-      format: d => d3.format('.2f')(d),
+      format: d => format('.2f')(d),
       scales: {
-        text: d3
-          .scaleQuantize()
+        text: scaleQuantize()
           .range(['Very low', 'Low', 'Average', 'High', 'Very high']),
-        rotate: d3.scaleLinear().range([0, 180]),
-        fill: d3.scaleLinear().range([0.2, 1]),
-        strokeDashoffset: d3.scaleLinear().range([1, 0]),
+        rotate: scaleLinear().range([0, 180]),
+        fill: scaleLinear().range([0.2, 1]),
+        strokeDashoffset: scaleLinear().range([1, 0]),
       },
     },
     {
       key: 'pressure',
       label: 'Atmospheric Pressure',
       measure: 'hectopascals',
-      format: d => `${d3.format('.1f')(d / 1000)}<span>k</span>`,
+      format: d => `${format('.1f')(d / 1000)}<span>k</span>`,
       scales: {
-        text: d3
-          .scaleQuantize()
+        text: scaleQuantize()
           .range(['Very low', 'Low', 'Average', 'High', 'Very high']),
-        rotate: d3.scaleLinear().range([0, 180]),
-        fill: d3.scaleLinear().range([0.2, 1]),
-        strokeDashoffset: d3.scaleLinear().range([1, 0]),
+        rotate: scaleLinear().range([0, 180]),
+        fill: scaleLinear().range([0.2, 1]),
+        strokeDashoffset: scaleLinear().range([1, 0]),
       },
     },
   ];
@@ -89,7 +96,7 @@ async function drawDashboard() {
   let selectedDay = 0;
 
   metrics.forEach(metric => {
-    const domain = d3.extent(dataset, d => d[metric.key]);
+    const domain = extent(dataset, d => d[metric.key]);
     Object.keys(metric.scales).forEach(scale =>
       metric.scales[scale].domain(domain)
     );
@@ -132,7 +139,7 @@ async function drawDashboard() {
       .enter()
       .append('stop')
       .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
-      .attr('stop-color', d => d3.interpolateBlues(d));
+      .attr('stop-color', d => interpolateBlues(d));
 
     const bounds = wrapper
       .append('g')
@@ -197,15 +204,13 @@ async function drawDashboard() {
       .attr('fill', 'none')
       .attr('stroke-linecap', 'round')
       .attr('stroke-dasharray', function() {
-        return d3
-          .select(this)
+        return select(this)
           .node()
           .getTotalLength();
       })
       .attr('stroke-dashoffset', function() {
         return (
-          d3
-            .select(this)
+          select(this)
             .node()
             .getTotalLength() * 0
         );
@@ -227,9 +232,9 @@ async function drawDashboard() {
       .attr('class', 'bubble')
       .attr('r', radiusCircle)
       .attr('cx', -dimensions.boundedWidth / 2)
-      .attr('fill', d3.color(d3.interpolateBlues(1)).darker(1.5))
+      .attr('fill', color(interpolateBlues(1)).darker(1.5))
       .attr('stroke-width', strokeWidthCircle)
-      .attr('stroke', d3.color(d3.interpolateBlues(1)).darker(2))
+      .attr('stroke', color(interpolateBlues(1)).darker(2))
       .attr('transform', 'rotate(180)');
 
     drawMetric(selectedDay, metric);

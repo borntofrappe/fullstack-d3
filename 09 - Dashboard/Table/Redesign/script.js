@@ -1,5 +1,17 @@
+const {
+  json,
+  timeParse,
+  timeFormat,
+  format,
+  scaleLinear,
+  extent,
+  min,
+  select,
+  selectAll
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.json('../../../nyc_weather_data.json');
+  const dataset = await json('../../../nyc_weather_data.json');
 
   const icons = {
     'uv-index': `<svg width="1em" height="1em" aria-focusable="false" aria-hidden="true" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -16,30 +28,27 @@ async function drawDashboard() {
  `,
   };
 
-  const timeParseSeconds = d3.timeParse('%s');
-  const timeParseDate = d3.timeParse('%Y-%m-%d');
+  const timeParseSeconds = timeParse('%s');
+  const timeParseDate = timeParse('%Y-%m-%d');
 
-  const timeFormatDate = d3.timeFormat('%-m/%d');
-  const timeFormatHour = d3.timeFormat('%-H');
-  const timeFormatHourTwelveHours = d3.timeFormat('%-I %p');
+  const timeFormatDate = timeFormat('%-m/%d');
+  const timeFormatHour = timeFormat('%-H');
+  const timeFormatHourTwelveHours = timeFormat('%-I %p');
 
-  const formatTemperatureMax = d3.format('.1f');
-  const formatWindSpeed = d3.format('.2f');
+  const formatTemperatureMax = format('.1f');
+  const formatWindSpeed = format('.2f');
 
   const strokeWidth = 1;
-  const positionScale = d3
-    .scaleLinear()
+  const positionScale = scaleLinear()
     .domain([0, 23])
     .range([strokeWidth / 2, 100 - strokeWidth / 2]);
 
-  const colorTemperatureMaxScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, d => d.temperatureMax))
+  const colorTemperatureMaxScale = scaleLinear()
+    .domain(extent(dataset, d => d.temperatureMax))
     .range(['hsl(199, 100%, 85%)', 'hsl(0, 100%, 81%)']);
 
-  const colorWindSpeedScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, d => d.windSpeed))
+  const colorWindSpeedScale = scaleLinear()
+    .domain(extent(dataset, d => d.windSpeed))
     .range(['hsl(0, 0%, 100%)', 'hsl(209, 19%, 72%)']);
 
   const temperatureMaxClass = 'temperatureMax';
@@ -97,14 +106,14 @@ async function drawDashboard() {
       label: 'UV Index',
       align: 'left',
       render: d =>
-        `<span aria-label="${d}">${Array(d3.min([d, uvIndexThreshold]))
+        `<span aria-label="${d}">${Array(min([d, uvIndexThreshold]))
           .fill()
           .map(() => icons['uv-index'])
           .join('')}${d > uvIndexThreshold ? icons.plus : ''}</span>`,
     },
   ];
 
-  const table = d3.select('#wrapper').append('table');
+  const table = select('#wrapper').append('table');
   table
     .append('thead')
     .append('tr')
@@ -139,11 +148,11 @@ async function drawDashboard() {
     .style('text-align', d => d.align)
     .html(d => d.render(d.value));
 
-  d3.selectAll('td.windSpeed').style('background', d =>
+  selectAll('td.windSpeed').style('background', d =>
     colorWindSpeedScale(d.value)
   );
 
-  d3.selectAll(`td.${temperatureMaxClass}`).style('background', d =>
+  selectAll(`td.${temperatureMaxClass}`).style('background', d =>
     colorTemperatureMaxScale(d.value)
   );
 }

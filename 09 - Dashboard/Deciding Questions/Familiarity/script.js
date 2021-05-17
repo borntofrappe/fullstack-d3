@@ -1,5 +1,15 @@
+const {
+  json,
+  format,
+  extent,
+  scaleLinear,
+  scaleQuantize,
+  select,
+  color
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.json('../../../nyc_weather_data.json');
+  const dataset = await json('../../../nyc_weather_data.json');
   const selectedDay = dataset[Math.floor(Math.random() * dataset.length)];
 
   const icons = {
@@ -9,29 +19,25 @@ async function drawDashboard() {
    `,
   };
 
-  const formarValue = d3.format('.1f');
+  const formarValue = format('.1f');
   const qualifyRange = ['very low', 'low', 'average', 'high', 'very high'];
   const rotateRange = [0, 180];
   const strokeDashoffsetRange = [1, 0];
 
   const metricAccessor = d => d.dewPoint;
   const value = metricAccessor(selectedDay);
-  const domain = d3.extent(dataset, metricAccessor);
+  const domain = extent(dataset, metricAccessor);
 
-  const colorScale = d3
-    .scaleLinear()
+  const colorScale = scaleLinear()
     .domain(domain)
     .range(['hsl(21, 95%, 84%)', 'hsl(34, 100%, 50%)']);
-  const rotateScale = d3
-    .scaleLinear()
+  const rotateScale = scaleLinear()
     .domain(domain)
     .range(rotateRange);
-  const qualifyScale = d3
-    .scaleQuantize()
+  const qualifyScale = scaleQuantize()
     .domain(domain)
     .range(qualifyRange);
-  const strokeDashoffsetScale = d3
-    .scaleLinear()
+  const strokeDashoffsetScale = scaleLinear()
     .domain(domain)
     .range(strokeDashoffsetRange);
 
@@ -56,7 +62,7 @@ async function drawDashboard() {
   const paddingGauge = 2;
   const strokeWidthGauge = (radiusCircle - paddingGauge) * 2;
 
-  const root = d3.select('#root');
+  const root = select('#root');
 
   function drawGauge(container) {
     const wrapper = container
@@ -142,15 +148,13 @@ async function drawDashboard() {
       .attr('opacity', 2)
       .attr('stroke-linecap', 'round')
       .attr('stroke-dasharray', function() {
-        return d3
-          .select(this)
+        return select(this)
           .node()
           .getTotalLength();
       })
       .attr('stroke-dashoffset', function() {
         return (
-          d3
-            .select(this)
+          select(this)
             .node()
             .getTotalLength() * strokeDashoffsetScale(value)
         );
@@ -162,7 +166,7 @@ async function drawDashboard() {
       .attr('cx', -dimensions.boundedWidth / 2)
       .attr('stroke-width', strokeWidthCircle)
       .attr('stroke', 'currentColor')
-      .attr('fill', d3.color(colorScale(value)).darker(0.5))
+      .attr('fill', color(colorScale(value)).darker(0.5))
       .attr('transform', `rotate(${rotateScale(value)})`);
   }
 

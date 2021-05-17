@@ -1,5 +1,23 @@
+const {
+  json,
+  timeParse,
+  timeMonth,
+  extent,
+  scaleQuantize,
+  scaleLinear,
+  format,
+  select,
+  forceSimulation,
+  forceCollide,
+  forceX,
+  forceY,
+  axisBottom,
+  color,
+  mean
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.json('../../../nyc_weather_data.json');
+  const dataset = await json('../../../nyc_weather_data.json');
   const selectedDay =
     dataset[Math.floor(Math.random() * (dataset.length - 31) + 31)];
 
@@ -10,40 +28,37 @@ async function drawDashboard() {
    `,
   };
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
   const dateAccessor = d => dateParser(d.date);
 
   const monthData = dataset.filter(
     d =>
-      dateAccessor(d) > d3.timeMonth.offset(dateAccessor(selectedDay), -1) &&
+      dateAccessor(d) > timeMonth.offset(dateAccessor(selectedDay), -1) &&
       dateAccessor(d) <= dateAccessor(selectedDay)
   );
 
   const metricAccessor = d => d.dewPoint;
   const value = metricAccessor(selectedDay);
-  const domain = d3.extent(monthData, metricAccessor);
+  const domain = extent(monthData, metricAccessor);
 
   const qualifyRange = ['very low', 'low', 'average', 'high', 'very high'];
-  const qualifyScale = d3
-    .scaleQuantize()
+  const qualifyScale = scaleQuantize()
     .domain(domain)
     .range(qualifyRange);
 
-  const formatValue = d3.format('.1f');
+  const formatValue = format('.1f');
 
-  const root = d3.select('#root');
+  const root = select('#root');
 
   function drawDetails() {
     const radiusAccessor = d => d.cloudCover;
     const radiusRange = [2, 20];
 
-    const radiusScale = d3
-      .scaleLinear()
-      .domain(d3.extent(monthData, radiusAccessor))
+    const radiusScale = scaleLinear()
+      .domain(extent(monthData, radiusAccessor))
       .range(radiusRange);
 
-    const xScale = d3
-      .scaleLinear()
+    const xScale = scaleLinear()
       .domain(domain)
       .nice();
 
@@ -93,15 +108,14 @@ async function drawDashboard() {
     const circleMargin = 3;
     const tick = 100;
 
-    d3.forceSimulation(simulationData)
+    forceSimulation(simulationData)
       .force(
         'collision',
-        d3
-          .forceCollide()
+        forceCollide()
           .radius(d => radiusScale(radiusAccessor(d)) + circleMargin)
       )
-      .force('x', d3.forceX().x(d => xScale(metricAccessor(d))))
-      .force('y', d3.forceY().y(dimensions.boundedHeight / 2))
+      .force('x', forceX().x(d => xScale(metricAccessor(d))))
+      .force('y', forceY().y(dimensions.boundedHeight / 2))
       .tick(tick);
 
     monthGroup
@@ -189,8 +203,7 @@ async function drawDashboard() {
       .attr('font-size', 18)
       .attr('font-weight', 900);
 
-    const xAxisGenerator = d3
-      .axisBottom()
+    const xAxisGenerator = axisBottom()
       .scale(xScale)
       .ticks(4)
       .tickSize(0)
@@ -212,17 +225,14 @@ async function drawDashboard() {
     const rotateRange = [0, 180];
     const strokeDashoffsetRange = [1, 0];
 
-    const colorScale = d3
-      .scaleLinear()
+    const colorScale = scaleLinear()
       .domain(domain)
       .range(colorRange);
-    const rotateScale = d3
-      .scaleLinear()
+    const rotateScale = scaleLinear()
       .domain(domain)
       .range(rotateRange);
 
-    const strokeDashoffsetScale = d3
-      .scaleLinear()
+    const strokeDashoffsetScale = scaleLinear()
       .domain(domain)
       .range(strokeDashoffsetRange);
 
@@ -334,15 +344,13 @@ async function drawDashboard() {
       .attr('opacity', 2)
       .attr('stroke-linecap', 'round')
       .attr('stroke-dasharray', function() {
-        return d3
-          .select(this)
+        return select(this)
           .node()
           .getTotalLength();
       })
       .attr('stroke-dashoffset', function() {
         return (
-          d3
-            .select(this)
+          select(this)
             .node()
             .getTotalLength() * strokeDashoffsetScale(value)
         );
@@ -354,7 +362,7 @@ async function drawDashboard() {
       .attr('cx', -dimensions.boundedWidth / 2)
       .attr('stroke-width', strokeWidthCircle)
       .attr('stroke', 'currentColor')
-      .attr('fill', d3.color(colorScale(value)).darker(0.5))
+      .attr('fill', color(colorScale(value)).darker(0.5))
       .attr('transform', `rotate(${rotateScale(value)})`);
 
     article
@@ -362,7 +370,7 @@ async function drawDashboard() {
       .attr('class', 'value')
       .html(`${formatValue(value)}<span>°F</span>`);
 
-    const average = d3.mean(monthData, metricAccessor);
+    const average = mean(monthData, metricAccessor);
     const difference = value - average;
     article
       .append('p')

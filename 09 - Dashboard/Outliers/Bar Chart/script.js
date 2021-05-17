@@ -1,6 +1,21 @@
+const {
+  csv,
+  timeParse,
+  scaleTime,
+  scaleLinear,
+  timeDay,
+  min,
+  max,
+  mean,
+  deviation,
+  select,
+  axisBottom,
+  axisLeft
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.csv('./data_outliers.csv');
-  const dateParser = d3.timeParse('%d-%m-%Y');
+  const dataset = await csv('./data_outliers.csv');
+  const dateParser = timeParse('%d-%m-%Y');
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => parseInt(d.views);
 
@@ -21,22 +36,19 @@ async function drawDashboard() {
     dimensions.boundedHeight =
       dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
-    const xScale = d3
-      .scaleTime()
+    const xScale = scaleTime()
       .domain([
-        d3.min(data, xAccessor),
-        d3.timeDay.offset(d3.max(data, xAccessor), 1),
+        min(data, xAccessor),
+        timeDay.offset(max(data, xAccessor), 1),
       ])
       .range([0, dimensions.boundedWidth]);
 
-    const yScale = d3
-      .scaleLinear()
-      .domain([d3.max(data, yAccessor), 0])
+    const yScale = scaleLinear()
+      .domain([max(data, yAccessor), 0])
       .range([0, dimensions.boundedHeight])
       .nice();
 
-    const wrapper = d3
-      .select('#wrapper')
+    const wrapper = select('#wrapper')
       .append('svg')
       .attr('width', dimensions.width)
       .attr('height', dimensions.height);
@@ -73,14 +85,12 @@ async function drawDashboard() {
       .attr('y', d => yScale(yAccessor(d)))
       .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)));
 
-    const xAxisGenerator = d3
-      .axisBottom()
+    const xAxisGenerator = axisBottom()
       .scale(xScale)
       .ticks(5)
       .tickSize(0)
       .tickPadding(8);
-    const yAxisGenerator = d3
-      .axisLeft()
+    const yAxisGenerator = axisLeft()
       .scale(yScale)
       .ticks(4)
       .tickSize(0)
@@ -124,27 +134,24 @@ async function drawDashboard() {
     dimensions.boundedHeight =
       dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
-    const xScale = d3
-      .scaleTime()
+    const xScale = scaleTime()
       .domain([
-        d3.min(data, xAccessor),
-        d3.timeDay.offset(d3.max(data, xAccessor), 1),
+        min(data, xAccessor),
+        timeDay.offset(max(data, xAccessor), 1),
       ])
       .range([0, dimensions.boundedWidth]);
 
-    const mean = d3.mean(data, yAccessor);
-    const standardDeviation = d3.deviation(data, yAccessor);
-    const upperThreshold = mean + 1.5 * standardDeviation;
+    const meanValue = mean(data, yAccessor);
+    const standardDeviation = deviation(data, yAccessor);
+    const upperThreshold = meanValue + 1.5 * standardDeviation;
 
     const outliers = data.filter(d => yAccessor(d) > upperThreshold)
-    const yScale = d3
-      .scaleLinear()
+    const yScale = scaleLinear()
       .domain([upperThreshold, 0])
       .range([0, dimensions.boundedHeight])
       .clamp(true);
 
-    const wrapper = d3
-      .select('#wrapper')
+    const wrapper = select('#wrapper')
       .append('svg')
       .attr('width', dimensions.width)
       .attr('height', dimensions.height);
@@ -216,14 +223,12 @@ async function drawDashboard() {
       .attr('stroke-width', 1)
       .attr('d', `M ${barTotalWidth / 2} ${-dimensions.margin.top / 2} v -8 h -5`);
 
-    const xAxisGenerator = d3
-      .axisBottom()
+    const xAxisGenerator = axisBottom()
       .scale(xScale)
       .ticks(5)
       .tickSize(0)
       .tickPadding(8);
-    const yAxisGenerator = d3
-      .axisLeft()
+    const yAxisGenerator = axisLeft()
       .scale(yScale)
       .ticks(4)
       .tickSize(0)

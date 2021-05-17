@@ -1,10 +1,15 @@
-async function drawDashboard() {
-  const dataset = await d3.json('../../../nyc_weather_data.json');
+const {
+  json,
+  select
+} = d3;
 
-  const wrapper = d3.select('#wrapper');
+async function drawDashboard() {
+  const dataset = await json('../../../nyc_weather_data.json');
+
+  const wrapper = select('#wrapper');
 
   function drawMetric(day, metric) {
-    const article = d3.select(`#article-${metric}`);
+    const article = select(`#article-${metric}`);
 
     article.select(`h2`).text(metric);
     article.select(`p`).text(dataset[day][metric]);

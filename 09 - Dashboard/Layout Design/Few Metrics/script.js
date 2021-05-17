@@ -1,5 +1,17 @@
+const {
+  json,
+  timeParse,
+  timeFormat,
+  select,
+  color,
+  format,
+  scaleQuantize,
+  scaleLinear,
+  extent
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.json('../../../nyc_weather_data.json');
+  const dataset = await json('../../../nyc_weather_data.json');
   const selectedDay = dataset[Math.floor(Math.random() * dataset.length)];
 
   const icons = {
@@ -17,8 +29,8 @@ async function drawDashboard() {
    `,
   };
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
-  const dateFormatter = d3.timeFormat('%B %-d, %Y');
+  const dateParser = timeParse('%Y-%m-%d');
+  const dateFormatter = timeFormat('%B %-d, %Y');
   const dateAccessor = d => dateParser(d.date);
 
   const dimensions = {
@@ -42,7 +54,7 @@ async function drawDashboard() {
   const paddingGauge = 2;
   const strokeWidthGauge = (radiusCircle - paddingGauge) * 2;
 
-  const root = d3.select('#root');
+  const root = select('#root');
   const header = root.append('header');
   header.append('h1').text('Weather in New York City');
   header.append('h2').text(dateFormatter(dateAccessor(selectedDay)));
@@ -50,7 +62,7 @@ async function drawDashboard() {
 
   function drawMetric(metric) {
     const { key, title, note, scales, accessor, formatValue } = metric;
-    const { qualify, rotate, color, strokeDashoffset } = scales;
+    const { qualify, rotate, colorScale, strokeDashoffset } = scales;
     const value = accessor(selectedDay);
 
     const article = section.append('article');
@@ -73,7 +85,7 @@ async function drawDashboard() {
       .append('linearGradient')
       .attr('id', gradientId)
       .selectAll('stop')
-      .data(color.range())
+      .data(colorScale.range())
       .enter()
       .append('stop')
       .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
@@ -143,15 +155,13 @@ async function drawDashboard() {
       .attr('opacity', 2)
       .attr('stroke-linecap', 'round')
       .attr('stroke-dasharray', function() {
-        return d3
-          .select(this)
+        return select(this)
           .node()
           .getTotalLength();
       })
       .attr('stroke-dashoffset', function() {
         return (
-          d3
-            .select(this)
+          select(this)
             .node()
             .getTotalLength() * strokeDashoffset(value)
         );
@@ -161,10 +171,10 @@ async function drawDashboard() {
       .append('circle')
       .attr('r', radiusCircle)
       .attr('cx', -dimensions.boundedWidth / 2)
-      .attr('fill', d3.color(color(0)).darker(1))
+      .attr('fill', color(colorScale(0)).darker(1))
       .attr('stroke-width', strokeWidthCircle)
       .attr('stroke', 'currentColor')
-      .attr('fill', d3.color(color(value)).darker(1))
+      .attr('fill', color(colorScale(value)).darker(1))
       .attr('transform', `rotate(${rotate(value)})`);
 
     article.append('p').html(formatValue(value));
@@ -182,14 +192,13 @@ async function drawDashboard() {
       accessor: d => d.humidity,
       title: 'Humidity',
       note: 'relative, out of 100%',
-      formatValue: d => `${d3.format('.0f')(d * 100)}<span>%</span>`,
+      formatValue: d => `${format('.0f')(d * 100)}<span>%</span>`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifyRange),
-        rotate: d3.scaleLinear().range(rotateRange),
-        color: d3
-          .scaleLinear()
+        qualify: scaleQuantize().range(qualifyRange),
+        rotate: scaleLinear().range(rotateRange),
+        colorScale: scaleLinear()
           .range(['hsl(21, 95%, 84%)', 'hsl(34, 100%, 50%)']),
-        strokeDashoffset: d3.scaleLinear().range(strokeDashoffsetRange),
+        strokeDashoffset: scaleLinear().range(strokeDashoffsetRange),
       },
     },
     {
@@ -197,14 +206,13 @@ async function drawDashboard() {
       accessor: d => d.temperatureMin,
       title: 'Minimum Temperature',
       note: 'degrees Fahrenheit',
-      formatValue: d => `${d3.format('.0f')(d)}`,
+      formatValue: d => `${format('.0f')(d)}`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifyRange),
-        rotate: d3.scaleLinear().range(rotateRange),
-        color: d3
-          .scaleLinear()
+        qualify: scaleQuantize().range(qualifyRange),
+        rotate: scaleLinear().range(rotateRange),
+        colorScale: scaleLinear()
           .range(['hsl(220, 100%, 87%)', 'hsl(220, 80%, 41%)']),
-        strokeDashoffset: d3.scaleLinear().range(strokeDashoffsetRange),
+        strokeDashoffset: scaleLinear().range(strokeDashoffsetRange),
       },
     },
     {
@@ -212,21 +220,20 @@ async function drawDashboard() {
       accessor: d => d.temperatureMax,
       title: 'Maximum Temperature',
       note: 'degrees Fahrenheit',
-      formatValue: d => `${d3.format('.0f')(d)}`,
+      formatValue: d => `${format('.0f')(d)}`,
       scales: {
-        qualify: d3.scaleQuantize().range(qualifyRange),
-        rotate: d3.scaleLinear().range(rotateRange),
-        color: d3
-          .scaleLinear()
+        qualify: scaleQuantize().range(qualifyRange),
+        rotate: scaleLinear().range(rotateRange),
+        colorScale: scaleLinear()
           .range(['hsl(0, 100%, 85%)', 'hsl(0, 92%, 43%)']),
-        strokeDashoffset: d3.scaleLinear().range(strokeDashoffsetRange),
+        strokeDashoffset: scaleLinear().range(strokeDashoffsetRange),
       },
     },
   ];
 
   metrics.forEach(metric => {
     const { accessor, scales } = metric;
-    const domain = d3.extent(dataset, accessor);
+    const domain = extent(dataset, accessor);
 
     Object.keys(scales).forEach(scale => metric.scales[scale].domain(domain));
 

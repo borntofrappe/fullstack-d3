@@ -1758,15 +1758,17 @@ For the d3 library:
 
 ## 09 - Dashboard
 
-A dashboard is loosely introduced an interface for data, a display encompassing the value of a few metrics as weel as complex visualizations.
+A dashboard is loosely introduced an interface for data, a display highlighting the accurate value of metrics as weel as complex visualizations to provid more insights.
 
 ### Weather Metrics
 
-The first demo works to show a rudimentary dashboard, displaying three metrics for a given day in the wind speed, visibility and atmospheric pressure.
+The first demo works to show a rudimentary dashboard for three metrics describing the wind speed, visibility and atmospheric pressure for a given day.
 
 Instead of using `<svg>` elements, I decided to bind the data to HTML elements.
 
-The redesign works to show how the dashboard can be improved by providing more context and additional visuals:
+The redesign works to show how the dashboard can be improved by describing the meaning of the metrics and by providing more context around the values themselves.
+
+In practice:
 
 - the values are formatted to consider fewer decimal numbers, with a fixed notation
 
@@ -1800,13 +1802,13 @@ The project highlights a few methods from the d3 library:
 
 ### Feed Metrics
 
-The first demo considers a few metrics connected to a news feed, with the same visual designed for the weather dashboard. The focus is here on the number of views and articles connected to a hypothetical subject.
+The demo for the starting point considers a few metrics connected to a news feed with the same visual designed for the weather dashboard. The focus is here on the number of views and articles connected to a hypothetical subject.
 
-The second demo improves the design with an additional metric: demand. Here the goal is to show how data can be turned into insight, into an actionable metric.
+The redesign improves the visualization with an additional metric: demand. Here the goal is to show how data can be turned into insight, into an actionable metric.
 
 _Please note:_ the script for the second demo slightly differs from the first, as I found a more useful solution in having the accessor function directly in the object describing each metric.
 
-_Please also note:_ the data for the project is included in the _09 - Dashboard_ folder, alongside the icons designed for each section.
+_Please also note:_ the data for the project is included in the `09 - Dashboard` folder, alongside the icons designed for each section.
 
 ### Data States
 

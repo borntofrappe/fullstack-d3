@@ -1,6 +1,22 @@
+const {
+  csv,
+  timeParse,
+  scaleTime,
+  extent,
+  min,
+  max,
+  line,
+  area,
+  scaleLinear,
+  curveCatmullRom,
+  select,
+  axisBottom,
+  axisLeft
+} = d3;
+
 async function drawDashboard() {
-  const dataset = await d3.csv('./data_outliers.csv');
-  const dateParser = d3.timeParse('%d-%m-%Y');
+  const dataset = await csv('./data_outliers.csv');
+  const dateParser = timeParse('%d-%m-%Y');
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => parseInt(d.views);
   const articlesAccessor = d => parseInt(d.articles);
@@ -21,32 +37,27 @@ async function drawDashboard() {
   dimensions.boundedHeight =
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
-  const xScale = d3
-    .scaleTime()
-    .domain(d3.extent(dataset, xAccessor))
+  const xScale = scaleTime()
+    .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth]);
 
-  const yScale = d3
-    .scaleLinear()
-    .domain([d3.max(dataset, yAccessor), 0])
+  const yScale = scaleLinear()
+    .domain([max(dataset, yAccessor), 0])
     .range([0, dimensions.boundedHeight])
     .nice();
 
-  const lineGenerator = d3
-    .line()
+  const lineGenerator = line()
     .x(d => xScale(xAccessor(d)))
     .y(d => yScale(yAccessor(d)))
-    .curve(d3.curveCatmullRom);
+    .curve(curveCatmullRom);
 
-  const areaGenerator = d3
-    .area()
+  const areaGenerator = area()
     .x(d => xScale(xAccessor(d)))
     .y0(d => yScale(yAccessor(d)))
     .y1(dimensions.boundedHeight)
-    .curve(d3.curveCatmullRom);
+    .curve(curveCatmullRom);
 
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -76,7 +87,7 @@ async function drawDashboard() {
     .attr('d', lineGenerator(dataset));
 
   const width = xScale(xAccessor(dataset[1])) - xScale(xAccessor(dataset[0]));
-  const radius = d3.min([(width / 2) * 0.9, 2]);
+  const radius = min([(width / 2) * 0.9, 2]);
 
   const articleGroups = articlesGroup
     .selectAll('g')
@@ -97,7 +108,7 @@ async function drawDashboard() {
   articleGroups
     .selectAll('circle')
     .data(d =>
-      Array(d3.min([articlesAccessor(d), maxCircles]))
+      Array(min([articlesAccessor(d), maxCircles]))
         .fill()
         .map((datum, i) => ((i * width) / 2) * -1)
     )
@@ -131,15 +142,13 @@ async function drawDashboard() {
     .attr('stroke-linejoin', 'round')
     .attr('fill', 'hsl(243, 29%, 75%)');
 
-  const xAxisGenerator = d3
-    .axisBottom()
+  const xAxisGenerator = axisBottom()
     .scale(xScale)
     .ticks(5)
     .tickSize(0)
     .tickPadding(8);
 
-  const yAxisGenerator = d3
-    .axisLeft()
+  const yAxisGenerator = axisLeft()
     .scale(yScale)
     .ticks(6)
     .tickSize(0)

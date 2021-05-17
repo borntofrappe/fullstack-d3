@@ -1,3 +1,15 @@
+const {
+  select,
+  transition,
+  scaleLinear,
+  extent,
+  bin,
+  max,
+  mean,
+  axisBottom,
+  json
+} = d3;
+
 function drawBarChart() {
   const dimensions = {
     width: 500,
@@ -24,8 +36,7 @@ function drawBarChart() {
   dimensions.boundedHeight =
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -204,8 +215,7 @@ function drawBarChart() {
   }
 
   function handleEmptyState() {
-    const overlayTransition = d3
-      .transition()
+    const overlayTransition = transition()
       .delay(250)
       .duration(1000);
 
@@ -238,14 +248,12 @@ function drawBarChart() {
     const metric = 'windSpeed';
     const metricAccessor = d => d[metric];
 
-    const xScale = d3
-      .scaleLinear()
-      .domain(d3.extent(dataset, metricAccessor))
+    const xScale = scaleLinear()
+      .domain(extent(dataset, metricAccessor))
       .range([0, dimensions.boundedWidth])
       .nice();
 
-    const binGenerator = d3
-      .bin()
+    const binGenerator = bin()
       .domain(xScale.domain())
       .value(metricAccessor)
       .thresholds(thresholds);
@@ -253,13 +261,12 @@ function drawBarChart() {
     const bins = binGenerator(dataset);
 
     const yAccessor = d => d.length;
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(bins, yAccessor)])
+    const yScale = scaleLinear()
+      .domain([0, max(bins, yAccessor)])
       .range([dimensions.boundedHeight, 0])
       .nice();
 
-    const overlayTransition = d3.transition().duration(750);
+    const overlayTransition = transition().duration(750);
 
     overlayGroup
       .transition(overlayTransition)
@@ -270,13 +277,11 @@ function drawBarChart() {
     const enter = update.enter().append('g');
     const exit = update.exit();
 
-    const exitTransition = d3.transition(overlayTransition).duration(750);
-    const updateTransition = d3
-      .transition(exit.empty() ? overlayTransition : exitTransition)
+    const exitTransition = transition(overlayTransition).duration(750);
+    const updateTransition = transition(exit.empty() ? overlayTransition : exitTransition)
       .transition()
       .duration(1000);
-    const enterTransition = d3
-      .transition(updateTransition)
+    const enterTransition = transition(updateTransition)
       .transition()
       .duration(1000);
 
@@ -293,7 +298,7 @@ function drawBarChart() {
       .attr('fill', 'cornflowerblue')
       .attr('x', d => xScale(d.x0) + barPadding)
       .attr('width', d =>
-        d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding * 2])
+        max([0, xScale(d.x1) - xScale(d.x0) - barPadding * 2])
       )
       .attr('y', dimensions.boundedHeight)
       .attr('height', 0)
@@ -306,7 +311,7 @@ function drawBarChart() {
       .transition(updateTransition)
       .attr('x', d => xScale(d.x0) + barPadding)
       .attr('width', d =>
-        d3.max([0, xScale(d.x1) - xScale(d.x0) - barPadding * 2])
+        max([0, xScale(d.x1) - xScale(d.x0) - barPadding * 2])
       )
       .attr('y', d => yScale(yAccessor(d)))
       .attr('height', d => dimensions.boundedHeight - yScale(yAccessor(d)))
@@ -326,16 +331,15 @@ function drawBarChart() {
       .delay((d, i) => i * 50)
       .style('opacity', 1);
 
-    const mean = d3.mean(dataset, metricAccessor);
+    const meanValue = mean(dataset, metricAccessor);
 
     meanGroup
       .transition(enterTransition)
       .transition()
       .style('opacity', 1)
-      .style('transform', `translate(${xScale(mean)}px, 0px)`);
+      .style('transform', `translate(${xScale(meanValue)}px, 0px)`);
 
-    const xAxis = d3
-      .axisBottom(xScale)
+    const xAxis = axisBottom(xScale)
       .ticks(5)
       .tickSize(0)
       .tickPadding(5);
@@ -356,7 +360,7 @@ function drawBarChart() {
   }
 
   setTimeout(() => {
-    d3.json('../../../nyc_weather_data.json')
+    json('../../../nyc_weather_data.json')
       .then(dataset => {
         if (dataset.length === 0) {
           handleEmptyState();
