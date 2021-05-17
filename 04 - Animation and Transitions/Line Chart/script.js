@@ -65,7 +65,7 @@ async function drawLineChart() {
     .attr('y', dimensions.boundedHeight)
     .attr('width', dimensions.boundedWidth)
     .attr('height', 0)
-    .attr('fill', '#e0f3f3');
+    .attr('fill', 'hsl(180, 44%, 92%)');
 
   const axisGroup = bounds.append('g');
   const xAxisGroup = axisGroup
@@ -81,7 +81,7 @@ async function drawLineChart() {
   const linePath = lineGroup
     .append('path')
     .attr('fill', 'none')
-    .attr('stroke', '#af9358')
+    .attr('stroke', 'hsl(41, 35%, 52%)')
     .attr('stroke-width', 2);
 
   function drawDays(data) {

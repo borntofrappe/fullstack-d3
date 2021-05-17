@@ -69,7 +69,7 @@ async function drawLineChart() {
     .attr('width', dimensions.boundedWidth)
     .attr('y', freezingTemperatureY)
     .attr('height', dimensions.boundedHeight - freezingTemperatureY)
-    .attr('fill', '#e0f3f3');
+    .attr('fill', 'hsl(180, 44%, 92%)');
 
   const lineGenerator = line()
     .x(d => xScale(xAccessor(d)))
@@ -79,7 +79,7 @@ async function drawLineChart() {
     .append('path')
     .attr('d', lineGenerator(dataset))
     .attr('fill', 'none')
-    .attr('stroke', '#af9358')
+    .attr('stroke', 'hsl(41, 35%, 52%)')
     .attr('stroke-width', 2);
 
   /* PERIPHERALS */
@@ -116,7 +116,7 @@ async function drawLineChart() {
     .append('circle')
     .attr('opacity', 0)
     .attr('fill', 'white')
-    .attr('stroke', '#af9358')
+    .attr('stroke', 'hsl(41, 35%, 52%)')
     .attr('stroke-width', 2)
     .attr('r', 4);
 

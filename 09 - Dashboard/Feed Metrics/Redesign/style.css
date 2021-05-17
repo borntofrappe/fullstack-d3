@@ -78,13 +78,30 @@ section a {
 }
 
 button {
+  justify-self: center;
   font-family: inherit;
   font-size: 1.1rem;
-  justify-self: center;
   background: hsl(84, 91%, 41%);
   color: hsl(0, 0%, 100%);
   border: none;
-  border-bottom: 0.25rem solid hsl(120, 64%, 29%);
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1rem;
   border-radius: 1rem;
+  position: relative;
+  --border-width: 3px;
+  border-bottom: 2px solid hsl(120, 78%, 19%);
+  border-bottom: var(--border-width) solid hsl(120, 78%, 19%);
+  transition-property: background, border-bottom-color, transform;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
+  transform-origin: 50% 100%;
+}
+
+button:hover {
+  background: hsl(83, 91%, 34%);
+}
+
+button:active {
+  border-bottom-color: transparent;
+  transform: translateY(2px);
+  transform: translateY(var(--border-width));
 }

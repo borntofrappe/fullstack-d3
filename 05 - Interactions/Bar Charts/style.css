@@ -25,7 +25,7 @@ svg text {
 }
 
 .wrapper svg rect:hover {
-  fill: purple;
+  fill: hsl(300, 100%, 25%);
 }
 
 .wrapper {

@@ -91,7 +91,7 @@ async function drawMap() {
   bounds
     .append('path')
     .attr('d', pathGenerator(sphere))
-    .attr('fill', '#e2f1f1')
+    .attr('fill', 'hsl(180, 35%, 92%)')
     .attr('stroke', 'none');
 
   // graticulate
@@ -100,7 +100,7 @@ async function drawMap() {
     .append('path')
     .attr('d', pathGenerator(graticuleJson))
     .attr('fill', 'none')
-    .attr('stroke', '#cadddd');
+    .attr('stroke', 'hsl(180, 22%, 83%)');
 
   // countries
   const countries = bounds
@@ -113,7 +113,7 @@ async function drawMap() {
     .attr('fill', d =>
       metricDataByCountry[countryIdAccessor(d)]
         ? colorScale(metricDataByCountry[countryIdAccessor(d)])
-        : '#e2e6e9'
+        : 'hsl(206, 14%, 90%)'
     );
 
   /* NAVIGATOR */
@@ -126,7 +126,7 @@ async function drawMap() {
       .append('circle')
       .attr('cx', x)
       .attr('cy', y)
-      .attr('fill', '#8f97db')
+      .attr('fill', 'hsl(234, 51%, 71%)')
       .transition()
       .delay(200)
       .duration(500)

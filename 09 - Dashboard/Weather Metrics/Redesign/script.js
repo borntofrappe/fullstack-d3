@@ -105,9 +105,9 @@ async function drawDashboard() {
       height: 125,
       margin: {
         top: 30,
-        right: 12,
-        bottom: 12,
-        left: 12,
+        right: 20,
+        bottom: 20,
+        left: 20,
       },
     };
 

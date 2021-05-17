@@ -51,22 +51,22 @@ async function drawLineChart() {
     {
       name: 'Spring',
       date: '3-20',
-      color: '#fff',
+      color: 'hsl(0, 0%, 100%)',
     },
     {
       name: 'Summer',
       date: '6-21',
-      color: '#10ac84',
+      color: 'hsl(165, 83%, 37%)',
     },
     {
       name: 'Fall',
       date: '9-21',
-      color: '#fff',
+      color: 'hsl(0, 0%, 100%)',
     },
     {
       name: 'Winter',
       date: '12-21',
-      color: '#2e86de',
+      color: 'hsl(210, 73%, 53%)',
     },
   ];
 
