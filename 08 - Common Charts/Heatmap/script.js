@@ -1,11 +1,25 @@
+const {
+  json,
+  timeParse,
+  timeFormat,
+  timeMonths,
+  timeWeeks,
+  interpolateBlues,
+  scaleLinear,
+  extent,
+  min,
+  max,
+  select
+} = d3;
+
 async function drawHeatmap() {
   /* ACCESS DATA */
-  const data = await d3.json('../../nyc_weather_data.json');
+  const data = await json('../../nyc_weather_data.json');
   
-  const dateParser = d3.timeParse('%Y-%m-%d');
-  const dayParser = d3.timeParse('%e');
-  const dayFormatter = d3.timeFormat('%A');
-  const monthFormatter = d3.timeFormat('%b');
+  const dateParser = timeParse('%Y-%m-%d');
+  const dayParser = timeParse('%e');
+  const dayFormatter = timeFormat('%A');
+  const monthFormatter = timeFormat('%b');
 
   const dateAccessor = d => dateParser(d.date);
   
@@ -13,16 +27,16 @@ async function drawHeatmap() {
  
   const firstDate = dateAccessor(dataset[0]);
   // return the number of weeks since start date
-  const weekAccessor = d => d3.timeWeeks(firstDate, dateAccessor(d)).length;
+  const weekAccessor = d => timeWeeks(firstDate, dateAccessor(d)).length;
   // return the number describing the day
-  const dayAccessor = d => d3.timeFormat('%w')(dateAccessor(d));
+  const dayAccessor = d => timeFormat('%w')(dateAccessor(d));
 
   const weeks = weekAccessor(dataset[dataset.length - 1]);
   const daysOfWeek = Array(7)
     .fill()
     .map((d, i) => dayFormatter(dayParser(i)));
 
-  const months = d3.timeMonths(
+  const months = timeMonths(
     dateAccessor(dataset[0]),
     dateAccessor(dataset[dataset.length - 1])
   );
@@ -71,15 +85,14 @@ async function drawHeatmap() {
     (dimensionsLegend.margin.top + dimensionsLegend.margin.bottom);
 
   /* SCALES */
-  const interpolateColor = d3.interpolateBlues;
-  const colorScale = d3.scaleLinear().range([0, 1]);
+  const interpolateColor = interpolateBlues;
+  const colorScale = scaleLinear().range([0, 1]);
 
   /* DRAW DATA */
-  const heatmapMetric = d3.select('#wrapper').append('h2');
+  const heatmapMetric = select('#wrapper').append('h2');
   const heatmapGradientId = 'heatmap-gradient';
 
-  const heatmapLegend = d3
-    .select('#wrapper')
+  const heatmapLegend = select('#wrapper')
     .append('svg')
     .attr('id', 'legend')
     .attr('width', dimensionsLegend.width)
@@ -127,13 +140,11 @@ async function drawHeatmap() {
     .attr('dominant-baseline', 'middle')
     .attr('font-size', 13);
 
-  const heatmapButton = d3
-    .select('#wrapper')
+  const heatmapButton = select('#wrapper')
     .append('button')
     .text('Change metric');
 
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('id', 'heatmap')
     .attr('width', dimensions.width)
@@ -159,7 +170,7 @@ async function drawHeatmap() {
     .enter()
     .append('text')
     .text(d => monthFormatter(d))
-    .attr('x', d => d3.timeWeeks(firstDate, d).length * tileTotalSize)
+    .attr('x', d => timeWeeks(firstDate, d).length * tileTotalSize)
     .attr('y', -dimensions.margin.top + 12);
 
   yAxisGroup
@@ -180,11 +191,11 @@ async function drawHeatmap() {
 
   function drawMap(metric) {
     const metricAccessor = d => d[metric];
-    colorScale.domain(d3.extent(dataset, metricAccessor));
+    colorScale.domain(extent(dataset, metricAccessor));
 
     heatmapMetric.text(metric);
-    heatmapMin.text(d3.min(dataset, metricAccessor));
-    heatmapMax.text(d3.max(dataset, metricAccessor));
+    heatmapMin.text(min(dataset, metricAccessor));
+    heatmapMax.text(max(dataset, metricAccessor));
 
     const updateGroup = metricGroup.selectAll('rect').data(dataset);
 

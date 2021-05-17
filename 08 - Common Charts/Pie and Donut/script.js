@@ -1,6 +1,14 @@
+const {
+  json,
+  schemePastel1,
+  pie,
+  arc,
+  select
+} = d3;
+
 async function drawDonutChart() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await json('../../nyc_weather_data.json');
   const iconAccessor = d => d.icon;
 
   const iconsPaths = {
@@ -43,18 +51,16 @@ async function drawDonutChart() {
 
   /* SCALES */
   const radius = dimensions.boundedWidth / 2;
-  const colors = d3.schemePastel1;
+  const colors = schemePastel1;
 
   const keyAccessor = d => d.key;
   const valueAccessor = d => d.value;
 
-  const pieGenerator = d3
-    .pie()
+  const pieGenerator = pie()
     .padAngle(0.01)
     .value(d => valueAccessor(d));
 
-  const arcGenerator = d3
-    .arc()
+  const arcGenerator = arc()
     .innerRadius(radius * 0.75)
     .outerRadius(radius);
 
@@ -66,8 +72,7 @@ async function drawDonutChart() {
   );
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);

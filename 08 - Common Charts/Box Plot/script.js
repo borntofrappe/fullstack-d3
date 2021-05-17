@@ -1,16 +1,31 @@
+const {
+  json,
+  timeParse,
+  timeFormat,
+  timeMonths,
+  max,
+  median,
+  quantile,
+  scaleBand,
+  scaleLinear,
+  select,
+  axisLeft,
+  axisTop
+} = d3;
+
 async function drawBoxPlot() {
   /* ACCESS DATA */
-  const data = await d3.json('../../nyc_weather_data.json');
+  const data = await json('../../nyc_weather_data.json');
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
   const dateAccessor = d => dateParser(d.date);
-  const dateFormatter = d3.timeFormat('%b');
+  const dateFormatter = timeFormat('%b');
 
   const xAccessor = d => d.month;
   const yAccessor = d => d.temperatureMax;
 
   const dataset = [...data].sort((a, b) => dateAccessor(a) - dateAccessor(b));
-  const months = d3.timeMonths(
+  const months = timeMonths(
     dateAccessor(dataset[0]),
     dateAccessor(dataset[dataset.length - 1])
   );
@@ -23,18 +38,18 @@ async function drawBoxPlot() {
       d => dateAccessor(d) > monthStart && dateAccessor(d) <= monthEnd
     );
 
-    const median = d3.median(days, yAccessor);
-    const q1 = d3.quantile(days, 0.25, yAccessor);
-    const q3 = d3.quantile(days, 0.75, yAccessor);
+    const medianValue = median(days, yAccessor);
+    const q1 = quantile(days, 0.25, yAccessor);
+    const q3 = quantile(days, 0.75, yAccessor);
     const iqr = q3 - q1;
 
     const outliers = days.filter(
-      d => Math.abs(yAccessor(d) - median) > 1.5 * iqr
+      d => Math.abs(yAccessor(d) - medianValue) > 1.5 * iqr
     );
 
     return {
       month: dateFormatter(month),
-      median,
+      median: medianValue,
       q1,
       q3,
       iqr,
@@ -60,21 +75,18 @@ async function drawBoxPlot() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const xScale = d3
-    .scaleBand()
+  const xScale = scaleBand()
     .domain(monthsData.map(d => xAccessor(d)))
     .range([0, dimensions.boundedWidth])
     .padding(0.15);
 
-  const yScale = d3
-    .scaleLinear()
-    .domain([0, d3.max(dataset, yAccessor)])
+  const yScale = scaleLinear()
+    .domain([0, max(dataset, yAccessor)])
     .range([dimensions.boundedHeight, 0])
     .nice();
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -107,6 +119,7 @@ async function drawBoxPlot() {
     .append('circle')
     .attr('fill', 'currentColor')
     .attr('r', 2)
+    .attr('opacity', 0.5)
     .attr('cy', d => yScale(yAccessor(d)));
 
   boxesGroup
@@ -146,16 +159,14 @@ async function drawBoxPlot() {
     );
 
   /* PERIPHERALS */
-  const yAxisGenerator = d3
-    .axisLeft()
+  const yAxisGenerator = axisLeft()
     .scale(yScale)
     .ticks(6)
     .tickPadding(5);
 
   const yAxisGroup = axisGroup.append('g').call(yAxisGenerator);
 
-  const xAxisGenerator = d3
-    .axisTop()
+  const xAxisGenerator = axisTop()
     .scale(xScale)
     .ticks(5)
     .tickSize(0)
@@ -170,14 +181,15 @@ async function drawBoxPlot() {
     .attr('dominant-baseline', 'middle')
     .attr('fill', 'currentColor')
     .attr('font-size', 14)
+    .attr('font-weight', 'bold')
     .style(
       'transform',
       `translate(${-dimensions.margin.left + 8}px, ${dimensions.boundedHeight /
         2}px) rotate(-90deg)`
     );
 
-  axisGroup.selectAll('g.tick text').attr('font-size', 10);
-  xAxisGroup.selectAll('g.tick text').attr('font-weight', 'bold');
+  axisGroup.selectAll('g.tick text').attr('font-size', 11);
+  xAxisGroup.selectAll('g.tick text');
   axisGroup.selectAll('path').remove();
 }
 

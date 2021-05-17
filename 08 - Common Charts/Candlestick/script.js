@@ -1,8 +1,24 @@
+const {
+  csv,
+  timeParse,
+  timeFormat,
+  format,
+  schemeSet1,
+  scaleTime,
+  scaleLinear,
+  timeDay,
+  min,
+  max,
+  select,
+  axisLeft,
+  axisBottom
+} = d3;
+
 async function drawCandlestickChart() {
   /* ACCESS DATA */
-  const dataset = await d3.csv('./data_stock.csv');
+  const dataset = await csv('./data_stock.csv');
 
-  const dateParser = d3.timeParse('%d-%m-%Y');
+  const dateParser = timeParse('%d-%m-%Y');
   const xAccessor = d => dateParser(d.date);
   const lowAccessor = d => d.low;
   const highAccessor = d => d.high;
@@ -10,10 +26,10 @@ async function drawCandlestickChart() {
   const closeAccessor = d => d.close;
   const gainAccessor = d => d.close > d.open;
 
-  const dateFormatter = d3.timeFormat('%d %b');
-  const valueFormatter = d3.format('.2f');
+  const dateFormatter = timeFormat('%d %b');
+  const valueFormatter = format('.2f');
 
-  const colors = d3.schemeSet1;
+  const colors = schemeSet1;
 
   /* CHART DIMENSIONS */
   const dimensions = {
@@ -21,7 +37,7 @@ async function drawCandlestickChart() {
     height: 400,
     margin: {
       top: 30,
-      right: 10,
+      right: 20,
       bottom: 20,
       left: 65,
     },
@@ -33,23 +49,20 @@ async function drawCandlestickChart() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const xScale = d3
-    .scaleTime()
+  const xScale = scaleTime()
     .domain([
-      d3.timeDay.offset(d3.min(dataset, xAccessor), -1),
-      d3.timeDay.offset(d3.max(dataset, xAccessor), 1),
+      timeDay.offset(min(dataset, xAccessor), -1),
+      timeDay.offset(max(dataset, xAccessor), 1),
     ])
     .range([0, dimensions.boundedWidth]);
 
-  const yScale = d3
-    .scaleLinear()
-    .domain([d3.min(dataset, lowAccessor), d3.max(dataset, highAccessor)])
+  const yScale = scaleLinear()
+    .domain([min(dataset, lowAccessor), max(dataset, highAccessor)])
     .range([dimensions.boundedHeight, 0])
     .nice();
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -90,7 +103,7 @@ async function drawCandlestickChart() {
     );
 
   const dayWidth =
-    xScale(d3.timeDay.offset(xAccessor(dataset[0]), 1)) -
+    xScale(timeDay.offset(xAccessor(dataset[0]), 1)) -
     xScale(xAccessor(dataset[0]));
   const rectWidth = dayWidth * 0.75;
 
@@ -99,7 +112,7 @@ async function drawCandlestickChart() {
     .attr('fill', d => (gainAccessor(d) ? colors[1] : colors[0]))
     .attr('x', -rectWidth / 2)
     .attr('width', rectWidth)
-    .attr('y', d => yScale(d3.max([openAccessor(d), closeAccessor(d)])))
+    .attr('y', d => yScale(max([openAccessor(d), closeAccessor(d)])))
     .attr('height', d =>
       Math.abs(yScale(openAccessor(d)) - yScale(closeAccessor(d)))
     );
@@ -117,17 +130,39 @@ async function drawCandlestickChart() {
       `translate(${dimensions.boundedWidth / 2} ${-dimensions.margin.top + 20})`
     );
 
-  const yAxisGenerator = d3
-    .axisLeft()
+  const yAxisGenerator = axisLeft()
     .scale(yScale)
     .ticks(6)
     .tickSize(0)
     .tickPadding(5)
     .tickFormat(d => `$${valueFormatter(d)}`);
+  
   const yAxisGroup = axisGroup.append('g').call(yAxisGenerator);
+  
+  yAxisGroup
+    .selectAll('g.tick')
+    .append('path')
+    .attr('d', `M 0 0 h ${dimensions.boundedWidth}`)
+    .attr('fill', 'none')
+    .attr('stroke', 'currentColor')
+    .attr('stroke-width', '0.5')
+    .attr('opacity', '0.5');
 
-  const xAxisGenerator = d3
-    .axisBottom()
+  yAxisGroup
+    .append('text')
+    .text('Price')
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('fill', 'currentColor')
+    .attr('font-size', 14)
+    .attr('font-weight', 'bold')
+    .style(
+      'transform',
+      `translate(${-dimensions.margin.left + 8}px, ${dimensions.boundedHeight /
+        2}px) rotate(-90deg)`
+    );
+
+  const xAxisGenerator = axisBottom()
     .scale(xScale)
     .ticks(5)
     .tickSize(0)
@@ -139,20 +174,7 @@ async function drawCandlestickChart() {
     .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
     .call(xAxisGenerator);
 
-  yAxisGroup
-    .append('text')
-    .text('Price')
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'middle')
-    .attr('fill', 'currentColor')
-    .attr('font-size', 14)
-    .style(
-      'transform',
-      `translate(${-dimensions.margin.left + 8}px, ${dimensions.boundedHeight /
-        2}px) rotate(-90deg)`
-    );
-
-  axisGroup.selectAll('g.tick text').attr('font-size', 10);
+  axisGroup.selectAll('g.tick text').attr('font-size', 11);
 
   const legendSize = 60;
   const legendSquareSize = 10;

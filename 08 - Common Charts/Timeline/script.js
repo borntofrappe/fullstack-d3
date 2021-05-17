@@ -1,17 +1,30 @@
+const {
+  json,
+  timeParse,
+  scaleTime,
+  scaleLinear,
+  extent,
+  select,
+  line,
+  axisLeft,
+  axisBottom,
+  selectAll,
+} = d3;
+
 async function drawLineChart() {
   /* ACCESS DATA */
-  const data = await d3.json('../../nyc_weather_data.json');
+  const data = await json('../../nyc_weather_data.json');
   const days = 100;
   const dataset = data.slice(0, days);
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
 
   const xAccessor = d => dateParser(d.date);
   const yAccessor = d => d.temperatureMax;
 
   /* CHART DIMENSIONS */
   const dimensions = {
-    width: 750,
+    width: 800,
     height: 350,
     margin: {
       top: 10,
@@ -27,20 +40,17 @@ async function drawLineChart() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const xScale = d3
-    .scaleTime()
-    .domain(d3.extent(dataset, xAccessor))
+  const xScale = scaleTime()
+    .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth]);
 
-  const yScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, yAccessor))
+  const yScale = scaleLinear()
+    .domain(extent(dataset, yAccessor))
     .range([dimensions.boundedHeight, 0])
     .nice();
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -52,8 +62,7 @@ async function drawLineChart() {
       `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
     );
 
-  const lineGenerator = d3
-    .line()
+  const lineGenerator = line()
     .x(d => xScale(xAccessor(d)))
     .y(d => yScale(yAccessor(d)));
 
@@ -76,15 +85,14 @@ async function drawLineChart() {
     .data(dataset)
     .enter()
     .append('circle')
-    .attr('r', 3)
+    .attr('r', 3.5)
     .attr('cx', d => xScale(xAccessor(d)))
     .attr('cy', d => yScale(yAccessor(d)))
     .attr('fill', 'currentColor');
 
   /* PERIPHERALS */
   const axisGroup = bounds.append('g');
-  const yAxisGenerator = d3
-    .axisLeft()
+  const yAxisGenerator = axisLeft()
     .scale(yScale)
     .ticks(4);
   const yAxisGroup = axisGroup.append('g').call(yAxisGenerator);
@@ -95,14 +103,14 @@ async function drawLineChart() {
     .attr('text-anchor', 'middle')
     .attr('fill', 'currentColor')
     .attr('font-size', 15)
+    .attr('font-weight', 'bold')
     .style(
       'transform',
       `translate(${-dimensions.margin.left + 24}px, ${dimensions.boundedHeight /
         2}px) rotate(-90deg)`
     );
 
-  const xAxisGenerator = d3
-    .axisBottom()
+  const xAxisGenerator = axisBottom()
     .scale(xScale)
     .ticks(8);
 
@@ -111,16 +119,16 @@ async function drawLineChart() {
     .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
     .call(xAxisGenerator);
 
-  d3.selectAll('g.tick text').attr('font-size', 11);
+  selectAll('g.tick text').attr('font-size', 11);
 
   /* INTERACTIONS */
-  d3.select('#wrapper')
+  select('#wrapper')
     .append('label')
     .text('Toggle points')
     .append('input')
     .attr('type', 'checkbox')
     .on('input', event =>
-      d3.select(`#${pointsId}`).style('opacity', event.target.checked ? 1 : 0)
+      select(`#${pointsId}`).style('opacity', event.target.checked ? 1 : 0)
     );
 
   const curves = [
@@ -132,13 +140,12 @@ async function drawLineChart() {
     'curveCardinal',
   ];
 
-  const select = d3
-    .select('#wrapper')
+  const selection = select('#wrapper')
     .append('label')
     .text('Select interpolation curve')
     .append('select');
 
-  select
+  selection
     .selectAll('option')
     .data(curves)
     .enter()
@@ -146,10 +153,10 @@ async function drawLineChart() {
     .attr('value', d => d)
     .text(d => d);
 
-  select.on('input', event => {
+  selection.on('input', event => {
     const { value } = event.target;
     lineGenerator.curve(d3[value]);
-    d3.select(`#${pathId}`).attr('d', lineGenerator(dataset));
+    select(`#${pathId}`).attr('d', lineGenerator(dataset));
   });
 }
 

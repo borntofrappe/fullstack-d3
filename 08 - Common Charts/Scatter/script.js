@@ -1,6 +1,16 @@
+const {
+  json,
+  scaleLinear,
+  extent,
+  select,
+  axisBottom,
+  axisLeft
+
+} = d3;
+
 async function drawScatterplots() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await json('../../nyc_weather_data.json');
 
   const colorAccessor = d => d.precipIntensity;
 
@@ -21,9 +31,8 @@ async function drawScatterplots() {
   dimensions.boundedHeight =
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
-  const colorScale = d3
-    .scaleLinear()
-    .domain(d3.extent(dataset, colorAccessor))
+  const colorScale = scaleLinear()
+    .domain(extent(dataset, colorAccessor))
     .range(['skyblue', 'darkslategrey']);
 
   function drawScatterplot(metricX, metricY) {
@@ -31,20 +40,17 @@ async function drawScatterplots() {
     const yAccessor = d => d[metricY];
 
     /* SCALES */
-    const xScale = d3
-      .scaleLinear()
-      .domain(d3.extent(dataset, xAccessor))
+    const xScale = scaleLinear()
+      .domain(extent(dataset, xAccessor))
       .range([0, dimensions.boundedWidth])
       .nice();
 
-    const yScale = d3
-      .scaleLinear()
-      .domain(d3.extent(dataset, yAccessor))
+    const yScale = scaleLinear()
+      .domain(extent(dataset, yAccessor))
       .range([dimensions.boundedHeight, 0]);
 
     /* DRAW DATA */
-    const wrapper = d3
-      .select('#wrapper')
+    const wrapper = select('#wrapper')
       .append('svg')
       .attr('width', dimensions.width)
       .attr('height', dimensions.height);
@@ -110,8 +116,7 @@ async function drawScatterplots() {
       );
 
     /* PERIPHERALS */
-    const xAxisGenerator = d3
-      .axisBottom()
+    const xAxisGenerator = axisBottom()
       .scale(xScale)
       .ticks(6);
     const xAxis = axisGroup
@@ -127,8 +132,7 @@ async function drawScatterplots() {
       .attr('font-size', 15)
       .attr('fill', 'currentColor');
 
-    const yAxisGenerator = d3
-      .axisLeft()
+    const yAxisGenerator = axisLeft()
       .scale(yScale)
       .ticks(6);
     const yAxis = axisGroup.append('g').call(yAxisGenerator);

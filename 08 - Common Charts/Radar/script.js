@@ -1,9 +1,23 @@
+const {
+  json,
+  timeParse,
+  timeFormat,
+  scaleBand,
+  scaleLinear,
+  extent,
+  lineRadial,
+  areaRadial,
+  curveLinearClosed,
+  select,
+
+} = d3;
+
 async function drawRadar() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await json('../../nyc_weather_data.json');
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
-  const dateFormatter = d3.timeFormat('%B %d, %Y');
+  const dateParser = timeParse('%Y-%m-%d');
+  const dateFormatter = timeFormat('%B %d, %Y');
 
   const metrics = [
     'windBearing',
@@ -34,42 +48,36 @@ async function drawRadar() {
   /* SCALES */
   const radius = dimensions.boundedWidth / 2;
 
-  const angleScale = d3
-    .scaleBand()
+  const angleScale = scaleBand()
     .domain(metrics)
     .range([0, Math.PI * 2]);
 
   const radiiScales = metrics.reduce((acc, curr) => {
-    acc[curr] = d3
-      .scaleLinear()
-      .domain(d3.extent(dataset, accessors[curr]))
+    acc[curr] = scaleLinear()
+      .domain(extent(dataset, accessors[curr]))
       .range([0, radius]);
     return acc;
   }, {});
 
-  const lineGenerator = d3
-    .lineRadial()
+  const lineGenerator = lineRadial()
     .angle(d => angleScale(d.metric))
     .radius(d => radiiScales[d.metric](d.value))
-    .curve(d3.curveLinearClosed);
+    .curve(curveLinearClosed);
 
-  const areaGenerator = d3
-    .areaRadial()
+  const areaGenerator = areaRadial()
     .angle(d => angleScale(d.metric))
     .innerRadius(0)
     .outerRadius(d => radiiScales[d.metric](d.value))
-    .curve(d3.curveLinearClosed);
+    .curve(curveLinearClosed);
 
   /* DRAW DATA */
-  const radarDate = d3.select('#wrapper').append('h2');
+  const radarDate = select('#wrapper').append('h2');
 
-  const radarButton = d3
-    .select('#wrapper')
+  const radarButton = select('#wrapper')
     .append('button')
     .text('Next day');
 
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
