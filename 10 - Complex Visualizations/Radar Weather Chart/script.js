@@ -1,9 +1,27 @@
-/* globals d3 */
+const {
+  json,
+  timeParse,
+  timeFormat,
+  format,
+  scaleTime,
+  extent,
+  select,
+  interpolateYlOrRd,
+  timeMonths,
+  scaleLinear,
+  areaRadial,
+  scaleSqrt,
+  scaleOrdinal,
+  arc,
+  scaleSequential,
+  pointer,
+} = d3;
+
 async function drawRadarWeatherChart() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await json('../../nyc_weather_data.json');
 
-  const dateParser = d3.timeParse('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
   const dateAccessor = d => dateParser(d.date);
 
   const temperatureMinAccessor = d => d.temperatureMin;
@@ -13,13 +31,13 @@ async function drawRadarWeatherChart() {
   const precipTypeAccessor = d => d.precipType;
   const cloudCoverAccessor = d => d.cloudCover;
 
-  const formatDate = d => d3.timeFormat('%b')(d);
-  const formatTemperature = d => `${d3.format('.0f')(d)}°F`;
+  const formatDate = d => timeFormat('%b')(d);
+  const formatTemperature = d => `${format('.0f')(d)}°F`;
 
-  const formatDateTooltip = d => d3.timeFormat('%B %-d')(d);
-  const formatTemperatureTooltip = d => `${d3.format('.1f')(d)}°F`;
-  const formatCloudCoverTooltip = d => d3.format('.2f')(d);
-  const formatPrecipProbabilityTooltip = d => d3.format('.0%')(d);
+  const formatDateTooltip = d => timeFormat('%B %-d')(d);
+  const formatTemperatureTooltip = d => `${format('.1f')(d)}°F`;
+  const formatCloudCoverTooltip = d => format('.2f')(d);
+  const formatPrecipProbabilityTooltip = d => format('.0%')(d);
 
   /* CHART DIMENSIONS */
   const dimensions = {
@@ -31,14 +49,12 @@ async function drawRadarWeatherChart() {
   dimensions.boundedRadius = dimensions.boundedSize / 2;
 
   /* SCALES */
-  const angleScale = d3
-    .scaleTime()
-    .domain(d3.extent(dataset, dateAccessor))
+  const angleScale = scaleTime()
+    .domain(extent(dataset, dateAccessor))
     .range([0, Math.PI * 2]);
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.size)
     .attr('height', dimensions.size);
@@ -54,7 +70,7 @@ async function drawRadarWeatherChart() {
 
   const defs = wrapper.append('defs');
   const gradientId = 'tempereature-gradient';
-  const gradientColorScale = d3.interpolateYlOrRd;
+  const gradientColorScale = interpolateYlOrRd;
 
   const stops = 10;
   const stopData = Array(stops)
@@ -78,7 +94,7 @@ async function drawRadarWeatherChart() {
   const peripheralsGroup = bounds.append('g');
 
   const axisGroup = peripheralsGroup.append('g');
-  const months = d3.timeMonths(...angleScale.domain());
+  const months = timeMonths(...angleScale.domain());
 
   axisGroup
     .append('g')
@@ -121,10 +137,9 @@ async function drawRadarWeatherChart() {
 
   const gridLinesGroup = peripheralsGroup.append('g');
 
-  const radiusScale = d3
-    .scaleLinear()
+  const radiusScale = scaleLinear()
     .domain(
-      d3.extent([
+      extent([
         ...dataset.map(temperatureMaxAccessor),
         ...dataset.map(temperatureMinAccessor),
       ])
@@ -182,8 +197,7 @@ async function drawRadarWeatherChart() {
       .attr('opacity', 0.15);
   }
 
-  const temperatureAreaGenerator = d3
-    .areaRadial()
+  const temperatureAreaGenerator = areaRadial()
     .angle(d => angleScale(dateAccessor(d)))
     .innerRadius(d => radiusScale(temperatureMinAccessor(d)))
     .outerRadius(d => radiusScale(temperatureMaxAccessor(d)));
@@ -220,9 +234,8 @@ async function drawRadarWeatherChart() {
 
   const cloudCoverGroup = bounds.append('g');
 
-  const cloudCoverRadiusScale = d3
-    .scaleSqrt()
-    .domain(d3.extent(dataset, cloudCoverAccessor))
+  const cloudCoverRadiusScale = scaleSqrt()
+    .domain(extent(dataset, cloudCoverAccessor))
     .range([1, 10]);
 
   cloudCoverGroup
@@ -244,15 +257,13 @@ async function drawRadarWeatherChart() {
     .attr('opacity', 0.5);
 
   const precipGroup = bounds.append('g');
-  const precipProbabilityRadiusScale = d3
-    .scaleSqrt()
-    .domain(d3.extent(dataset, precipProbabilityAccessor))
+  const precipProbabilityRadiusScale = scaleSqrt()
+    .domain(extent(dataset, precipProbabilityAccessor))
     .range([1, 8]);
 
   const precipTypes = ['rain', 'sleet', 'snow'];
 
-  const precipTypeColorScale = d3
-    .scaleOrdinal()
+  const precipTypeColorScale = scaleOrdinal()
     .domain(precipTypes)
     .range(['#54a0ff', '#636e72', '#b2bec3']);
 
@@ -359,7 +370,7 @@ async function drawRadarWeatherChart() {
   }
 
   /* INTERACTIONS */
-  const tooltip = d3.select('#tooltip');
+  const tooltip = select('#tooltip');
 
   const highlightPath = bounds
     .append('g')
@@ -369,15 +380,13 @@ async function drawRadarWeatherChart() {
     .attr('fill-opacity', 0.4);
 
   const tooltipDistance = dimensions.boundedRadius + dimensions.margin + 50;
-  const arcGenerator = d3
-    .arc()
+  const arcGenerator = arc()
     .innerRadius(0)
     .outerRadius(tooltipDistance);
 
-  const temperatureColorScale = d3
-    .scaleSequential()
+  const temperatureColorScale = scaleSequential()
     .domain(
-      d3.extent([
+      extent([
         ...dataset.map(temperatureMinAccessor),
         ...dataset.map(temperatureMaxAccessor),
       ])
@@ -385,7 +394,7 @@ async function drawRadarWeatherChart() {
     .interpolator(gradientColorScale);
 
   function onMouseMove(event) {
-    const [x, y] = d3.pointer(event);
+    const [x, y] = pointer(event);
     const theta = Math.atan2(y, x);
     let angle = theta + Math.PI / 2;
     if (angle < 0) {
@@ -394,7 +403,7 @@ async function drawRadarWeatherChart() {
 
     const date = angleScale.invert(angle);
     const d = dataset.find(
-      datum => d3.timeFormat('%Y-%m-%d')(date) === datum.date
+      datum => timeFormat('%Y-%m-%d')(date) === datum.date
     );
 
     if (d) {

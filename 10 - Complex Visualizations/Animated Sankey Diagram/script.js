@@ -1,10 +1,25 @@
+const {
+  json,
+  range,
+  bisect,
+  scaleLinear,
+  extent,
+  interpolateHcl,
+  line,
+  curveMonotoneX,
+  select,
+  selectAll,
+  merge,
+  timer,
+} = d3;
+
 async function drawAnimatedSankey() {
   /* ACCESS DATA */
-  const dataset = await d3.json('./education.json');
+  const dataset = await json('./education.json');
 
   const sexAccessor = d => d.sex;
   const sexNames = ['female', 'male'];
-  const sexIds = d3.range(sexNames.length);
+  const sexIds = range(sexNames.length);
 
   const educationAccessor = d => d.education;
   const educationNames = [
@@ -15,11 +30,11 @@ async function drawAnimatedSankey() {
     "Associate's",
     "Bachelor's and up",
   ];
-  const educationIds = d3.range(educationNames.length);
+  const educationIds = range(educationNames.length);
 
   const sesAccessor = d => d.ses;
   const sesNames = ['low', 'middle', 'high'];
-  const sesIds = d3.range(sesNames.length);
+  const sesIds = range(sesNames.length);
 
   const getStatusKey = ({ sex, ses }) => `${sex}--${ses}`;
 
@@ -54,7 +69,7 @@ async function drawAnimatedSankey() {
     const key = getStatusKey({ sex: sexNames[sex], ses: sesNames[ses] });
     const probabilities = stackedProbabilities[key];
     const probability = Math.random();
-    const education = d3.bisect(probabilities, probability);
+    const education = bisect(probabilities, probability);
 
     return {
       sex,
@@ -87,44 +102,38 @@ async function drawAnimatedSankey() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const colorScale = d3
-    .scaleLinear()
-    .domain(d3.extent(sesIds))
+  const colorScale = scaleLinear()
+    .domain(extent(sesIds))
     .range(['hsl(178, 84%, 43%)', 'hsl(332, 55%, 46%)'])
-    .interpolate(d3.interpolateHcl);
+    .interpolate(interpolateHcl);
 
-  const xScale = d3
-    .scaleLinear()
+  const xScale = scaleLinear()
     .domain([0, 1])
     .range([0, dimensions.boundedWidth])
     .clamp(true);
 
-  const startYScale = d3
-    .scaleLinear()
+  const startYScale = scaleLinear()
     .domain([sesIds.length, -1])
     .range([0, dimensions.boundedHeight]);
 
-  const endYScale = d3
-    .scaleLinear()
+  const endYScale = scaleLinear()
     .domain([educationIds.length, -1])
     .range([0, dimensions.boundedHeight]);
 
   const linkPoints = 6;
-  const linkGenerator = d3
-    .line()
+  const linkGenerator = line()
     .x((d, i) => (i * dimensions.boundedWidth) / (linkPoints - 1))
     .y((d, i) => (i < linkPoints / 2 ? startYScale(d[0]) : endYScale(d[1])))
-    .curve(d3.curveMonotoneX);
+    .curve(curveMonotoneX);
 
-  const linkOptions = d3.merge(
+  const linkOptions = merge(
     sesIds.map(startId =>
       educationIds.map(endId => Array(linkPoints).fill([startId, endId]))
     )
   );
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height)
@@ -312,12 +321,12 @@ async function drawAnimatedSankey() {
 
   metricsGroup.attr('transform', `translate(${dimensions.boundedWidth} 0)`);
 
-  const heightScale = d3.scaleLinear().range([0, dimensions.pathHeight]);
+  const heightScale = scaleLinear().range([0, dimensions.pathHeight]);
 
   function highlightMetrics(metrics) {
-    const data = d3.merge(
+    const data = merge(
       metrics.map((education, educationId) =>
-        d3.merge(
+        merge(
           education.map((sex, sexId) => {
             const total = sex.reduce((acc, curr) => acc + curr, 0);
             heightScale.domain([0, total]);
@@ -388,9 +397,8 @@ async function drawAnimatedSankey() {
   /* PEOPLE */
   let people = [];
 
-  let timer;
-  const yProgressScale = d3
-    .scaleLinear()
+  let t;
+  const yProgressScale = scaleLinear()
     .domain([0.45, 0.55])
     .range([0, 1])
     .clamp(true);
@@ -448,7 +456,7 @@ async function drawAnimatedSankey() {
       })
       .remove();
 
-    d3.selectAll('.marker').attr('transform', d => {
+    selectAll('.marker').attr('transform', d => {
       const xProgress = xProgressAccessor(elapsed, d);
       const x = xScale(xProgress);
       const yStart = startYScale(sesAccessor(d));
@@ -461,12 +469,12 @@ async function drawAnimatedSankey() {
     });
 
     if (elapsed > time * generations) {
-      timer.stop();
+      t.stop();
     }
   }
 
   highlightMetrics(dataMetrics);
-  timer = d3.timer(updateMarkers);
+  t = timer(updateMarkers);
 }
 
 drawAnimatedSankey();

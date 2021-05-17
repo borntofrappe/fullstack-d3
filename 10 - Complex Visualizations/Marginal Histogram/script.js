@@ -1,12 +1,36 @@
+const {
+  json,
+  timeParse,
+  timeFormat,
+  format,
+  extent,
+  scaleLinear,
+  scaleSequential,
+  hcl,
+  interpolateRainbow,
+  select,
+  timeMonths,
+  timeWeek,
+  bin,
+  max,
+  min,
+  area,
+  curveBasis,
+  Delaunay,
+  axisBottom,
+  axisLeft,
+  pointer
+} = d3;
+
 async function drawMarginalHistogram() {
   /* ACCESS DATA */
-  const dataset = await d3.json('../../nyc_weather_data.json');
+  const dataset = await json('../../nyc_weather_data.json');
 
   const xAccessor = d => d.temperatureMin;
   const yAccessor = d => d.temperatureMax;
-  const parseDate = d3.timeParse('%Y-%m-%d');
-  const formatTemperature = d => `${d3.format('.1f')(d)}°F`;
-  const formatDate = d3.timeFormat('%A, %b   %d, %Y');
+  const parseDate = timeParse('%Y-%m-%d');
+  const formatTemperature = d => `${format('.1f')(d)}°F`;
+  const formatDate = timeFormat('%A, %b   %d, %Y');
   const dateAccessor = d => parseDate(d.date);
   const colorScaleYear = 2018;
   const colorAccessor = d => parseDate(d.date).setYear(colorScaleYear);
@@ -37,35 +61,31 @@ async function drawMarginalHistogram() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const domain = d3.extent([
+  const domain = extent([
     ...dataset.map(xAccessor),
     ...dataset.map(yAccessor),
   ]);
 
-  const xScale = d3
-    .scaleLinear()
+  const xScale = scaleLinear()
     .domain(domain)
     .range([0, dimensions.boundedWidth])
     .nice();
 
-  const yScale = d3
-    .scaleLinear()
+  const yScale = scaleLinear()
     .domain(domain)
     .range([dimensions.boundedHeight, 0])
     .nice();
 
-  const colorScale = d3
-    .scaleSequential()
+  const colorScale = scaleSequential()
     .domain([
       parseDate(`${colorScaleYear}-01-01`),
       parseDate(`${colorScaleYear}-12-31`),
     ])
-    // .interpolator(d => d3.hcl((d * 360 + 220) % 360, 160, 75))
-    .interpolator(d => d3.interpolateRainbow(d * -1));
+    // .interpolator(d => hcl((d * 360 + 220) % 360, 160, 75))
+    .interpolator(d => interpolateRainbow(d * -1));
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select('#wrapper')
+  const wrapper = select('#wrapper')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height)
@@ -91,7 +111,7 @@ async function drawMarginalHistogram() {
     .append('linearGradient')
     .attr('id', gradientId)
     .selectAll('stop')
-    .data(d3.timeMonths(...colorScale.domain()))
+    .data(timeMonths(...colorScale.domain()))
     .enter()
     .append('stop')
     .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
@@ -119,24 +139,21 @@ async function drawMarginalHistogram() {
 
   histogramsGroup.attr('class', 'color-sub');
   const thresholds = 20;
-  const topHistogramGenerator = d3
-    .bin()
+  const topHistogramGenerator = bin()
     .domain(xScale.domain())
     .value(xAccessor)
     .thresholds(thresholds);
 
   const topHistogramBins = topHistogramGenerator(dataset);
 
-  const topHistogramScale = d3
-    .scaleLinear()
-    .domain([0, d3.max(topHistogramBins, d => d.length)])
+  const topHistogramScale = scaleLinear()
+    .domain([0, max(topHistogramBins, d => d.length)])
     .range([dimensions.histogram.height, 0]);
-  const topHistogramAreaGenerator = d3
-    .area()
+  const topHistogramAreaGenerator = area()
     .x(d => xScale((d.x0 + d.x1) / 2))
     .y0(d => topHistogramScale(d.length))
     .y1(dimensions.histogram.height)
-    .curve(d3.curveBasis);
+    .curve(curveBasis);
 
   const topHistogramGroup = histogramsGroup
     .append('g')
@@ -153,24 +170,21 @@ async function drawMarginalHistogram() {
 
   const topHistogramHighlight = topHistogramGroup.append('path');
 
-  const rightHistogramGenerator = d3
-    .bin()
+  const rightHistogramGenerator = bin()
     .domain(yScale.domain())
     .value(yAccessor)
     .thresholds(thresholds);
 
   const rightHistogramBins = rightHistogramGenerator(dataset);
 
-  const rightHistogramScale = d3
-    .scaleLinear()
-    .domain([0, d3.max(rightHistogramBins, d => d.length)])
+  const rightHistogramScale = scaleLinear()
+    .domain([0, max(rightHistogramBins, d => d.length)])
     .range([dimensions.histogram.height, 0]);
-  const rightHistogramAreaGenerator = d3
-    .area()
+  const rightHistogramAreaGenerator = area()
     .x(d => xScale((d.x0 + d.x1) / 2))
     .y0(d => rightHistogramScale(d.length))
     .y1(dimensions.histogram.height)
-    .curve(d3.curveBasis);
+    .curve(curveBasis);
 
   const rightHistogramGroup = histogramsGroup
     .append('g')
@@ -190,7 +204,7 @@ async function drawMarginalHistogram() {
   const rightHistogramHighlight = rightHistogramGroup.append('path');
 
   /* INTERACTIONS */
-  const tooltip = d3.select('#tooltip').style('opacity', 0);
+  const tooltip = select('#tooltip').style('opacity', 0);
 
   tooltipGroup.style('pointer-events', 'none').style('opacity', 0);
 
@@ -277,7 +291,7 @@ async function drawMarginalHistogram() {
     highlightGroup.style('opacity', 0);
   }
 
-  const delaunay = d3.Delaunay.from(
+  const delaunay = Delaunay.from(
     dataset,
     d => xScale(xAccessor(d)),
     d => yScale(yAccessor(d))
@@ -317,15 +331,14 @@ async function drawMarginalHistogram() {
     .attr('height', dimensions.legend.height)
     .attr('fill', `url(#${gradientId})`);
 
-  const legendTickScale = d3
-    .scaleLinear()
+  const legendTickScale = scaleLinear()
     .domain(colorScale.domain())
     .range([0, dimensions.legend.width]);
 
   const legendTicksGroup = legendGroup
     .selectAll('g')
     .style('pointer-events', 'none')
-    .data(d3.timeMonths(...colorScale.domain()).filter((d, i) => i % 2 !== 0))
+    .data(timeMonths(...colorScale.domain()).filter((d, i) => i % 2 !== 0))
     .enter()
     .append('g')
     .attr('transform', d => `translate(${legendTickScale(d)} 0)`);
@@ -339,7 +352,7 @@ async function drawMarginalHistogram() {
 
   legendTicksGroup
     .append('text')
-    .text(d => d3.timeFormat('%b')(d))
+    .text(d => timeFormat('%b')(d))
     .attr('fill', 'currentColor')
     .attr('font-size', 12)
     .attr('y', -4)
@@ -366,7 +379,7 @@ async function drawMarginalHistogram() {
     .attr('stroke', 'hsl(0, 0%, 100%)')
     .attr('stroke-width', 3);
 
-  const formatLegendDate = d3.timeFormat('%b %d');
+  const formatLegendDate = timeFormat('%b %d');
   const weeksHighlight = 2;
 
   function isWithinRange(datum, d1, d2) {
@@ -375,13 +388,13 @@ async function drawMarginalHistogram() {
   }
 
   function onLegendMouseMove(event) {
-    const [x] = d3.pointer(event);
+    const [x] = pointer(event);
     const date = legendTickScale.invert(x);
 
     const [startDate, endDate] = legendTickScale.domain();
 
-    const d1 = d3.max([startDate, d3.timeWeek.offset(date, -weeksHighlight)]);
-    const d2 = d3.min([endDate, d3.timeWeek.offset(date, weeksHighlight)]);
+    const d1 = max([startDate, timeWeek.offset(date, -weeksHighlight)]);
+    const d2 = min([endDate, timeWeek.offset(date, weeksHighlight)]);
 
     legendTicksGroup.style('opacity', 0);
 
@@ -443,8 +456,7 @@ async function drawMarginalHistogram() {
     .on('mouseleave', onLegendMouseLeave);
 
   const ticks = 5;
-  const xAxisGenerator = d3
-    .axisBottom()
+  const xAxisGenerator = axisBottom()
     .scale(xScale)
     .ticks(ticks);
 
@@ -461,8 +473,7 @@ async function drawMarginalHistogram() {
     .attr('font-size', 14)
     .attr('fill', 'currentColor');
 
-  const yAxisGenerator = d3
-    .axisLeft()
+  const yAxisGenerator = axisLeft()
     .scale(yScale)
     .ticks(ticks);
   const yAxisGroup = axisGroup.append('g').call(yAxisGenerator);

@@ -2897,5 +2897,3 @@ function generatePerson(elapsed) {
   .join('rect')
   .style('transition', 'all 0.25s ease-out')
   ```
-
-## 11 - Framework
