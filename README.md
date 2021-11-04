@@ -1,25 +1,15 @@
 # Fullstack d3
 
-[_Fullstack d3_](https://www.newline.co/fullstack-d3) is an incredibly informative book from [_Amelia Wattenberger_](https://wattenberger.com/) devoted to the d3 library. With this folder I replicate the examples provided in the book, and annotate the lessons learned in the process.
+[_Fullstack d3_](https://www.newline.co/fullstack-d3) is an incredibly informative book from [_Amelia Wattenberger_](https://wattenberger.com/) devoted to the [d3.js](https://d3js.org/) library. With this folder I replicate the examples provided in the book, and annotate the lessons learned in the process.
 
 _Please note:_
 
-- while the book works with d3 in version **5**, this repository includes the library in version **6.5.0**. I highlight the differences as necessary
+- while the book works with d3 in version 5, this repository includes the library in version **v7.1.1**. I highlight the differences as necessary
 
-- at the top of the script, consider `01 - Line Chart/script.js`, I extract the modules used in the visualizations
+- at the top of the script, I extract the modules used in the visualizations
 
   ```js
-  const {
-    json,
-    timeParse,
-    extent,
-    scaleTime,
-    scaleLinear,
-    select,
-    line,
-    axisLeft,
-    axisBottom,
-  } = d3;
+  const { json, timeParse, extent } = d3;
   ```
 
   This helps to provide an overview of the parts of the library actually being used, but is also important to stress the structure of d3. In a production environment you'd include the necessary modules instead of the entire library.
@@ -57,7 +47,7 @@ Having a dedicate function allows to have variables scoped to the body of the fu
 
 ```js
 async function drawLineChart() {
-  const dataset = await json('../nyc_weather_data.json');
+  const dataset = await json("../nyc_weather_data.json");
 }
 ```
 
@@ -150,14 +140,14 @@ const yAxisGenerator = d3.axisLeft().scale(yScale);
 The generator function is then able to include the axis matching the scale in an existing element, like a group element `<g>`.
 
 ```js
-const yAxis = bounds.append('g');
+const yAxis = bounds.append("g");
 yAxisGenerator(yAxis);
 ```
 
 In this intance, the `.call` method provides a convenient alternative by calling the generator function with the current selection.
 
 ```js
-bounds.append('g').call(yAxisGenerator);
+bounds.append("g").call(yAxisGenerator);
 ```
 
 ## 02 - Scatterplot
@@ -176,7 +166,7 @@ It is technically possible to append the circles with a for loop, for instance w
 
 ```js
 dataset.forEach((point) => {
-  groupCircles.append('circle').attr('...', '...');
+  groupCircles.append("circle").attr("...", "...");
 });
 ```
 
@@ -189,44 +179,44 @@ The binding can be implemented in at least two ways.
    Start by selecting every circle. As no circle is included in the visualization, d3 now describes an empty selection.
 
    ```js
-   groupCircles.selectAll('circle');
+   groupCircles.selectAll("circle");
    ```
 
    With the `data` function, build a selection which knows the elements needed to map the data. In the specific example, a selection which describes all new elements, as no circle is included in the visualization and no data point is represented.
 
    ```js
-   groupCircles.selectAll('circle').data(dataset);
+   groupCircles.selectAll("circle").data(dataset);
    ```
 
    With the `enter` function, access the data points which need to be included in the visualization.
 
    ```js
-   groupCircles.selectAll('circle').data(dataset).enter();
+   groupCircles.selectAll("circle").data(dataset).enter();
    ```
 
    Finally, include a circle element for each item of the collection.
 
    ```js
    groupCircles
-     .selectAll('circle')
+     .selectAll("circle")
      .data(dataset)
      .enter()
-     .append('circle')
+     .append("circle")
      // other defining attributes
-     .attr('r', 5);
+     .attr("r", 5);
    ```
 
    While the implementation may seem convoluted, it helps to know that when you use the `data` function, the selection returned by d3 differentiates the elements with a `_enter` and `_exit` key. The first type describes items which are not represented in the visualizations, data points which are not already mapped to a circle; the second type describes items which were represented, but should no longer be, circles exceeding the sufficient amount.
 
    ```js
-   const update = groupCircles.selectAll('circle').data(dataset);
+   const update = groupCircles.selectAll("circle").data(dataset);
 
    const enter = update.enter();
 
    enter
-     .append('circle')
+     .append("circle")
      // other defining attributes
-     .attr('r', 5);
+     .attr("r", 5);
 
    // const exit = update.exit();
    ```
@@ -235,11 +225,11 @@ The binding can be implemented in at least two ways.
 
    ```js
    enter
-     .append('circle')
+     .append("circle")
      // other defining attributes
-     .attr('r', 5)
+     .attr("r", 5)
      .merge(update)
-     .attr('fill', 'red');
+     .attr("fill", "red");
    ```
 
 2. join
@@ -250,26 +240,26 @@ The binding can be implemented in at least two ways.
 
    ```js
    groupCircles
-     .selectAll('circle')
+     .selectAll("circle")
      .data(dataset)
-     .join('circle')
+     .join("circle")
      // other defining attributes
-     .attr('r', 5);
+     .attr("r", 5);
    ```
 
    In a more structured example, the `join()` function allows to target the different selections with a series of callback functions.
 
    ```js
    groupCircles
-     .selectAll('circle')
+     .selectAll("circle")
      .data(dataset)
      .join(
        // (update) => ,
        (enter) =>
          enter
-           .append('circle')
+           .append("circle")
            // other defining attributes
-           .attr('r', 5)
+           .attr("r", 5)
        // (exit) => ,
      );
    ```
@@ -294,7 +284,7 @@ A linear scale is able to interpolate between numerical values, but also colors.
 ```js
 const colorScale = scaleLinear()
   .domain(extent(dataset, colorAccessor))
-  .range(['skyblue', 'darkslategrey']);
+  .range(["skyblue", "darkslategrey"]);
 ```
 
 The `.nice()` allows makes it possible to round the values of the scale's intervals.
@@ -382,30 +372,30 @@ The visualization is made accessible for screen readers with a few elements and 
   In the individual bar chart, the idea is to focus on the SVG container, the group element nesting all the histogram bars, and the group element responsible for the individual bars
 
   ```js
-  wrapper.attr('tabindex', '0');
-  binsGroup.attr('tabindex', '0');
-  binGroups.attr('tabindex', '0');
+  wrapper.attr("tabindex", "0");
+  binsGroup.attr("tabindex", "0");
+  binGroups.attr("tabindex", "0");
   ```
 
 - the `role` attribute identifies the specific purpose of the select-able elements
 
   ```js
-  wrapper.attr('role', 'figure');
-  binsGroup.attr('role', 'list');
-  binGroups.attr('role', 'listitem');
+  wrapper.attr("role", "figure");
+  binsGroup.attr("role", "list");
+  binGroups.attr("role", "listitem");
   ```
 
 - the `aria-label` attribute provides an informative label
 
   ```js
-  binsGroup.attr('aria-label', 'Histogram bars');
-  binGroups.attr('aria-label', (d) => `...`);
+  binsGroup.attr("aria-label", "Histogram bars");
+  binGroups.attr("aria-label", (d) => `...`);
   ```
 
 - `aria-hidden` set to `true` hides elements from screen readers
 
   ```js
-  wrapper.selectAll('text').attr('aria-hidden', 'true');
+  wrapper.selectAll("text").attr("aria-hidden", "true");
   ```
 
   In the specific demo the labels included on the group elements are enough to describe the bar charts, and the `<text/>` elements overload screen readers with too many values (a screen reader would also read the ticks of the axis)
@@ -415,8 +405,8 @@ The visualization is made accessible for screen readers with a few elements and 
 `drawBarCharts` is responsible for fetching the data and describing the dimensions of the visualization. The visualization is then included in a `drawHistogram` function. This structure allows to draw multiple bar charts by calling `drawHistogram` with a different argument.
 
 ```js
-drawHistogram('windSpeed');
-drawHistogram('moonPhase');
+drawHistogram("windSpeed");
+drawHistogram("moonPhase");
 ```
 
 ## 04 - Animation and Transitions
@@ -434,10 +424,10 @@ In folder I elected to focus on the last approach.
 d3 provides a `.transition` method to interpolate between a start and end state. Essentially, it is enough to apply a transition as follows:
 
 ```js
-d3.select('rect')
-  .attr('transform', 'scale(0)')
+d3.select("rect")
+  .attr("transform", "scale(0)")
   .transition()
-  .attr('transform', 'scale(1)');
+  .attr("transform", "scale(1)");
 ```
 
 In this instance the selected rectangle is transition to its full size.
@@ -461,7 +451,7 @@ The concept of the data join, as introduced in the second chapter `02 - Scatterp
 `drawHistogram` begins by selecting group elements `<g>` and binding the data provided by the bins.
 
 ```js
-const binGroups = binsGroup.selectAll('g').data(bins);
+const binGroups = binsGroup.selectAll("g").data(bins);
 ```
 
 From this starting point, `binGroups` describes the update selection, in other words those group elements `<g>` which already exist. New (missing) elements are identified with the `enter` function, while old (excessive) elements with the `exit` method.
@@ -482,26 +472,26 @@ With this structure, it is finally possible to update the visualization as neede
 - new elements are included with a group element
 
   ```js
-  const newBinGroups = binGroups.enter().append('g');
+  const newBinGroups = binGroups.enter().append("g");
   ```
 
   The groups are then used to add the desired label and rectangle
 
   ```js
-  newBinGroups.filter(yAccessor).append('text');
+  newBinGroups.filter(yAccessor).append("text");
   // set attributes and properties
 
-  newBinGroups.append('rect');
+  newBinGroups.append("rect");
   // set attributes and properties
   ```
 
 - existing element modify the position and text of the labels, not to mention the position and size of the bars
 
   ```js
-  binGroups.filter(yAccessor).select('text');
+  binGroups.filter(yAccessor).select("text");
   // modify attributes and properties
 
-  binGroups.select('rect');
+  binGroups.select("rect");
   // modify attributes and properties
   ```
 
@@ -511,33 +501,33 @@ Coming back to the topic of the chapter, `transition` is applied to a selection 
 
 ```js
 binGroups
-  .select('rect')
+  .select("rect")
   .transition()
-  .attr('y', (d) => yScale(yAccessor(d)));
+  .attr("y", (d) => yScale(yAccessor(d)));
 ```
 
 The change can be customized in duration and delay with matching functions.
 
 ```js
 binGroups
-  .select('rect')
+  .select("rect")
   .transition()
   .duration(500)
   .delay(100)
-  .attr('y', (d) => yScale(yAccessor(d)));
+  .attr("y", (d) => yScale(yAccessor(d)));
 ```
 
 Multiple transitions can also be chained by using the method repeatedly.
 
 ```js
 binGroups
-  .select('rect')
+  .select("rect")
   .transition()
   .duration(500)
   .delay(100)
-  .attr('y', (d) => yScale(yAccessor(d)))
+  .attr("y", (d) => yScale(yAccessor(d)))
   .transition()
-  .attr('fill', 'cornflowerblue');
+  .attr("fill", "cornflowerblue");
 ```
 
 In this instance the color is modified _after_ the rectangle rectangle reaches its `y` coordinate.
@@ -548,17 +538,17 @@ On its own, `transition` is already useful to smoothly change attributes and pro
 const updateTransition = d3.transition().duration(500).delay(100);
 
 binGroups
-  .select('rect')
+  .select("rect")
   .transition(updateTransition)
-  .attr('y', (d) => yScale(yAccessor(d)));
+  .attr("y", (d) => yScale(yAccessor(d)));
 ```
 
 With this structure the necessary transitions are initialised ahead of time, and can be repeated throughout the code to synchronize change on multiple elements.
 
 ```js
-binGroups.select('rect').transition(updateTransition);
+binGroups.select("rect").transition(updateTransition);
 
-binGroups.filter(yAccessor).select('text').transition(updateTransition);
+binGroups.filter(yAccessor).select("text").transition(updateTransition);
 ```
 
 Multiple transitions can then be chained to have the change happen in sequence.
@@ -593,7 +583,7 @@ xAxisGroup.transition().call(xAxisGenerator);
 For the line, the `transition` method produces the undesired effect of a wriggle.
 
 ```js
-line.transition(transition).attr('d', lineGenerator(data));
+line.transition(transition).attr("d", lineGenerator(data));
 ```
 
 This is because d3 is updating the `d` attribute of the line point by point. Consider the following example, where the line is described with a series of points (`L`, or _line to_, instructs the path element to continue the line toward a certain (`x`, `y`) pairing).
@@ -645,22 +635,22 @@ To fix the second issue, it is instead necessary to introduce a new SVG element 
 
 ```js
 bounds
-  .append('defs')
-  .append('clipPath')
-  .append('rect')
-  .attr('width', dimensions.boundedWidth)
-  .attr('height', dimensions.boundedHeight);
+  .append("defs")
+  .append("clipPath")
+  .append("rect")
+  .attr("width", dimensions.boundedWidth)
+  .attr("height", dimensions.boundedHeight);
 ```
 
 With an identifier, it is then possible to referemce the clip in the group element nesting the line, so that the line is shown only in the prescribed area.
 
 ```js
-bounds.append('defs').append('clipPath').attr('id', 'bounds-clip-path');
+bounds.append("defs").append("clipPath").attr("id", "bounds-clip-path");
 // clipping area
 
 const lineGroup = bounds
-  .append('g')
-  .attr('clip-path', 'url(#bounds-clip-path)');
+  .append("g")
+  .attr("clip-path", "url(#bounds-clip-path)");
 ```
 
 #### Minor Tweaks
@@ -677,8 +667,8 @@ const lineGroup = bounds
 
   ```js
   rectangle
-    .attr('y', freezingTemperatureY)
-    .attr('height', dimensions.boundedHeight - freezingTemperatureY);
+    .attr("y", freezingTemperatureY)
+    .attr("height", dimensions.boundedHeight - freezingTemperatureY);
   ```
 
 - the horizontal scale considers the input data from the second point
@@ -693,7 +683,7 @@ const lineGroup = bounds
   This is to avoid removing the first point while first point is still visible. Starting with the second point, the first one is mapped to a negative `x` coordinate, which means it is finally removed outisde of the clip area. Comment out the clip to assess this is what actually happens.
 
   ```js
-  const lineGroup = bounds.append('g');
+  const lineGroup = bounds.append("g");
   // .attr('clip-path', 'url(#bounds-clip-path)');
   ```
 
@@ -706,7 +696,7 @@ _Please note:_ version 6 of the d3 library revised event handlers considerably.
 Listen to events through the `on` method. On a selection, the method specifies the event and a callback function.
 
 ```js
-selection.on('mouseenter', function () {
+selection.on("mouseenter", function () {
   // do something
 });
 ```
@@ -714,9 +704,9 @@ selection.on('mouseenter', function () {
 The function is called when the event is registered, and has knowledge of the event and the bound data.
 
 ```js
-const rectangles = bounds.selectAll('rect').data(dates).enter().append('rect');
+const rectangles = bounds.selectAll("rect").data(dates).enter().append("rect");
 
-rectangles.on('mouseenter', function (event, d) {
+rectangles.on("mouseenter", function (event, d) {
   // do something
 });
 ```
@@ -726,7 +716,7 @@ In this example, the function is executed as the mouse enters in a rectangle. `e
 _Please note:_ prior to d3 version 6, the callback function is called with three values: the datum bound to the selection, the index and the collection to which the element belongs.
 
 ```js
-rectangles.on('mouseenter', function (d, i, nodes) {
+rectangles.on("mouseenter", function (d, i, nodes) {
   // do something
 });
 ```
@@ -736,7 +726,7 @@ Again and in the rectangles' example, `d` would descibe the date, `nodes` the co
 It is still possible to know about the index and nodes collection, but with a different syntax.
 
 ```js
-rectangles.on('mouseenter', function (event, d) {
+rectangles.on("mouseenter", function (event, d) {
   const nodes = rectangles.nodes();
   const i = nodes.indexOf(this);
 });
@@ -745,7 +735,7 @@ rectangles.on('mouseenter', function (event, d) {
 _Plese also note:_ with the `function` keyword, `this` describes the element behind the event. The concept is useful to target the specific element.
 
 ```js
-rectangles.on('mouseenter', function (event, d) {
+rectangles.on("mouseenter", function (event, d) {
   d3.select(this);
   // update the hovered rectangle
 });
@@ -754,7 +744,7 @@ rectangles.on('mouseenter', function (event, d) {
 With ES6 arrow syntax, `=>`, and since version 6, it is still possible to have a reference to the element with `event.currentTarget`.
 
 ```js
-rectangles.on('mouseenter', (event, d) => {
+rectangles.on("mouseenter", (event, d) => {
   d3.select(event.currentTarget);
   // update the hovered rectangle
 });
@@ -763,13 +753,13 @@ rectangles.on('mouseenter', (event, d) => {
 With the `on` keyword the library attaches event handlers to the selected element. With `null` instead of a callback function, it is then possible to destroy said handlers.
 
 ```js
-rectangles.on('mouseenter', null);
+rectangles.on("mouseenter", null);
 ```
 
 The `dispatch` method finally allows to execute the code of the input event handler.
 
 ```js
-rectangles.dispatch('mouseenter').on('mouseenter', null);
+rectangles.dispatch("mouseenter").on("mouseenter", null);
 ```
 
 In this instance, the logic described in the callback function is executed before removing the associated handler.
@@ -793,7 +783,7 @@ As the mouse hovers on the rectangles, the color is updated to the chosen hue.
 _Please note:_ The property overrides the `fill` attribute.
 
 ```js
-rectangles.attr('fill', 'cornflowerblue');
+rectangles.attr("fill", "cornflowerblue");
 ```
 
 Had the color been set inline and with the `.style` method, the solution would not have worked (at least without the `!important` keyword). This relates to CSS specificity and not to d3 itself.
@@ -801,7 +791,7 @@ Had the color been set inline and with the `.style` method, the solution would n
 ```js
 rectangles
   // .attr('fill', 'cornflowerblue');
-  .style('fill', 'cornflowerblue');
+  .style("fill", "cornflowerblue");
 ```
 
 #### Tooltip
@@ -849,21 +839,21 @@ In the script, d3 finally manages the tooltip as the mouse hovers on a rectangle
 
 ```js
 binGroups
-  .append('rect')
-  .on('mouseenter', onMouseEnter())
-  .on('mouseleave', onMouseLeave());
+  .append("rect")
+  .on("mouseenter", onMouseEnter())
+  .on("mouseleave", onMouseLeave());
 ```
 
 `onMouseEnter` updates the tooltip modifying the text of its nested elements. For instance and in a heading element, the tooltip shows the metric of the particular bar chart.
 
 ```js
-tooltip.select('h2').text(metric);
+tooltip.select("h2").text(metric);
 ```
 
 In terms of style, the function also shows the tooltip modifying its opacity.
 
 ```js
-tooltip.style('opacity', 1);
+tooltip.style("opacity", 1);
 ```
 
 Most importantly, the function updates the position of the tooltip so that it resides above the selected rectangle. The solution is not simple, and that it might help to explain the logic in steps:
@@ -891,7 +881,7 @@ Most importantly, the function updates the position of the tooltip so that it re
 - with the `transform` property, the tooltip is translated to the prescribed `x` and `y` coordinates
 
   ```js
-  tooltip.style('transform', `translate(${x}px, ${y}px)`);
+  tooltip.style("transform", `translate(${x}px, ${y}px)`);
   ```
 
   This works, but the tooltip is positioned from the top left corner
@@ -900,7 +890,7 @@ Most importantly, the function updates the position of the tooltip so that it re
 
   ```js
   tooltip.style(
-    'transform',
+    "transform",
     `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`
   );
   ```
@@ -911,7 +901,7 @@ Most importantly, the function updates the position of the tooltip so that it re
 
 ```js
 function onMouseLeave() {
-  tooltip.style('opacity', 0);
+  tooltip.style("opacity", 0);
 }
 ```
 
@@ -920,7 +910,7 @@ function onMouseLeave() {
 `d3.format` creates a formatting function with a series of directives.
 
 ```js
-const format = d3.format('.2f');
+const format = d3.format(".2f");
 ```
 
 In this instance, `format` can be used to describe numerical values with two numbers after the decimal point.
@@ -952,21 +942,21 @@ Event handlers are included on `<circle>` elements exactly like on rectangles.
 
 ```js
 bounds
-  .append('circle')
-  .on('mouseenter', onMouseEnter)
-  .on('mouseleave', onMouseLeave);
+  .append("circle")
+  .on("mouseenter", onMouseEnter)
+  .on("mouseleave", onMouseLeave);
 ```
 
 On top of displaying the data points with numerical values, the tooltip also includes a date, which is formatted with the `d3-time-format` module. Formatted, and parsed actually, as it is first necessary to convert the string describing the points to a date object. The functions work similarly to `d3.format`, with a series of directives describing the format.
 
 ```js
-const parseDate = d3.timeParse('%Y-%m-%d');
+const parseDate = d3.timeParse("%Y-%m-%d");
 ```
 
 In this instance, the function creates a date object from a string displaying the full year, month and day, separated with a hyphen, like `2018-07-23`.
 
 ```js
-const formatDate = d3.timeFormat('%B %A %-d, %Y');
+const formatDate = d3.timeFormat("%B %A %-d, %Y");
 ```
 
 In this instance, the function formats a date object to show the entire name of the month and day, followed by the number of the day and year, like `July Monday 23, 2018`.
@@ -1004,12 +994,12 @@ The scatter plot from the previous demo is enhanced to have the mouse highlight 
 
   ```js
   bounds
-    .append('g')
-    .selectAll('path')
+    .append("g")
+    .selectAll("path")
     .data(dataset)
     .enter()
-    .append('path')
-    .attr('d', (d, i) => voronoi.renderCell(i));
+    .append("path")
+    .attr("d", (d, i) => voronoi.renderCell(i));
   ```
 
 By default, the path are rendered with a solid fill, so that the scatterplot is completely hidden. Setting a transparent fill, it is possible to conceal the elements and still register mouse events.
@@ -1041,12 +1031,12 @@ The event handlers are modified to also show a maroon circle in the place of the
 
 ```js
 bounds
-  .append('circle')
-  .attr('id', 'tooltipCircle')
-  .attr('fill', 'maroon')
-  .attr('r', 5)
-  .attr('cx', x)
-  .attr('cy', y);
+  .append("circle")
+  .attr("id", "tooltipCircle")
+  .attr("fill", "maroon")
+  .attr("r", 5)
+  .attr("cx", x)
+  .attr("cy", y);
 ```
 
 `x` and `y` are updated to refer to the coordinates of the selected data point.
@@ -1054,7 +1044,7 @@ bounds
 The identifier is useful to target and remove the element as the mouse leaves the elements.
 
 ```js
-bounds.select('#tooltipCircle').remove();
+bounds.select("#tooltipCircle").remove();
 ```
 
 ### Line
@@ -1062,7 +1052,7 @@ bounds.select('#tooltipCircle').remove();
 The final interactive demo provides more details for a line chart, a visualization similar to the one introduced in the first chapter, `01 Line Chart`. The biggest change is that the chart focuses on a subset of the entire data, on the first one hundred observations.
 
 ```js
-const data = await d3.json('../../nyc_weather_data.json');
+const data = await d3.json("../../nyc_weather_data.json");
 const dataset = data.slice(0, 100);
 ```
 
@@ -1076,16 +1066,16 @@ For the horizontal coordinate, the script first adds an onverlay with a `<rect>`
 
 ```js
 bounds
-  .append('rect')
-  .attr('width', dimensions.boundedWidth)
-  .attr('height', dimensions.boundedHeight)
-  .attr('fill', 'transparent');
+  .append("rect")
+  .attr("width", dimensions.boundedWidth)
+  .attr("height", dimensions.boundedHeight)
+  .attr("fill", "transparent");
 ```
 
 The coordinate is then retrieved following the `mousemove` event.
 
 ```js
-bounds.append('rect').on('mousemove', onMouseMove);
+bounds.append("rect").on("mousemove", onMouseMove);
 ```
 
 The book retrieves the desired value with the `d3.mouse` method.
@@ -1149,7 +1139,7 @@ geoJSON refers to the syntax necessary to draw a map. For the project, the synta
 The output is a `.json` file, which I opted to label `world-geojson.json`. Imported in the script like data in previous projects, the object highlights a series of important fields.
 
 ```js
-const countryShapes = await d3.json('./world-geojson.json');
+const countryShapes = await d3.json("./world-geojson.json");
 console.log(countryShapes);
 ```
 
@@ -1158,8 +1148,8 @@ Take notice of the `features` array, which describes a series of `Feature` objec
 In the specific project, the book introduces two accessor functions to retrieve the country's name and identifier.
 
 ```js
-const countryNameAccessor = (d) => d.properties['NAME'];
-const countryIdAccessor = (d) => d.properties['ADM0_A3_IS'];
+const countryNameAccessor = (d) => d.properties["NAME"];
+const countryIdAccessor = (d) => d.properties["ADM0_A3_IS"];
 ```
 
 The name is useful to describe the country, and will become relevant in the moment the country is highlighted in a tooltip, while the identifier provides a link with which to connect the country and the data describing the population growth.
@@ -1181,14 +1171,14 @@ Data is retrieved from the [world bank](https://databank.worldbank.org/data/sour
 The dataset is in `.csv` format, where the values are comma separated, but the script reads the data similarly to previous projects. The only difference is `d3.csv` is used in place of `d3.json`.
 
 ```js
-const dataset = await d3.csv('./databank_data.csv');
+const dataset = await d3.csv("./databank_data.csv");
 console.log(dataset);
 ```
 
 `dataset` described an array with one item for each row, but, for the project at hand, the relevant metric is just the population growth.
 
 ```js
-const metric = 'Population growth (annual %)';
+const metric = "Population growth (annual %)";
 ```
 
 In light of this, a dedicated variable is set to store the necessary values in an object describing the country and population growth with key-value pairs.
@@ -1205,8 +1195,8 @@ In light of this, a dedicated variable is set to store the necessary values in a
 I decided to use a `.reduce()` function instead of looping through the data with a `.forEach` loop as in the book, but the logic is the same: loop through the dataset, and include the country code if the item describes the chosen metric.
 
 ```js
-if (curr['Series Name'] === metric) {
-  acc[curr['Country Code']] = parseFloat(curr['2017 [YR2017]']) || 0;
+if (curr["Series Name"] === metric) {
+  acc[curr["Country Code"]] = parseFloat(curr["2017 [YR2017]"]) || 0;
 }
 ```
 
@@ -1223,7 +1213,7 @@ Unlike previous projects, however, `dimensions` doesn't initially set the height
 An object with a `type` of `'Sphere'` is all that is necessary to eventually draw the outline of the planet.
 
 ```js
-const sphere = { type: 'Sphere' };
+const sphere = { type: "Sphere" };
 ```
 
 ### Projection
@@ -1284,7 +1274,7 @@ The projection takes care of the position of the countries, so that a scale is n
 const colorScale = d3
   .scaleLinear()
   .domain([-maxChange, 0, maxChange])
-  .range(['indigo', 'white', 'darkgreen']);
+  .range(["indigo", "white", "darkgreen"]);
 ```
 
 In this instance, `-maxChange` is mapped to indigo, `0` to white and `maxChange` to dark green. Any value in between is interpolated between the chosen colors.
@@ -1301,10 +1291,10 @@ The map itself is drawn with the path generator function, and at least three typ
 
   ```js
   bounds
-    .append('path')
-    .attr('d', pathGenerator(sphere))
-    .attr('fill', '#e2f1f1')
-    .attr('stroke', 'none');
+    .append("path")
+    .attr("d", pathGenerator(sphere))
+    .attr("fill", "#e2f1f1")
+    .attr("stroke", "none");
   ```
 
 - `d3.geoGraticule10` creates an object for the lines highlighting the longitude and latitude
@@ -1313,10 +1303,10 @@ The map itself is drawn with the path generator function, and at least three typ
   const graticuleJson = d3.geoGraticule10();
 
   bounds
-    .append('path')
-    .attr('d', pathGenerator(graticuleJson))
-    .attr('fill', 'none')
-    .attr('stroke', '#cadddd');
+    .append("path")
+    .attr("d", pathGenerator(graticuleJson))
+    .attr("fill", "none")
+    .attr("stroke", "#cadddd");
   ```
 
   The function itself provides a graticule with a set of default options (`10` refers for instance to the degrees separating the longitude and latitude lines). [The documentation](https://github.com/d3/d3-geo#geoGraticule) provides more information as to how to customize the grid.
@@ -1325,12 +1315,12 @@ The map itself is drawn with the path generator function, and at least three typ
 
   ```js
   bounds
-    .append('g')
-    .selectAll('path')
+    .append("g")
+    .selectAll("path")
     .data(countryShapes.features)
     .enter()
-    .append('path')
-    .attr('d', pathGenerator);
+    .append("path")
+    .attr("d", pathGenerator);
   ```
 
   `pathGenerator` works as a shorthand for `d => pathGenerator(d)`, meaning the generating function receives a feature to produce the necessary SVG syntax.
@@ -1365,7 +1355,7 @@ const [x, y] = projection([longitude, latitude]);
 Knowing the location, it is finally possible to highlight the position of the user.
 
 ```js
-bounds.append('g').append('circle').attr('cx', x).attr('cy', y).attr('r', 6);
+bounds.append("g").append("circle").attr("cx", x).attr("cy", y).attr("r", 6);
 ```
 
 ### Peripherals
@@ -1407,12 +1397,12 @@ The color is included in the `stop-color` attribute, while the offset is compute
 
 ```js
 linearGradient
-  .selectAll('stop')
+  .selectAll("stop")
   .data(colorScale.range())
   .enter()
-  .append('stop')
-  .attr('stop-color', (d) => d)
-  .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`);
+  .append("stop")
+  .attr("stop-color", (d) => d)
+  .attr("offset", (d, i, { length }) => `${(i * 100) / (length - 1)}%`);
 ```
 
 ### Interactions
@@ -1425,10 +1415,10 @@ The `<path>` is recreated with the path generator function.
 
 ```js
 bounds
-  .append('path')
-  .attr('id', 'tooltipCountry')
-  .attr('fill', 'cornflowerblue')
-  .attr('d', pathGenerator(d));
+  .append("path")
+  .attr("id", "tooltipCountry")
+  .attr("fill", "cornflowerblue")
+  .attr("d", pathGenerator(d));
 ```
 
 The circle is positioned thanks to the `centroid` method, providing the center of a GeoJSON object and for a specific generator function.
@@ -1441,11 +1431,11 @@ For the tooltip, then, the HTML element highglights the selected country and the
 
 ```js
 tooltip
-  .select('p')
+  .select("p")
   .text(
     metricData
       ? `${formatMetric(metricData)}% population change`
-      : 'Data not available'
+      : "Data not available"
   );
 ```
 
@@ -1458,11 +1448,11 @@ As suggested in the book, mouse interaction can be improved with Delaunay's tria
 ```js
 bounds
   // bind features
-  .append('path')
-  .attr('d', (d, i) => voronoi.renderCell(i))
-  .attr('fill', 'transparent')
-  .on('mouseenter', onMouseEnter)
-  .on('mouseleave', onMouseLeave);
+  .append("path")
+  .attr("d", (d, i) => voronoi.renderCell(i))
+  .attr("fill", "transparent")
+  .on("mouseenter", onMouseEnter)
+  .on("mouseleave", onMouseLeave);
 ```
 
 The only difference is in the `x` and `y` coordinates used in the `d3.Delaunay.from` function, which now refer to the center of each country.
@@ -1520,7 +1510,7 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
 - instead of considering every data point, the line generator function receives a smaller set of values, considering the average for each week
 
   ```js
-  lineGroup.append('path').attr('d', lineGenerator(downsampleData));
+  lineGroup.append("path").attr("d", lineGenerator(downsampleData));
   ```
 
   `downsampleData` considers the weekly averages with `d3.timeWeeks`, a function generating the weeks from the start to end date
@@ -1543,20 +1533,20 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
 - for the seasons, the line chart includes a semi-transparent rectangle, and a line highlighting the mean value
 
   ```js
-  seasonGroup.append('rect');
+  seasonGroup.append("rect");
 
-  seasonGroup.append('path');
+  seasonGroup.append("path");
   ```
 
   The groups are bound to an object detailing the season.
 
   ```js
   const seasonGroup = seasonsGroup
-    .append('g')
-    .selectAll('g')
+    .append("g")
+    .selectAll("g")
     .data(seasonData)
     .enter()
-    .append('g');
+    .append("g");
   ```
 
   `seasonData` is built to have each data point represented by a season. `d3.timeYears` and `d3.timeMonth` are used to create an array describing one year more than necessary.
@@ -1572,7 +1562,7 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
   ```js
   const years = d3
     .timeYears(d3.timeMonth.offset(startDate, -13), endDate)
-    .map((yearDate) => parseInt(d3.timeFormat('%Y')(yearDate)));
+    .map((yearDate) => parseInt(d3.timeFormat("%Y")(yearDate)));
   ```
 
 - the `y` axis includes a label for the lines detailing the season's averages
@@ -1787,7 +1777,7 @@ The project highlights a few methods from the d3 library:
   For the label above the gauge component, the idea is to display one of five options, from very low to very high, according to where the value fits in the domain.
 
   ```js
-  d3.scaleQuantize().range(['Very low', 'Low', 'Average', 'High', 'Very high']);
+  d3.scaleQuantize().range(["Very low", "Low", "Average", "High", "Very high"]);
   ```
 
   `scaleQuantize` divides the domain in intervals of equal size, so that if the value falls in the first 20% of values, it is associated to the `Very low` label. Between 20% and 40% to the `Low` label and so forth. Refer to the documentation in the [`d3-scale`](https://github.com/d3/d3-scale) module for more details.
@@ -1831,7 +1821,7 @@ setTimeout(() => {
 `d3.json` provides a promise to fetch the data. If successful the idea is to either show the empty or loaded state, according to the length of the obtained data.
 
 ```js
-d3.json('../../nyc_weather_data.json').then((dataset) => {
+d3.json("../../nyc_weather_data.json").then((dataset) => {
   if (dataset.length === 0) {
     handleEmptyState();
   } else {
@@ -1843,7 +1833,7 @@ d3.json('../../nyc_weather_data.json').then((dataset) => {
 If not successful, the idea is to then show the error state.
 
 ```js
-d3.json('../../nyc_weather_data.json').catch((error) => {
+d3.json("../../nyc_weather_data.json").catch((error) => {
   console.error(error);
   handleErrorState();
 });
@@ -1852,7 +1842,7 @@ d3.json('../../nyc_weather_data.json').catch((error) => {
 _Please note_: in its current design, the promise should always proceed to the loaded state. To highlight the other states, try modifying the logic of the promise. To highlight an error, for instance, have the promise look for a non-existing file.
 
 ```js
-d3.json('../../nyc_weather_data.jn');
+d3.json("../../nyc_weather_data.jn");
 ```
 
 ### Outliers
@@ -2085,9 +2075,9 @@ The way the histogram is generated is similar to the visualizaton in a previous 
 
   ```js
   topHistogramGroup
-    .append('path')
-    .attr('d', topHistogramAreaGenerator(topHistogramBins))
-    .attr('fill', 'currentColor');
+    .append("path")
+    .attr("d", topHistogramAreaGenerator(topHistogramBins))
+    .attr("fill", "currentColor");
   ```
 
 The same logic is repeated for the right side, but the histogram is ultimately flipped and positioned to have the visualization highlight the ranges top to bottom.
@@ -2097,15 +2087,15 @@ The same logic is repeated for the right side, but the histogram is ultimately f
 When hovering on the scatterplot, the visualization highlights a specific circle. This is implemented exactly as in the chapter devoted to interactions, with a tooltip and Delaunay's triangulation, so I want devote much attention to the code. I will note, however, that beside the tooltip and the circle highlighting the selection, the visualization includes two rectangle elements, to highlight the color in the context of the histogram.
 
 ```js
-highlightGroup.append('rect');
+highlightGroup.append("rect");
 
-highlightGroup.append('rect');
+highlightGroup.append("rect");
 ```
 
 One important mention goes to the `mix-blend-mode` property, used to have the rectangles virtually hidden above the white background. This helps focusing the attention on the accompanying histograms.
 
 ```js
-highlightGroup.style('mix-blend-mode', 'color-burn');
+highlightGroup.style("mix-blend-mode", "color-burn");
 ```
 
 The highlight group is also included before the scatterplot, so that the rectangles are drawn below the circles.
@@ -2117,9 +2107,9 @@ The idea is to highlight a set of values when hovering on the legend. The implem
 Immediately, `legendHighlightGroup` is created to contain two elements: a `<text>` working as a label and a `<rect>` to highlight the selected date, or more precisely the selected range.
 
 ```js
-legendHighlightGroup.append('text');
+legendHighlightGroup.append("text");
 
-legendHighlightGroup.append('rect');
+legendHighlightGroup.append("rect");
 ```
 
 When hovering on the rectangle making up the legend, the idea is to then pick a start and end date around the selected date. The specific date is obtained by inverting the horizontal coordinate with the scale created for the legend.
@@ -2145,15 +2135,15 @@ Based on this structure, `d1` and `d2` describe the dates in the given year. The
 
 ```js
 legendHighlightGroup
-  .select('rect')
-  .attr('x', legendTickScale(d1))
-  .attr('width', legendTickScale(d2) - legendTickScale(d1));
+  .select("rect")
+  .attr("x", legendTickScale(d1))
+  .attr("width", legendTickScale(d2) - legendTickScale(d1));
 ```
 
 The label is also updated in position, similarly to the rectangle, but also and notably in the text, in order to display the dates with the chosen month and date.
 
 ```js
-const formatLegendDate = d3.timeFormat('%b %d');
+const formatLegendDate = d3.timeFormat("%b %d");
 
 legendHighlightGroup.text(`${formatLegendDate(d1)} - ${formatLegendDate(d2)}`);
 ```
@@ -2162,8 +2152,8 @@ The two dates are however and most importantly used to highlight the dots with t
 
 ```js
 scatterplotGroup
-  .selectAll('circle')
-  .style('opacity', (d) => (isWithinRange(d, d1, d2) ? 1 : 0));
+  .selectAll("circle")
+  .style("opacity", (d) => (isWithinRange(d, d1, d2) ? 1 : 0));
 ```
 
 The date of reference is always in the year, to account for data potentially expanding beyond one year.
@@ -2193,9 +2183,9 @@ The syntax returned by the function is included in the `d` attribute of a `<path
 
 ```js
 topHistogramHighlight
-  .style('opacity', 1)
+  .style("opacity", 1)
   .attr(
-    'd',
+    "d",
     topHistogramAreaGenerator(topHistogramGenerator(highlightDataset))
   );
 ```
@@ -2239,7 +2229,7 @@ const y =
 The `text-anchor` attribute is modified to have the text aligned left, center or right according to its horizontal position.
 
 ```js
-return Math.abs(x) < 5 ? 'middle' : x > 0 ? 'start' : 'end';
+return Math.abs(x) < 5 ? "middle" : x > 0 ? "start" : "end";
 ```
 
 Past the axis, grid lines are included with a series of `<circle>` element, for a set of arbitrary temperatures. `d3.ticks` creates an array of values based on a scale, and it is here helpful to find the radius of the circles.
@@ -2276,7 +2266,7 @@ const temperatureAreaGenerator = d3
 The generator function already plots the desired shape.
 
 ```js
-temperatureGroup.append('path').attr('d', temperatureAreaGenerator(dataset));
+temperatureGroup.append("path").attr("d", temperatureAreaGenerator(dataset));
 ```
 
 Instead of a solid fill, however, the code introduces a `<radialGradient>` element, similarly to the `<linearGradient>` of previous demos. The most important feature of the gradient is that the colors are picked from a chromatic scale of the `d3-scale-chromatic` module.
@@ -2334,12 +2324,12 @@ const precipProbabilityRadiusScale = d3
 The type is however included in the color of the circles, in the `fill` attribute, mapping the vlaue of the three known types (rain, sleet and snow).
 
 ```js
-const precipTypes = ['rain', 'sleet', 'snow'];
+const precipTypes = ["rain", "sleet", "snow"];
 
 const precipTypeColorScale = d3
   .scaleOrdinal()
   .domain(precipTypes)
-  .range(['#54a0ff', '#636e72', '#b2bec3']);
+  .range(["#54a0ff", "#636e72", "#b2bec3"]);
 ```
 
 The types are included with an ordinal scale, which maps a discrete domain to a discrete range (for instance `rain` is mapped to `#54a0ff`).
@@ -2358,7 +2348,7 @@ function drawAnnotation(angle, offset, text) {}
 drawAnnotation(
   angleScale(dateAccessor(dataset[22])),
   dimensions.boundedRadius + dimensions.margin * 0.5,
-  'Cloud Cover'
+  "Cloud Cover"
 );
 ```
 
@@ -2376,11 +2366,11 @@ The tooltip highlilghts a specific date and its multiple metrics. The solution i
 
 ```js
 bounds
-  .append('circle')
-  .attr('r', dimensions.boundedRadius + dimensions.margin)
-  .attr('fill', 'transparent')
-  .on('mousemove', onMouseMove)
-  .on('mouseleave', onMouseLeave);
+  .append("circle")
+  .attr("r", dimensions.boundedRadius + dimensions.margin)
+  .attr("fill", "transparent")
+  .on("mousemove", onMouseMove)
+  .on("mouseleave", onMouseLeave);
 ```
 
 In the `event` received by the `mousemove` listener, it is possible to obtain the angle from the given `x` and `y` coordinates.
@@ -2462,7 +2452,7 @@ Data accessor functions are accompanied with two arrays, one describing the poss
 
 ```js
 const sexAccessor = (d) => d.sex;
-const sexNames = ['female', 'male'];
+const sexNames = ["female", "male"];
 const sexIds = d3.range(sexNames.length);
 ```
 
@@ -2562,11 +2552,11 @@ For the first half the function considers the start scale, while the rest of the
 
 ```js
 bounds
-  .append('path')
-  .attr('d', linkGenerator(example))
-  .attr('fill', 'none')
-  .attr('stroke', 'currentColor')
-  .attr('stroke-width', dimensions.pathHeight);
+  .append("path")
+  .attr("d", linkGenerator(example))
+  .attr("fill", "none")
+  .attr("stroke", "currentColor")
+  .attr("stroke-width", dimensions.pathHeight);
 ```
 
 `d3.merge` helps to create the necessary combinations, as it is useful to flatten a 2D array considering the ses and education values.
@@ -2716,29 +2706,29 @@ people = [
 By filtering out the elements, data binding introduces an enter, update and exit selection. Enter for new shapes, update for existing ones (to-be-moved horizontally) and exit for those no longer represented.
 
 ```js
-markersGroup.selectAll('.marker-circle').data(people);
+markersGroup.selectAll(".marker-circle").data(people);
 ```
 
 The selection is actually split in two, so to represent the male and female category with different shapes.
 
 ```js
 const updateFemales = markersGroup
-  .selectAll('.marker-circle')
+  .selectAll(".marker-circle")
   .data(people.filter((d) => sexAccessor(d) === 0));
 ```
 
 For new shapes, the enter selections introduce circles and triangles with a specific class of `.marker`
 
 ```js
-updateFemales.enter().append('circle').attr('class', 'marker marker-circle');
+updateFemales.enter().append("circle").attr("class", "marker marker-circle");
 
-updateMale.enter().append('polygon').attr('class', 'marker marker-triangle');
+updateMale.enter().append("polygon").attr("class", "marker marker-triangle");
 ```
 
 The class is helpful to target the shapes, regardless of gender, and udpate their position.
 
 ```js
-d3.selectAll('.marker').attr('transform', (d) => {
+d3.selectAll(".marker").attr("transform", (d) => {
   // compute x and y
   return `translate(${x} ${y})`;
 });
@@ -2753,7 +2743,7 @@ updateFemales.exit().merge(updateMale.exit()).remove();
 This is enough to have d3 manage a collection of elements of equal size of `people`. However, it is essential to stress how the data is bound in the update selection. Beside the data, included as an array of either male/female persons, the `.data` function receives a key accessor function, which defaults to the index in the array.
 
 ```js
-const updateFemales = markersGroup.selectAll('.marker-circle').data(
+const updateFemales = markersGroup.selectAll(".marker-circle").data(
   people.filter((d) => sexAccessor(d) === 0),
   (d, i) => i
 );
@@ -2764,7 +2754,7 @@ By using the index, the library essentially recycles old elements instead of cre
 To assign elements to a single data point, the code is updated so that the key accessor function refers to a unique id.
 
 ```js
-const updateFemales = markersGroup.selectAll('.marker-circle').data(
+const updateFemales = markersGroup.selectAll(".marker-circle").data(
   people.filter((d) => sexAccessor(d) === 0),
   (d) => d.id
 );
@@ -2868,7 +2858,7 @@ function generatePerson(elapsed) {
   const colorScale = d3
     .scaleLinear()
     .domain(d3.extent(sesIds))
-    .range(['hsl(178, 84%, 43%)', 'hsl(332, 55%, 46%)']);
+    .range(["hsl(178, 84%, 43%)", "hsl(332, 55%, 46%)"]);
   ```
 
   An interpolator function is useful to have the color in the hcl color space, which means the choices have the same perceived lightness
@@ -2882,9 +2872,9 @@ function generatePerson(elapsed) {
 - the rectangles and text elements responsible for the metrics are included with the `.join` method.
 
   ```js
-  metricsGroup.selectAll('rect').data(data).join('rect');
+  metricsGroup.selectAll("rect").data(data).join("rect");
 
-  metricsGroup.selectAll('text').data(data).join('text');
+  metricsGroup.selectAll("text").data(data).join("text");
   ```
 
   The function works as a conveinence method for the update-enter-exit pattern. `join` allows to append the necessary element, as through the enter selection, and update their position, as through the update selection.
