@@ -18,7 +18,7 @@ _Please note:_
 
 The book begins immediately with a line chart. It is useful to introduce d3, but also the flow for every visualization.
 
-### Live Server
+### Live server
 
 At least for the first few visualizations, data is retrieved from a file in `.json` format. To bypass the CORS safety restriction, it is first necessary to set up a server. The node package `live-server` readily accommodates for this need.
 
@@ -32,7 +32,7 @@ Once installed, `live-server` provides an environment on `http://localhost:8080/
 live-server # go to localhost
 ```
 
-### Async Function
+### Async function
 
 The script calls an `async` function to create the visualization.
 f
@@ -43,7 +43,7 @@ async function drawLineChart() {}
 drawLineChart();
 ```
 
-Having a dedicate function allows to have variables scoped to the body of the function. Having an `async` function helps to `await` the data, which is retrieved with the `d3.json` function from the `d3-fetch` module.
+Having a dedicated function allows to have variables scoped to the body of the function. Most importantly, having an `async` function helps to `await` the data from methods like `d3.json`, which return a promise.
 
 ```js
 async function drawLineChart() {
@@ -51,7 +51,17 @@ async function drawLineChart() {
 }
 ```
 
-### Accessor Functions
+### Date parser
+
+In the dataset dates are included as a string, like "2018-01-02", but the d3 library works with date objects. To convert between the two the `d3-time-format` module provides helper functions like `d3.timeParse`.
+
+```js
+const dateParser = timeParse("%Y-%m-%d");
+```
+
+The function receives as input a string describing the format of the date. In this instance the full year followed by the month followed by the day, all separated with a hyphen.
+
+### Accessor functions
 
 Accessor functions are useful to retrieve specific values from the input data.
 
@@ -59,9 +69,9 @@ Accessor functions are useful to retrieve specific values from the input data.
 const yAccessor = (d) => d.temperatureMax;
 ```
 
-The construct is useful to access the data, throughout the visualization. Consider for instance:
+The construct is useful to access the data throughout the visualization. Consider for instance:
 
-- the domain of the scales, like `yScale`
+- the domain for the scales, like `yScale`
 
   ```js
   const yScale = d3
@@ -81,7 +91,7 @@ The construct is useful to access the data, throughout the visualization. Consid
 
 Included at the top of the script, accessor functions are also useful to provide a hint as to the topic of the visualization.
 
-### Wrapper and Bounds
+### Wrapper and bounds
 
 The line chart is included in an SVG element `<svg>` and it is furthermore nested in a group element `<g>`.
 
@@ -93,7 +103,7 @@ The line chart is included in an SVG element `<svg>` and it is furthermore neste
 </svg>
 ```
 
-This layered structure is useful to safely draw the visualization and peripherals (axis, labels), without fear of cropping the visuals. Anything falling outside of the `<svg>` SVG element `<svg>` is indeed not rendered.
+This layered structure is useful to safely draw the visualization and peripherals (axis, labels) without fear of cropping the visuals. Anything falling outside of the `<svg>` SVG element `<svg>` is indeed not rendered on the page.
 
 The wrapping container is attributed an arbitrary width, height and margin.
 
@@ -119,9 +129,64 @@ dimensions.boundedHeight =
   dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 ```
 
+### Selection
+
+`d3.select` allows to retrieve a reference to an element in the DOM with any popular CSS selectors.
+
+```js
+const wrapper = select("#wrapper");
+```
+
+The library returns a _selection object_ which is a particular type of array with several methods. One of the most useful methods is `.append`, to include HTML elements directly from the script.
+
+```js
+const wrapper = select("#wrapper");
+
+wrapper.append("svg");
+```
+
+Conveniently, it is possible to chain methods on the selection object. The practice becomes more and more useful the more methods modify the selection. One of these methods, `.attr`, allows to modify the attributes.
+
+```js
+const wrapper = select("#wrapper")
+  .append("svg")
+  .attr("width", dimensions.width)
+  .attr("height", dimensions.height);
+```
+
+### Scales
+
+Scales map a domain to a range. In the project at hand they map the temperature to a `y` coordinate, the date to a `x` coordinate.
+
+`d3-scale` provides different methods suited for different types of scales. For the temperature, where both the domain and the range describe a continuous metric, the relevant function is `d3.scaleLinear`.
+
+```js
+const yScale = scaleLinear().domain().range();
+```
+
+For the date, where the domain describes a series of date objects, the most appropriate method is `d3.scaleTime`.
+
+```js
+const xScale = scaleTime().domain().range();
+```
+
+In both instances the domain describes the extremes of the respective metric.
+
+```js
+const yScale = scaleLinear().domain([0, 100]);
+```
+
+In place of a hard-coded variable, however, `d3-array` provides a helper method `d3.extent` to extract the information with an accessor function.
+
+```js
+const yScale = scaleLinear().domain(extent(dataset, yAccessor));
+```
+
 ### Line
 
-`d3.line` provides a generator function which takes as input the data and returns the syntax for the `d` attribute of `<path>` elements. Two functions allow to describe the coordinates of the points in the line, in the horizontal and vertical dimenions.
+The `d3-shape` module provides `d3.line()` as a generator function. The goal is to create the syntax for the `d` attribute of `<path>` elements.
+
+The `x` and `y` methods allow to decipher the exact coordinates on the basis of the input data.
 
 ```js
 function lineGenerator = d3.line()
@@ -131,24 +196,28 @@ function lineGenerator = d3.line()
 
 ### Axis
 
-To include an axis you first create the peripheral with the `d3-axis` module.
+To include an axis you first create the peripheral with methods from the `d3-axis` module.
 
 ```js
 const yAxisGenerator = d3.axisLeft().scale(yScale);
 ```
 
-The generator function is then able to include the axis matching the scale in an existing element, like a group element `<g>`.
+`axisTop`, `axisRight`, `axisBottom`, `axisLeft` create a different structure in terms of ticks, positioned in the most appropriate side of the axis.
+
+Once you initialize the generator function it is possible to update the DOM by calling the function with an existing element, like a group element `<g>`.
 
 ```js
 const yAxis = bounds.append("g");
 yAxisGenerator(yAxis);
 ```
 
-In this intance, the `.call` method provides a convenient alternative by calling the generator function with the current selection.
+Conveniently, the library allows to call the generator function on the current selection with the `.call` method.
 
 ```js
 bounds.append("g").call(yAxisGenerator);
 ```
+
+In this manner there is no need to store a reference to the selection.
 
 ## 02 - Scatterplot
 
