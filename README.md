@@ -221,37 +221,33 @@ In this manner there is no need to store a reference to the selection.
 
 ## 02 - Scatterplot
 
-The second visualization is useful to repeat the concepts introduced with the line chart and also describe the concept of a data join.
-
-### Purpose
-
-A scatterplot is helpful to describe the relationship between two metrics, like the dew point and humidity recorded in the weather dataset.
+The second visualization is useful to repeat the process introduced with the line chart and also illustrate the concept of a data join.
 
 ### Data Join
 
-The visualization includes one circle for each data point, mapping the dew point to the axis, the humidity to the `y` axis, and the cloud cover to the `fill`, the color, of the shape.
+The visualization includes one circle for each data point, mapping the dew point to the `x` axis, the humidity to the `y` axis, and finally the cloud cover to the `fill` (the color) of the shape.
 
 It is technically possible to append the circles with a for loop, for instance with a `forEach` iterator.
 
 ```js
 dataset.forEach((point) => {
-  groupCircles.append("circle").attr("...", "...");
+  groupCircles.append("circle");
 });
 ```
 
-However, d3 introduces the concept of a data join to bind the data to DOM elements. With this binding, each element is linked to a data point, and the visualization can be updated knowing which value is already included.
+However, the chapter introduces the concept of a data join to bind the data to DOM elements. With this binding, each element is linked to a data point, and the visualization can be updated knowing which value is already included.
 
 The binding can be implemented in at least two ways.
 
 1. select, data, enter
 
-   Start by selecting every circle. As no circle is included in the visualization, d3 now describes an empty selection.
+   Start by selecting every circle. As no circle is included in the visualization, d3 returns an empty selection.
 
    ```js
    groupCircles.selectAll("circle");
    ```
 
-   With the `data` function, build a selection which knows the elements needed to map the data. In the specific example, a selection which describes all new elements, as no circle is included in the visualization and no data point is represented.
+   With the `data` function, build a selection which knows the elements needed to map the data. In the specific example, a selection which describes all new elements, as no circle is already available.
 
    ```js
    groupCircles.selectAll("circle").data(dataset);
@@ -290,7 +286,7 @@ The binding can be implemented in at least two ways.
    // const exit = update.exit();
    ```
 
-   To consider both new and existing elements, for instance to attribute a color to all elements in the visualization, the `.merge` function units the input selection with the current one.
+   To consider both new and existing elements, for instance to update the color of all circles, the `.merge` function unites the input selection with the current one.
 
    ```js
    enter
@@ -303,9 +299,9 @@ The binding can be implemented in at least two ways.
 
 2. join
 
-   Introduced in a later version of the `d3-selection` module ([v1.4.0](https://github.com/d3/d3-selection/releases/tag/v1.4.0)), the `.join` function provides a different interface for data binding.
+   Introduced in a later version of the `d3-selection` module, [v1.4.0](https://github.com/d3/d3-selection/releases/tag/v1.4.0), the `.join` function provides a different interface for data binding.
 
-   In the specific example, it allows to draw one circle for each data point by calling directly the desired shape.
+   In the specific example, it allows to draw one circle for each data point by referencing the desired shape directly.
 
    ```js
    groupCircles
@@ -323,28 +319,34 @@ The binding can be implemented in at least two ways.
      .selectAll("circle")
      .data(dataset)
      .join(
-       // (update) => ,
-       (enter) =>
-         enter
-           .append("circle")
-           // other defining attributes
-           .attr("r", 5)
-       // (exit) => ,
+       (enter) => enter.append("circle") /* other defining attributes */,
+       (update) => null,
+       (exit) => null
      );
    ```
 
-   Here it is possible to manage the enter, update and exit selections directly.
+   Here it is possible to manage the enter, update and exit selections separately.
+
+   Note that it is not necessary to specify the three function, and the snippet includes the remaining callbacks just to show where the update and exit logic would go
+
+   ```js
+   .join(
+   (enter) => enter
+     .append("circle")
+     // other defining attributes
+   );
+   ```
 
 _Please note_:
 
-- try to log the value returned by a function to understand what said function does. `console.log` proves to be very useful for instance to see how d3 manages the selection following the `data()` function, the `_enter` and `_exit` keys.
+- try to log the value returned by a function to understand what said function does. `console.log` proves to be very useful to assess how d3 manages the selection following the `data()` function, the `_enter` and `_exit` keys.
 
   ```js
   const update = groupCircles.selectAll('circle').data(dataset);
   console.log(upate);,
   ```
 
-- in the script I implemented data binding with the first approach, but continued exploring the concept with other instructions. These are commented out, but fundamentally create the same visualizatio as the first one.
+- in the script I implemented data binding with the first approach, but continued exploring the concept with other instructions. The instructions commented out, but fundamentally create the same visualization
 
 ### Linear Scales
 
@@ -356,7 +358,7 @@ const colorScale = scaleLinear()
   .range(["skyblue", "darkslategrey"]);
 ```
 
-The `.nice()` allows makes it possible to round the values of the scale's intervals.
+`.nice()` makes it possible to round the values of the scale's intervals.
 
 ```js
 const xScale = scaleLinear()
