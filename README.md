@@ -373,17 +373,13 @@ Beside the axis, included with a limited set of ticks, the group responsible for
 
 ## 03 - Bar Charts
 
-The project is useful to introduce another generator function in `d3.bin`, and a couple helper functions in `d3.mean` and `selection.filter`.
+The project is useful to introduce another generator function in `d3.bin`, plus a couple helper functions in `d3.mean` and `selection.filter`.
 
-The chapter is also and extremely useful in terms of accessibility, with a first set of attributes to make the visualization accessible for screen readers.
+The chapter is also and extremely useful in terms of accessibility, with a first set of attributes to make the visualization accessible for screen readers and keyboard users.
 
-### Purpose
+### Bins
 
-A bar chart is effective to consider the distribution of a variable. The idea is to segment the values in a series of bins and plot their frequency on the `y` axis.
-
-### ~Histogram~ Bin
-
-The book describes the `d3.histogram` function to create a series of bins, a series of arrays in which to slot the data points. [Since version 6](https://github.com/d3/d3/blob/master/CHANGES.md#breaking-changes), however, the function has been renamed to `d3.bin`.
+The book introduces `d3.histogram` to create a series of bins, a series of arrays in which d3 slots the data points. [Since version 6](https://github.com/d3/d3/blob/master/CHANGES.md#breaking-changes), however, the function has been deprecated in favour of `d3.bin`.
 
 ```js
 // const binGenerator = d3
@@ -414,13 +410,13 @@ const mean = d3.mean(dataset, metricAccessor);
 
 ### Filter
 
-A selection can be filtered according to a function. In the specific project, the `filter()` function is used to have the text label for the histogram bars only on the bars describing at least one observation.
+A selection can be filtered according to a function. In the specific project, the `filter()` function is used to have the text label for the histogram bars only on the bars highlight at least one observation.
 
 ```js
 const textGroups = binGroups.filter(yAccessor);
 ```
 
-`yAccessor` returns the length of the bin, which if `0` describes a falsy value. The function works essentially as a shorthand for the following snippet.
+`yAccessor` returns the length of the bin, a falsy value for empty arrays. The function works essentially as a shorthand for the following snippet.
 
 ```js
 const textGroups = binGroups.filter((d) => yAccessor(d) !== 0);
@@ -428,7 +424,7 @@ const textGroups = binGroups.filter((d) => yAccessor(d) !== 0);
 
 ### Accessibility
 
-The visualization is made accessible for screen readers with a few elements and attributes:
+Accessibility is improved with a few elements and attributes:
 
 - the `title` element introduces the visualization
 
@@ -440,7 +436,7 @@ The visualization is made accessible for screen readers with a few elements and 
 
 - the `tabindex` attribute allows to have specific elements select-able through keyboard.
 
-  In the individual bar chart, the idea is to focus on the SVG container, the group element nesting all the histogram bars, and the group element responsible for the individual bars
+  In the individual bar chart, the idea is to focus on the SVG container, the group element wrapping around the histogram bars, and the group elements wrapping around the individual bars
 
   ```js
   wrapper.attr("tabindex", "0");
@@ -456,7 +452,7 @@ The visualization is made accessible for screen readers with a few elements and 
   binGroups.attr("role", "listitem");
   ```
 
-- the `aria-label` attribute provides an informative label
+- the `aria-label` attribute adds an informative label
 
   ```js
   binsGroup.attr("aria-label", "Histogram bars");
@@ -469,11 +465,11 @@ The visualization is made accessible for screen readers with a few elements and 
   wrapper.selectAll("text").attr("aria-hidden", "true");
   ```
 
-  In the specific demo the labels included on the group elements are enough to describe the bar charts, and the `<text/>` elements overload screen readers with too many values (a screen reader would also read the ticks of the axis)
+  In the specific demo the labels included on the group elements are enough to describe the bar charts, and the `<text/>` elements overload screen readers with too many values. Without this precaution a screen reader would also read the ticks of the axis
 
 ### Metrics
 
-`drawBarCharts` is responsible for fetching the data and describing the dimensions of the visualization. The visualization is then included in a `drawHistogram` function. This structure allows to draw multiple bar charts by calling `drawHistogram` with a different argument.
+`drawBarCharts` is responsible for fetching the data and setting the dimensions of the visualization. The bars themselves are included in a `drawHistogram` function. This structure allows to draw multiple bar charts by calling `drawHistogram` with a different argument.
 
 ```js
 drawHistogram("windSpeed");
