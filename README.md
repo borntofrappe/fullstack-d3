@@ -486,7 +486,7 @@ The chapter describes three methods to smoothly change a value over time:
 
 3. d3.js `transition` method
 
-In folder I elected to focus on the last approach.
+In folder I chose to focus on the last approach only.
 
 d3 provides a `.transition` method to interpolate between a start and end state. Essentially, it is enough to apply a transition as follows:
 
@@ -530,13 +530,13 @@ const oldBinGroups = binGroups.exit();
 
 With this structure, it is finally possible to update the visualization as needed. In the speficic example:
 
-- old elements are removed with the `remove` function
+- remove old elements with the `remove` function
 
   ```js
   oldBinGroups.remove();
   ```
 
-- new elements are included with a group element
+- include new elements in the form of a group elements
 
   ```js
   const newBinGroups = binGroups.enter().append("g");
@@ -552,7 +552,7 @@ With this structure, it is finally possible to update the visualization as neede
   // set attributes and properties
   ```
 
-- existing element modify the position and text of the labels, not to mention the position and size of the bars
+- modify existing element in the position and text of the labels, not to mention the position and size of the bars
 
   ```js
   binGroups.filter(yAccessor).select("text");
@@ -597,9 +597,9 @@ binGroups
   .attr("fill", "cornflowerblue");
 ```
 
-In this instance the color is modified _after_ the rectangle rectangle reaches its `y` coordinate.
+In this instance the color is modified after the rectangle rectangle reaches its `y` coordinate.
 
-On its own, `transition` is already useful to smoothly change attributes and properties. It is however possible to initialize a transition on the root element with `d3.transition`, and later reference the transition as the argument of a `transition` function.
+On its own, `transition` is already useful to smoothly change attributes and properties. It is however possible to initialize a transition on the root element with `d3.transition`, and later reference the value as the argument of a separate `transition` function.
 
 ```js
 const updateTransition = d3.transition().duration(500).delay(100);
@@ -610,7 +610,7 @@ binGroups
   .attr("y", (d) => yScale(yAccessor(d)));
 ```
 
-With this structure the necessary transitions are initialised ahead of time, and can be repeated throughout the code to synchronize change on multiple elements.
+With this structure the necessary transitions are initialized ahead of time, and can be repeated throughout the code to synchronize change on multiple elements.
 
 ```js
 binGroups.select("rect").transition(updateTransition);
@@ -630,7 +630,7 @@ In this instance `updateTransition` will occur after `exitTransition`.
 
 ### Line
 
-The goal is to update the line chart introduced in the first chapter, `01 Line Chart`, in order to show a fixed number of days. The days are then modified to have the line progress through the year and analyse the contribution of each passing day.
+The goal is to update the line chart introduced in the first chapter, `01 Line Chart`, in order to show a fixed number of days. The days are then modified to have the line progress through the year and analyze the contribution of each passing day.
 
 _Please note:_ the code might differ from that proposed in the book, as I attempted to create the transition on my own.
 
@@ -653,16 +653,14 @@ For the line, the `transition` method produces the undesired effect of a wriggle
 line.transition(transition).attr("d", lineGenerator(data));
 ```
 
-This is because d3 is updating the `d` attribute of the line point by point. Consider the following example, where the line is described with a series of points (`L`, or _line to_, instructs the path element to continue the line toward a certain (`x`, `y`) pairing).
+This is because d3 is updating the `d` attribute of the line point by point. Consider the following example, where the line is described with a series of points (`L`, or "line to", instructs the path element to continue the line toward a specific `x` `y` coordinate).
 
 ```html
-<!-- assuming y coordinates (0, -5, -10, -8)  -->
 <path d="M 0 0 L 1 -5 L 2 -10 L 3 -8" />
-<!-- assuming next coordinate (-2)  -->
 <path d="M 0 -5 L 1 -10 L 2 -8 L 3 -2" />
 ```
 
-The first point `(0, 0)` is updated to be `(0, -5)`, resulting in the point moving upwards. As the idea of the animation is to scroll the line toward the left, the solution is to here move the points horizontally:
+Updating the line point by point, the transition results in the first point, `(0, 0)`, moving upwards, to `(0, -5)`. As the goal is to actually move the point to the left, the solution is add the new point, translate the entire line to the left and then remove the origin.
 
 - while updating the `d` attribute, shift the entire line to the right
 
@@ -698,7 +696,7 @@ const pixelsBetweenLastPoints =
   xScale(xAccessor(lastTwoPoints[1])) - xScale(xAccessor(lastTwoPoints[0]));
 ```
 
-To fix the second issue, it is instead necessary to introduce a new SVG element in `<clipPath>`. Defined in the a `<defs>` element, the clip describes the area in which elements are actually shown. In the instance of the line chart, it describes a rectangle spanning the bounded width and height.
+To fix the second issue, it is instead necessary to introduce a new SVG element in `<clipPath>`. Defined in the a `<defs>` element, the clip describes an area in which elements are actually shown. In the instance of the line chart, it describes a rectangle spanning the bounded width and height.
 
 ```js
 bounds
@@ -709,11 +707,10 @@ bounds
   .attr("height", dimensions.boundedHeight);
 ```
 
-With an identifier, it is then possible to referemce the clip in the group element nesting the line, so that the line is shown only in the prescribed area.
+The clip is attributed a specific `id`, later referenced in the `clip-path` attribute of the to-be-clipped element.
 
 ```js
 bounds.append("defs").append("clipPath").attr("id", "bounds-clip-path");
-// clipping area
 
 const lineGroup = bounds
   .append("g")
@@ -730,7 +727,7 @@ const lineGroup = bounds
   const freezingTemperatureY = d3.min([dimensions.boundedHeight, yScale(32)]);
   ```
 
-  Without this precaution, the risk is to have a negative height, as the height is computed by subtracting the `y` coordinate to the bounded threshold
+  Without this precaution the risk is to have a negative height, as the height is computed by subtracting the `y` coordinate to the bounded threshold
 
   ```js
   rectangle
@@ -753,6 +750,18 @@ const lineGroup = bounds
   const lineGroup = bounds.append("g");
   // .attr('clip-path', 'url(#bounds-clip-path)');
   ```
+
+- the vertical scale is set for the entire dataset instead of only the data passed to the `drawDays` function
+
+  ```js
+  const yScale = scaleLinear()
+    .domain(extent(dataset, yAccessor))
+    .range([dimensions.boundedHeight, 0]);
+  ```
+
+  This is a quick way to avoid the vertical jump which happens when the new point changes the domain
+
+- the interval calling `drawDays` is cleared as the line reaches the end of the dataset
 
 ## 05 - Interactions
 
