@@ -13,11 +13,11 @@ const {
 
 async function drawScatterplot() {
   /* ACCESS DATA */
-  const dataset = await json('../../nyc_weather_data.json');
+  const dataset = await json("../../nyc_weather_data.json");
 
-  const xAccessor = d => d.dewPoint;
-  const yAccessor = d => d.humidity;
-  const colorAccessor = d => d.cloudCover;
+  const xAccessor = (d) => d.dewPoint;
+  const yAccessor = (d) => d.humidity;
+  const colorAccessor = (d) => d.cloudCover;
 
   /* CHART DIMENSIONS */
   const dimensions = {
@@ -48,127 +48,127 @@ async function drawScatterplot() {
 
   const colorScale = scaleLinear()
     .domain(extent(dataset, colorAccessor))
-    .range(['skyblue', 'darkslategrey']);
+    .range(["skyblue", "darkslategrey"]);
 
   /* DRAW DATA */
-  const tooltip = select('#wrapper #tooltip');
+  const tooltip = select("#wrapper #tooltip");
 
-  const wrapper = select('#wrapper')
-    .append('svg')
-    .attr('width', dimensions.width)
-    .attr('height', dimensions.height);
+  const wrapper = select("#wrapper")
+    .append("svg")
+    .attr("width", dimensions.width)
+    .attr("height", dimensions.height);
 
   const bounds = wrapper
-    .append('g')
+    .append("g")
     .style(
-      'transform',
+      "transform",
       `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
     );
 
   bounds
-    .append('g')
-    .selectAll('circle')
+    .append("g")
+    .selectAll("circle")
     .data(dataset)
     .enter()
-    .append('circle')
-    .attr('r', 5)
-    .attr('cx', d => xScale(xAccessor(d)))
-    .attr('cy', d => yScale(yAccessor(d)))
-    .attr('fill', d => colorScale(colorAccessor(d)));
+    .append("circle")
+    .attr("r", 5)
+    .attr("cx", (d) => xScale(xAccessor(d)))
+    .attr("cy", (d) => yScale(yAccessor(d)))
+    .attr("fill", (d) => colorScale(colorAccessor(d)));
 
   /* INTERACTION */
   function onMouseEnter(event, d) {
-    const parseDate = timeParse('%Y-%m-%d');
-    const formatDate = timeFormat('%B %A %-d, %Y');
-    const formatMetric = format('.2f');
+    const parseDate = timeParse("%Y-%m-%d");
+    const formatDate = timeFormat("%B %A %-d, %Y");
+    const formatMetric = format(".2f");
 
     const x = xScale(xAccessor(d));
     const y = yScale(yAccessor(d));
 
     tooltip
       .style(
-        'transform',
-        `translate(calc(-50% + ${x +
-          dimensions.margin.left}px), calc(-100% + ${y +
-          dimensions.margin.top -
-          5}px - 0.5rem))`
+        "transform",
+        `translate(calc(-50% + ${x + dimensions.margin.left}px), calc(-100% + ${
+          y + dimensions.margin.top - 5
+        }px - 0.5rem))`
       )
-      .style('opacity', 1);
+      .style("opacity", 1);
 
-    tooltip.select('h2').text(formatDate(parseDate(d.date)));
+    tooltip.select("h2").text(formatDate(parseDate(d.date)));
     tooltip
-      .select('p:nth-of-type(1)')
+      .select("p:nth-of-type(1)")
       .text(`Humidity: ${formatMetric(yAccessor(d))}`);
     tooltip
-      .select('p:nth-of-type(2)')
+      .select("p:nth-of-type(2)")
       .text(`Dew point: ${formatMetric(xAccessor(d))}`);
 
     bounds
-      .append('circle')
-      .style('pointer-events', 'none')
-      .attr('id', 'tooltipCircle')
-      .attr('fill', 'maroon')
-      .attr('r', 6)
-      .attr('cx', x)
-      .attr('cy', y);
+      .append("circle")
+      .style("pointer-events", "none")
+      .attr("id", "tooltipCircle")
+      .attr("fill", "maroon")
+      .attr("r", 6)
+      .attr("cx", x)
+      .attr("cy", y);
   }
 
   function onMouseLeave() {
-    tooltip.style('opacity', 0);
+    tooltip.style("opacity", 0);
 
-    bounds.select('#tooltipCircle').remove();
+    bounds.select("#tooltipCircle").remove();
   }
 
   const delaunay = Delaunay.from(
     dataset,
-    d => xScale(xAccessor(d)),
-    d => yScale(yAccessor(d))
+    (d) => xScale(xAccessor(d)),
+    (d) => yScale(yAccessor(d))
   );
   const voronoi = delaunay.voronoi();
   voronoi.xmax = dimensions.boundedWidth;
   voronoi.ymax = dimensions.boundedHeight;
 
   bounds
-    .append('g')
-    .selectAll('path')
+    .append("g")
+    .selectAll("path")
     .data(dataset)
     .enter()
-    .append('path')
-    .attr('d', (d, i) => voronoi.renderCell(i))
-    .attr('fill', 'transparent')
+    .append("path")
+    .attr("d", (d, i) => voronoi.renderCell(i))
+    .attr("fill", "transparent")
     // .attr('stroke', 'currentColor')
     // .attr('stroke-width', 0.5)
-    .on('mouseenter', onMouseEnter)
-    .on('mouseleave', onMouseLeave);
+    .on("mouseenter", onMouseEnter)
+    .on("mouseleave", onMouseLeave);
 
   /* PERIPHERALS */
   const xAxisGenerator = axisBottom().scale(xScale);
   const xAxis = bounds
-    .append('g')
-    .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
+    .append("g")
+    .style("transform", `translate(0px, ${dimensions.boundedHeight}px)`)
     .call(xAxisGenerator);
 
   xAxis
-    .append('text')
-    .text('Dew point (°F)')
-    .attr('x', dimensions.boundedWidth / 2)
-    .attr('y', dimensions.margin.bottom - 10)
-    .attr('font-size', 15)
-    .attr('fill', 'currentColor');
+    .append("text")
+    .text("Dew point (°F)")
+    .attr("x", dimensions.boundedWidth / 2)
+    .attr("y", dimensions.margin.bottom - 10)
+    .attr("font-size", 15)
+    .attr("fill", "currentColor");
 
   const yAxisGenerator = axisLeft().scale(yScale);
-  const yAxis = bounds.append('g').call(yAxisGenerator);
+  const yAxis = bounds.append("g").call(yAxisGenerator);
 
   yAxis
-    .append('text')
-    .text('Relative humidity')
-    .attr('font-size', 15)
-    .attr('fill', 'currentColor')
-    .style('text-anchor', 'middle')
+    .append("text")
+    .text("Relative humidity")
+    .attr("font-size", 15)
+    .attr("fill", "currentColor")
+    .style("text-anchor", "middle")
     .style(
-      'transform',
-      `translate(${-dimensions.margin.left + 15}px, ${dimensions.boundedHeight /
-        2}px) rotate(-90deg)`
+      "transform",
+      `translate(${-dimensions.margin.left + 15}px, ${
+        dimensions.boundedHeight / 2
+      }px) rotate(-90deg)`
     );
 }
 

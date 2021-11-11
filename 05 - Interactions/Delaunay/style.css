@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Inter var';
-  src: url('../../Inter.var.woff2');
+  font-family: "Inter var";
+  src: url("../../Inter.var.woff2");
 }
 
 * {
@@ -9,11 +9,11 @@
 }
 
 body {
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
 }
 
 svg text {
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
 }
 
 #wrapper {
@@ -34,7 +34,7 @@ svg text {
 }
 
 #wrapper #tooltip::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 100%;
   left: 50%;
