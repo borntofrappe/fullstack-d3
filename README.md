@@ -1212,31 +1212,30 @@ In this manner the function creates a collection of differences, and returns the
 
 The goal is to plot a choropleth map, highlighting the population growth by applying a different color on the different countries.
 
-### GeoJSON
+### geoJSON
 
 geoJSON refers to the syntax necessary to draw a map. For the project, the syntax is obtained as follows:
 
 - download a shapefile from [Natural Earth Data](https://www.naturalearthdata.com/). An `.shp` file provides an alternative format to represent geographic data
 
-- convert the shapefile to GeoJSON objects. The book describes a library, but there are alternatives, like [mapshaper.org](https://mapshaper.org/) for a web-based interface
+- convert the shapefile to GeoJSON objects. The book describes a library
 
-The output is a `.json` file, which I opted to label `world-geojson.json`. Imported in the script like data in previous projects, the object highlights a series of important fields.
+The output is a `.json` file, which I named `world-geojson.json`. The file is imported in the script similarly to data in previous demos and with the `d3.json` function.
 
 ```js
 const countryShapes = await d3.json("./world-geojson.json");
-console.log(countryShapes);
 ```
 
 Take notice of the `features` array, which describes a series of `Feature` objects for the countries. Each feature has a `geometry` and `properties` field. The first one describes the coordinates making up each country, while the second one details information on the country itself, like its name or continent.
 
-In the specific project, the book introduces two accessor functions to retrieve the country's name and identifier.
+In the specific project the book introduces two accessor functions to retrieve the country's name and identifier.
 
 ```js
 const countryNameAccessor = (d) => d.properties["NAME"];
 const countryIdAccessor = (d) => d.properties["ADM0_A3_IS"];
 ```
 
-The name is useful to describe the country, and will become relevant in the moment the country is highlighted in a tooltip, while the identifier provides a link with which to connect the country and the data describing the population growth.
+The name is useful to describe the country, and will become relevant in the moment the country is highlighted in a tooltip. The identifier provides a link to connect the country and the data describing the population growth.
 
 ### Data
 
@@ -1259,7 +1258,7 @@ const dataset = await d3.csv("./databank_data.csv");
 console.log(dataset);
 ```
 
-`dataset` described an array with one item for each row, but, for the project at hand, the relevant metric is just the population growth.
+`dataset` described an array with one item for each row. For the project at hand however, the relevant metric is just the population growth.
 
 ```js
 const metric = "Population growth (annual %)";
@@ -1284,7 +1283,7 @@ if (curr["Series Name"] === metric) {
 }
 ```
 
-`parseFloat` allows to convert the string to a numerical value, while `|| 0` provides a default value of `0` for those countries for which the value value is missing.
+`parseFloat` allows to convert the string to a numerical value, while `|| 0` provides a default value for those countries for which the value value is missing.
 
 ### Chart Dimensions
 
@@ -1338,9 +1337,9 @@ It then receives a geoJSON object to produce the necessary syntax for the `d` at
 console.log(pathGenerator(sphere)); // M ....
 ```
 
-### Chart Dimensions / 2
+### Chart Dimensions 2
 
-Thanks to the generator function, it is possible to compute the vertical dimensions of the chart. `pathGenerator.bounds` provides a two dimensional array with the bounds of the input GeoJSON object. Through the sphere, the function highlights the bounds of the entire visualization: `[[x0, y0], [x1, y1]]`, and finally the height of the bounded area.
+Thanks to the generator function it is possible to compute the vertical dimensions of the chart. `pathGenerator.bounds` provides a two dimensional array with the bounds of the input GeoJSON object. Through the sphere, the function highlights the bounds of the entire visualization: `[[x0, y0], [x1, y1]]`, and finally the height of the bounded area.
 
 ```js
 const y1 = pathGenerator.bounds(sphere)[1][1];
