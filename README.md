@@ -1578,7 +1578,9 @@ The type of data influences the type of chart. Picking for instance the temperat
 
 The goal is to create a visualization highlighting how humidity changes depending on the time of the year.
 
-Starting from a rudimentary timeline, the book illustrates how to design the line chart to answer the question with more focus and purpose. The visualization is updated as follows:
+Starting from a rudimentary timeline, the book illustrates how to design the line chart to answer the question with more focus and purpose.
+
+The visualization is updated as follows:
 
 - the line plots the data with a curve
 
@@ -1605,7 +1607,7 @@ Starting from a rudimentary timeline, the book illustrates how to design the lin
   );
   ```
 
-- the data points are preserved through lighter grey circles
+- the data points are preserved through light grey circles
 
 - the `y` axis displays fewer ticks modifying the axis generator function
 
@@ -1658,19 +1660,19 @@ The project illustrates how to include color through the `d3-scale-chromatic` an
 
 It is important to note the following:
 
-- categorical scales provide an array of distinct colors. Consider `d3.schemeCategory10`. You access individual colors by index, like `d3.schemeCategory10[0]`
+- categorical scales are based on an array of distinct colors, like `d3.schemeCategory10`. You access individual colors by index, for instance `d3.schemeCategory10[0]`
 
-- sequential, diverging, cyclical scales create a scale like `d3.scaleLinear`, with a domain (`[0, 1]`) and a range (an array of colors). Consider `d3.interpolateBlues()`. You obtain a color by calling the function with a specific number, like `d3.interpolateBlues(0.5)`
+- sequential, diverging, cyclical scales work as a scale with a domain of `[0, 1]` and a range describing the colors. Consider `d3.interpolateBlues()`; you obtain a color by calling the function with a specific number, like `d3.interpolateBlues(0.5)`
 
 - when interpolating between two or more colors, d3 supports both the scale and array syntax. `d3.interpolateBlues()`, for instance, creates a proper scale, while `d3.interpolateBlues[n]` creates an array of `n` colors in the prescribed range
 
-- functions from `d3-interpolate` interpolate between two colors in a given color space. In this light, it is helpful to have a brief overview of the different formats:
+- functions from the `d3-interpolate` module allow to interpolate between two colors in a given color space. In this light, it is helpful to have a brief overview of the different formats:
 
   - keywords like `cornflowerblue` provide a first way to describe color. It is important to also highlight `transparent`, used in a previous project to hide elements like Delaunay's `<path>`s, and `currentColor`, useful to consider the value from the `color` property
 
   - `rgb[a]` describes a color through its red, green and blue components. `a` describes the optional alpha channel, for the opacity of the color. Each component is a number in the `[0, 255]` range, and colors are mixed with additive fashion, meaning `rgb(255, 255, 255)` is completely white
 
-  - `hsl[a]` describes a color with a hue, saturation and lightness. The hue is a number in the `[0, 360]` range going from red, 0, to green, 120, to blue, 240, back to red, 360. Saturation is a percentage going from grey, `0%` to fully saturated, `100%`. Lightness is a percentage going from black, `0%`, to white, `100%`
+  - `hsl[a]` describes a color with a hue, saturation and lightness. The hue is a number in the `[0, 360]` range going from red, 0, to green, 120, to blue, 240, back to red, 360. Saturation is a percentage going from grey, 0% to fully saturated, 100%. Lightness is a percentage going from black, 0%, to white, 100%
 
   - `hcl[a]` describes a color with a hue, chroma and lightness. The chroma is a number in the `[0, 230]` influencing the saturation, while the lightness a number in the `[0, 100]` interval. The difference from the hsl color space is that two values with the same lightness value have the same perceived lightness. In light of this, the format is useful to avoid contrasting levels of saturation
 
