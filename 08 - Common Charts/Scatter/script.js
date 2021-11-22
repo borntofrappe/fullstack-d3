@@ -1,18 +1,10 @@
-const {
-  json,
-  scaleLinear,
-  extent,
-  select,
-  axisBottom,
-  axisLeft
-
-} = d3;
+const { json, scaleLinear, extent, select, axisBottom, axisLeft } = d3;
 
 async function drawScatterplots() {
   /* ACCESS DATA */
-  const dataset = await json('../../nyc_weather_data.json');
+  const dataset = await json("../../nyc_weather_data.json");
 
-  const colorAccessor = d => d.precipIntensity;
+  const colorAccessor = (d) => d.precipIntensity;
 
   /* CHART DIMENSIONS */
   const dimensions = {
@@ -33,11 +25,11 @@ async function drawScatterplots() {
 
   const colorScale = scaleLinear()
     .domain(extent(dataset, colorAccessor))
-    .range(['skyblue', 'darkslategrey']);
+    .range(["skyblue", "darkslategrey"]);
 
   function drawScatterplot(metricX, metricY) {
-    const xAccessor = d => d[metricX];
-    const yAccessor = d => d[metricY];
+    const xAccessor = (d) => d[metricX];
+    const yAccessor = (d) => d[metricY];
 
     /* SCALES */
     const xScale = scaleLinear()
@@ -50,42 +42,42 @@ async function drawScatterplots() {
       .range([dimensions.boundedHeight, 0]);
 
     /* DRAW DATA */
-    const wrapper = select('#wrapper')
-      .append('svg')
-      .attr('width', dimensions.width)
-      .attr('height', dimensions.height);
+    const wrapper = select("#wrapper")
+      .append("svg")
+      .attr("width", dimensions.width)
+      .attr("height", dimensions.height);
 
     const bounds = wrapper
-      .append('g')
+      .append("g")
       .style(
-        'transform',
+        "transform",
         `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
       );
 
     const clipPathId = `clip-path-${metricX}-${metricY}`;
 
     bounds
-      .append('defs')
-      .append('clipPath')
-      .attr('id', clipPathId)
-      .append('rect')
-      .attr('width', dimensions.boundedWidth)
-      .attr('height', dimensions.boundedHeight);
+      .append("defs")
+      .append("clipPath")
+      .attr("id", clipPathId)
+      .append("rect")
+      .attr("width", dimensions.boundedWidth)
+      .attr("height", dimensions.boundedHeight);
 
-    const axisGroup = bounds.append('g');
+    const axisGroup = bounds.append("g");
     const dataGroup = bounds
-      .append('g')
-      .attr('clip-path', `url(#${clipPathId})`);
+      .append("g")
+      .attr("clip-path", `url(#${clipPathId})`);
 
     dataGroup
-      .selectAll('circle')
+      .selectAll("circle")
       .data(dataset)
       .enter()
-      .append('circle')
-      .attr('r', 4)
-      .attr('cx', d => xScale(xAccessor(d)))
-      .attr('cy', d => yScale(yAccessor(d)))
-      .attr('fill', d => colorScale(colorAccessor(d)));
+      .append("circle")
+      .attr("r", 4)
+      .attr("cx", (d) => xScale(xAccessor(d)))
+      .attr("cy", (d) => yScale(yAccessor(d)))
+      .attr("fill", (d) => colorScale(colorAccessor(d)));
 
     const sumXSquared = dataset.reduce(
       (acc, curr) => acc + xAccessor(curr) ** 2,
@@ -104,56 +96,53 @@ async function drawScatterplots() {
 
     // y = m * x + q
     dataGroup
-      .append('path')
-      .attr('fill', 'none')
-      .attr('stroke', '#f28e2c')
-      .attr('stroke-width', 4)
+      .append("path")
+      .attr("fill", "none")
+      .attr("stroke", "#f28e2c")
+      .attr("stroke-width", 4)
       .attr(
-        'd',
-        `M 0 ${dimensions.boundedHeight - q} L ${
-          dimensions.boundedWidth
-        } ${dimensions.boundedHeight - dimensions.boundedWidth * m + q}`
+        "d",
+        `M 0 ${dimensions.boundedHeight - q} L ${dimensions.boundedWidth} ${
+          dimensions.boundedHeight - dimensions.boundedWidth * m + q
+        }`
       );
 
     /* PERIPHERALS */
-    const xAxisGenerator = axisBottom()
-      .scale(xScale)
-      .ticks(6);
+    const xAxisGenerator = axisBottom().scale(xScale).ticks(6);
     const xAxis = axisGroup
-      .append('g')
-      .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
+      .append("g")
+      .style("transform", `translate(0px, ${dimensions.boundedHeight}px)`)
       .call(xAxisGenerator);
 
     xAxis
-      .append('text')
+      .append("text")
       .text(metricX)
-      .attr('x', dimensions.boundedWidth / 2)
-      .attr('y', dimensions.margin.bottom - 10)
-      .attr('font-size', 15)
-      .attr('fill', 'currentColor');
+      .attr("x", dimensions.boundedWidth / 2)
+      .attr("y", dimensions.margin.bottom - 10)
+      .attr("font-size", 15)
+      .attr("fill", "currentColor");
 
-    const yAxisGenerator = axisLeft()
-      .scale(yScale)
-      .ticks(6);
-    const yAxis = axisGroup.append('g').call(yAxisGenerator);
+    const yAxisGenerator = axisLeft().scale(yScale).ticks(6);
+    const yAxis = axisGroup.append("g").call(yAxisGenerator);
 
     yAxis
-      .append('text')
+      .append("text")
       .text(metricY)
-      .attr('font-size', 15)
-      .attr('fill', 'currentColor')
-      .style('text-anchor', 'middle')
+      .attr("font-size", 15)
+      .attr("fill", "currentColor")
+      .style("text-anchor", "middle")
       .style(
-        'transform',
-        `translate(${-dimensions.margin.left +
-          15}px, ${dimensions.boundedHeight / 2}px) rotate(-90deg)`
+        "transform",
+        `translate(${-dimensions.margin.left + 15}px, ${
+          dimensions.boundedHeight / 2
+        }px) rotate(-90deg)`
       );
   }
 
   const metrics = [
-    ['temperatureMin', 'temperatureMax'],
-    ['windSpeed', 'pressure'],
-    ['windSpeed', 'humidity'],
+    ["temperatureMin", "temperatureMax"],
+    ["windSpeed", "pressure"],
+    ["windSpeed", "humidity"],
   ];
 
   metrics.forEach(([metricX, metricY]) => drawScatterplot(metricX, metricY));

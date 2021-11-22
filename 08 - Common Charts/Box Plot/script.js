@@ -10,19 +10,19 @@ const {
   scaleLinear,
   select,
   axisLeft,
-  axisTop
+  axisTop,
 } = d3;
 
 async function drawBoxPlot() {
   /* ACCESS DATA */
-  const data = await json('../../nyc_weather_data.json');
+  const data = await json("../../nyc_weather_data.json");
 
-  const dateParser = timeParse('%Y-%m-%d');
-  const dateAccessor = d => dateParser(d.date);
-  const dateFormatter = timeFormat('%b');
+  const dateParser = timeParse("%Y-%m-%d");
+  const dateAccessor = (d) => dateParser(d.date);
+  const dateFormatter = timeFormat("%b");
 
-  const xAccessor = d => d.month;
-  const yAccessor = d => d.temperatureMax;
+  const xAccessor = (d) => d.month;
+  const yAccessor = (d) => d.temperatureMax;
 
   const dataset = [...data].sort((a, b) => dateAccessor(a) - dateAccessor(b));
   const months = timeMonths(
@@ -35,7 +35,7 @@ async function drawBoxPlot() {
     const monthEnd = months[index + 1] || new Date();
 
     const days = dataset.filter(
-      d => dateAccessor(d) > monthStart && dateAccessor(d) <= monthEnd
+      (d) => dateAccessor(d) > monthStart && dateAccessor(d) <= monthEnd
     );
 
     const medianValue = median(days, yAccessor);
@@ -44,7 +44,7 @@ async function drawBoxPlot() {
     const iqr = q3 - q1;
 
     const outliers = days.filter(
-      d => Math.abs(yAccessor(d) - medianValue) > 1.5 * iqr
+      (d) => Math.abs(yAccessor(d) - medianValue) > 1.5 * iqr
     );
 
     return {
@@ -76,7 +76,7 @@ async function drawBoxPlot() {
 
   /* SCALES */
   const xScale = scaleBand()
-    .domain(monthsData.map(d => xAccessor(d)))
+    .domain(monthsData.map((d) => xAccessor(d)))
     .range([0, dimensions.boundedWidth])
     .padding(0.15);
 
@@ -86,85 +86,82 @@ async function drawBoxPlot() {
     .nice();
 
   /* DRAW DATA */
-  const wrapper = select('#wrapper')
-    .append('svg')
-    .attr('width', dimensions.width)
-    .attr('height', dimensions.height);
+  const wrapper = select("#wrapper")
+    .append("svg")
+    .attr("width", dimensions.width)
+    .attr("height", dimensions.height);
 
   const bounds = wrapper
-    .append('g')
+    .append("g")
     .style(
-      'transform',
+      "transform",
       `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
     );
 
-  const axisGroup = bounds.append('g');
-  const boxGroup = bounds.append('g');
+  const axisGroup = bounds.append("g");
+  const boxGroup = bounds.append("g");
 
   const boxesGroup = boxGroup
-    .selectAll('g')
+    .selectAll("g")
     .data(monthsData)
     .enter()
-    .append('g')
+    .append("g")
     .attr(
-      'transform',
-      d => `translate(${xScale(xAccessor(d)) + xScale.bandwidth() / 2} 0)`
+      "transform",
+      (d) => `translate(${xScale(xAccessor(d)) + xScale.bandwidth() / 2} 0)`
     );
 
   boxesGroup
-    .append('g')
-    .selectAll('circle')
-    .data(d => d.outliers)
+    .append("g")
+    .selectAll("circle")
+    .data((d) => d.outliers)
     .enter()
-    .append('circle')
-    .attr('fill', 'currentColor')
-    .attr('r', 2)
-    .attr('opacity', 0.5)
-    .attr('cy', d => yScale(yAccessor(d)));
+    .append("circle")
+    .attr("fill", "currentColor")
+    .attr("r", 2)
+    .attr("opacity", 0.5)
+    .attr("cy", (d) => yScale(yAccessor(d)));
 
   boxesGroup
-    .append('path')
-    .attr('fill', 'none')
-    .attr('stroke', 'currentColor')
-    .attr('stroke-width', 1)
+    .append("path")
+    .attr("fill", "none")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 1)
     .attr(
-      'd',
-      d =>
-        `M ${-xScale.bandwidth() / 4} ${yScale(
-          d.median + d.iqr
-        )} h ${xScale.bandwidth() / 2} m ${-xScale.bandwidth() /
-          4} 0 V ${yScale(d.median - d.iqr)} m ${-xScale.bandwidth() /
-          4} 0 h ${xScale.bandwidth() / 2}`
+      "d",
+      (d) =>
+        `M ${-xScale.bandwidth() / 4} ${yScale(d.median + d.iqr)} h ${
+          xScale.bandwidth() / 2
+        } m ${-xScale.bandwidth() / 4} 0 V ${yScale(d.median - d.iqr)} m ${
+          -xScale.bandwidth() / 4
+        } 0 h ${xScale.bandwidth() / 2}`
     );
 
   boxesGroup
-    .append('rect')
-    .attr('fill', 'cornflowerblue')
-    .attr('x', -xScale.bandwidth() / 2)
-    .attr('width', xScale.bandwidth())
-    .attr('y', d => yScale(d.q3))
-    .attr('height', d => yScale(d.q1) - yScale(d.q3));
+    .append("rect")
+    .attr("fill", "cornflowerblue")
+    .attr("x", -xScale.bandwidth() / 2)
+    .attr("width", xScale.bandwidth())
+    .attr("y", (d) => yScale(d.q3))
+    .attr("height", (d) => yScale(d.q1) - yScale(d.q3));
 
   boxesGroup
-    .append('path')
-    .attr('fill', 'none')
-    .attr('stroke', 'currentColor')
-    .attr('stroke-width', 2)
+    .append("path")
+    .attr("fill", "none")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 2)
     .attr(
-      'd',
-      d =>
+      "d",
+      (d) =>
         `M ${-xScale.bandwidth() / 2} ${yScale(
           d.median
         )} h ${xScale.bandwidth()}`
     );
 
   /* PERIPHERALS */
-  const yAxisGenerator = axisLeft()
-    .scale(yScale)
-    .ticks(6)
-    .tickPadding(5);
+  const yAxisGenerator = axisLeft().scale(yScale).ticks(6).tickPadding(5);
 
-  const yAxisGroup = axisGroup.append('g').call(yAxisGenerator);
+  const yAxisGroup = axisGroup.append("g").call(yAxisGenerator);
 
   const xAxisGenerator = axisTop()
     .scale(xScale)
@@ -172,25 +169,26 @@ async function drawBoxPlot() {
     .tickSize(0)
     .tickPadding(10);
 
-  const xAxisGroup = axisGroup.append('g').call(xAxisGenerator);
+  const xAxisGroup = axisGroup.append("g").call(xAxisGenerator);
 
   yAxisGroup
-    .append('text')
-    .text('Maximum Temperature (°F)')
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'middle')
-    .attr('fill', 'currentColor')
-    .attr('font-size', 14)
-    .attr('font-weight', 'bold')
+    .append("text")
+    .text("Maximum Temperature (°F)")
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "middle")
+    .attr("fill", "currentColor")
+    .attr("font-size", 14)
+    .attr("font-weight", "bold")
     .style(
-      'transform',
-      `translate(${-dimensions.margin.left + 8}px, ${dimensions.boundedHeight /
-        2}px) rotate(-90deg)`
+      "transform",
+      `translate(${-dimensions.margin.left + 8}px, ${
+        dimensions.boundedHeight / 2
+      }px) rotate(-90deg)`
     );
 
-  axisGroup.selectAll('g.tick text').attr('font-size', 11);
-  xAxisGroup.selectAll('g.tick text');
-  axisGroup.selectAll('path').remove();
+  axisGroup.selectAll("g.tick text").attr("font-size", 11);
+  xAxisGroup.selectAll("g.tick text");
+  axisGroup.selectAll("path").remove();
 }
 
 drawBoxPlot();

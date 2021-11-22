@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Inter var';
-  src: url('../../Inter.var.woff2');
+  font-family: "Inter var";
+  src: url("../../Inter.var.woff2");
 }
 
 * {
@@ -14,18 +14,18 @@ body {
   place-items: center;
   background: hsl(210, 17%, 98%);
   color: hsl(210, 29%, 29%);
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
 }
 
 svg text {
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
   color: hsl(184, 6%, 53%);
 }
 
 #wrapper {
   display: grid;
   grid-template-columns: auto auto 1fr;
-  grid-template-areas: 'metric legend button' 'heatmap heatmap heatmap';
+  grid-template-areas: "metric legend button" "heatmap heatmap heatmap";
   align-items: center;
   gap: 1rem 0.5rem;
 }

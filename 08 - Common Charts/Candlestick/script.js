@@ -11,23 +11,23 @@ const {
   max,
   select,
   axisLeft,
-  axisBottom
+  axisBottom,
 } = d3;
 
 async function drawCandlestickChart() {
   /* ACCESS DATA */
-  const dataset = await csv('./data_stock.csv');
+  const dataset = await csv("./data_stock.csv");
 
-  const dateParser = timeParse('%d-%m-%Y');
-  const xAccessor = d => dateParser(d.date);
-  const lowAccessor = d => d.low;
-  const highAccessor = d => d.high;
-  const openAccessor = d => d.open;
-  const closeAccessor = d => d.close;
-  const gainAccessor = d => d.close > d.open;
+  const dateParser = timeParse("%d-%m-%Y");
+  const dateFormatter = timeFormat("%d %b");
+  const valueFormatter = format(".2f");
 
-  const dateFormatter = timeFormat('%d %b');
-  const valueFormatter = format('.2f');
+  const xAccessor = (d) => dateParser(d.date);
+  const lowAccessor = (d) => d.low;
+  const highAccessor = (d) => d.high;
+  const openAccessor = (d) => d.open;
+  const closeAccessor = (d) => d.close;
+  const gainAccessor = (d) => d.close > d.open;
 
   const colors = schemeSet1;
 
@@ -62,44 +62,44 @@ async function drawCandlestickChart() {
     .nice();
 
   /* DRAW DATA */
-  const wrapper = select('#wrapper')
-    .append('svg')
-    .attr('width', dimensions.width)
-    .attr('height', dimensions.height);
+  const wrapper = select("#wrapper")
+    .append("svg")
+    .attr("width", dimensions.width)
+    .attr("height", dimensions.height);
 
   const bounds = wrapper
-    .append('g')
+    .append("g")
     .style(
-      'transform',
+      "transform",
       `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
     );
 
   bounds
-    .append('rect')
-    .attr('width', dimensions.boundedWidth)
-    .attr('height', dimensions.boundedHeight)
-    .attr('fill', 'none')
-    .attr('stroke', 'currentColor');
+    .append("rect")
+    .attr("width", dimensions.boundedWidth)
+    .attr("height", dimensions.boundedHeight)
+    .attr("fill", "none")
+    .attr("stroke", "currentColor");
 
-  const axisGroup = bounds.append('g');
-  const candlestickGroup = bounds.append('g');
-  const legendGroup = bounds.append('g');
+  const axisGroup = bounds.append("g");
+  const candlestickGroup = bounds.append("g");
+  const legendGroup = bounds.append("g");
 
   const candlestickGroups = candlestickGroup
-    .selectAll('g')
+    .selectAll("g")
     .data(dataset)
     .enter()
-    .append('g')
-    .attr('transform', d => `translate(${xScale(xAccessor(d))} 0)`);
+    .append("g")
+    .attr("transform", (d) => `translate(${xScale(xAccessor(d))} 0)`);
 
   candlestickGroups
-    .append('path')
-    .attr('fill', 'none')
-    .attr('stroke', 'currentColor')
-    .attr('stroke-width', 2)
+    .append("path")
+    .attr("fill", "none")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 2)
     .attr(
-      'd',
-      d => `M 0 ${yScale(lowAccessor(d))} V ${yScale(highAccessor(d))}`
+      "d",
+      (d) => `M 0 ${yScale(lowAccessor(d))} V ${yScale(highAccessor(d))}`
     );
 
   const dayWidth =
@@ -108,25 +108,25 @@ async function drawCandlestickChart() {
   const rectWidth = dayWidth * 0.75;
 
   candlestickGroups
-    .append('rect')
-    .attr('fill', d => (gainAccessor(d) ? colors[1] : colors[0]))
-    .attr('x', -rectWidth / 2)
-    .attr('width', rectWidth)
-    .attr('y', d => yScale(max([openAccessor(d), closeAccessor(d)])))
-    .attr('height', d =>
+    .append("rect")
+    .attr("fill", (d) => (gainAccessor(d) ? colors[1] : colors[0]))
+    .attr("x", -rectWidth / 2)
+    .attr("width", rectWidth)
+    .attr("y", (d) => yScale(max([openAccessor(d), closeAccessor(d)])))
+    .attr("height", (d) =>
       Math.abs(yScale(openAccessor(d)) - yScale(closeAccessor(d)))
     );
 
   /* PERIPHERALS */
   axisGroup
-    .append('text')
-    .text('Monthly stock price')
-    .attr('text-anchor', 'middle')
-    .attr('fill', 'currentColor')
-    .attr('font-size', 16)
-    .attr('font-weight', 'bold')
+    .append("text")
+    .text("Monthly stock price")
+    .attr("text-anchor", "middle")
+    .attr("fill", "currentColor")
+    .attr("font-size", 16)
+    .attr("font-weight", "bold")
     .attr(
-      'transform',
+      "transform",
       `translate(${dimensions.boundedWidth / 2} ${-dimensions.margin.top + 20})`
     );
 
@@ -135,31 +135,32 @@ async function drawCandlestickChart() {
     .ticks(6)
     .tickSize(0)
     .tickPadding(5)
-    .tickFormat(d => `$${valueFormatter(d)}`);
-  
-  const yAxisGroup = axisGroup.append('g').call(yAxisGenerator);
-  
-  yAxisGroup
-    .selectAll('g.tick')
-    .append('path')
-    .attr('d', `M 0 0 h ${dimensions.boundedWidth}`)
-    .attr('fill', 'none')
-    .attr('stroke', 'currentColor')
-    .attr('stroke-width', '0.5')
-    .attr('opacity', '0.5');
+    .tickFormat((d) => `$${valueFormatter(d)}`);
+
+  const yAxisGroup = axisGroup.append("g").call(yAxisGenerator);
 
   yAxisGroup
-    .append('text')
-    .text('Price')
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'middle')
-    .attr('fill', 'currentColor')
-    .attr('font-size', 14)
-    .attr('font-weight', 'bold')
+    .selectAll("g.tick")
+    .append("path")
+    .attr("d", `M 0 0 h ${dimensions.boundedWidth}`)
+    .attr("fill", "none")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", "0.5")
+    .attr("opacity", "0.5");
+
+  yAxisGroup
+    .append("text")
+    .text("Price")
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "middle")
+    .attr("fill", "currentColor")
+    .attr("font-size", 14)
+    .attr("font-weight", "bold")
     .style(
-      'transform',
-      `translate(${-dimensions.margin.left + 8}px, ${dimensions.boundedHeight /
-        2}px) rotate(-90deg)`
+      "transform",
+      `translate(${-dimensions.margin.left + 8}px, ${
+        dimensions.boundedHeight / 2
+      }px) rotate(-90deg)`
     );
 
   const xAxisGenerator = axisBottom()
@@ -167,51 +168,51 @@ async function drawCandlestickChart() {
     .ticks(5)
     .tickSize(0)
     .tickPadding(10)
-    .tickFormat(d => dateFormatter(d));
+    .tickFormat((d) => dateFormatter(d));
 
   axisGroup
-    .append('g')
-    .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
+    .append("g")
+    .style("transform", `translate(0px, ${dimensions.boundedHeight}px)`)
     .call(xAxisGenerator);
 
-  axisGroup.selectAll('g.tick text').attr('font-size', 11);
+  axisGroup.selectAll("g.tick text").attr("font-size", 11);
 
   const legendSize = 60;
   const legendSquareSize = 10;
   const legendsGroup = legendGroup
     .attr(
-      'transform',
-      `translate(${dimensions.boundedWidth / 2} ${dimensions.boundedHeight -
-        legendSquareSize * 2})`
+      "transform",
+      `translate(${dimensions.boundedWidth / 2} ${
+        dimensions.boundedHeight - legendSquareSize * 2
+      })`
     )
-    .selectAll('g')
-    .data(['Down', 'Up'])
+    .selectAll("g")
+    .data(["Down", "Up"])
     .enter()
-    .append('g')
+    .append("g")
     .attr(
-      'transform',
+      "transform",
       (d, i, { length }) =>
         `translate(${legendSize * (i - (length - 1) / 2)} 0)`
     );
 
   legendsGroup
-    .append('text')
-    .attr('x', legendSquareSize)
-    .attr('dominant-baseline', 'middle')
-    .attr('fill', 'currentColor')
-    .attr('font-size', 14)
-    .text(d => d);
+    .append("text")
+    .attr("x", legendSquareSize)
+    .attr("dominant-baseline", "middle")
+    .attr("fill", "currentColor")
+    .attr("font-size", 14)
+    .text((d) => d);
 
   legendsGroup
-    .append('rect')
-    .attr('width', legendSquareSize)
-    .attr('height', legendSquareSize)
+    .append("rect")
+    .attr("width", legendSquareSize)
+    .attr("height", legendSquareSize)
     .attr(
-      'transform',
+      "transform",
       `translate(-${legendSquareSize / 2} -${legendSquareSize / 2})`
     )
-
-    .attr('fill', (d, i) => colors[i]);
+    .attr("fill", (d, i) => colors[i]);
 }
 
 drawCandlestickChart();

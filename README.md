@@ -1678,7 +1678,9 @@ It is important to note the following:
 
 ## 08 - Common Charts
 
-The chapter introduces a few types of data visualizations with the goal of providing a baseline, a foundation for more complex projects. With the folder I try to replicate the visuals on my own.
+The chapter introduces a few types of data visualizations with the goal of laying the foundation for more complex projects.
+
+_Please note:_ in each sub-folder I try to replicate the visualizations introduced in the book.
 
 ### Candlestick
 
@@ -1688,7 +1690,7 @@ In terms of the d3 library take notice of the following:
 
 - `d3.csv` considers comma separated values describing hypothetical stock prices
 
-- `d3.schemeSet1` provides an array of colors to distinguish which day resulted in a net gain
+- `d3.schemeSet1` provides an array of colors to distinguish gains and losses
 
 - `d3.timeDay.offset` is used to stretch the horizontal scale one day before and one day after the actual domain. The function is useful in the context of the time scale, to provide some padding around the values. A different approach would be to use a band scale, and have each observation positioned at a fraction of the available width
 
@@ -1706,9 +1708,9 @@ Taking inspiration from the visualization highlighting profile contributions on 
 
 Since the visualization relies on the color of individual cells, is useful to show trends over time. It is not as effective to describe small differences between values.
 
-The demo itself includes a button to cycle through different metrics, similarly to the bar charts developed innthe fifth chapter, `05 - Interactions`.
+The demo itself includes a button to cycle through different metrics, similarly to the bar charts developed in the fifth chapter, `05 - Interactions`.
 
-In terms of d3, the project is an excellent exercise with the `d3-time` module, specifically `d3.timeWeeks`, `d3.timeMonths` and the directives included in the parsing, formatting functions.
+In terms of D3, the project is an excellent exercise with the `d3-time` module, specifically `d3.timeWeeks`, `d3.timeMonths` and the directives included in the parsing, formatting functions.
 
 ### Radar
 
@@ -1723,7 +1725,7 @@ A radar chart is useful to compare multiple metrics. While it is possible to inc
     .radius(..);
   ```
 
-- `d3.areaRadial`. Similarly to `d3.area` the function specifies two values to describe the area below the curve. In this instance, the feature is achieved with two radii instead of two `y` coordinates
+- `d3.areaRadial`. Similarly to `d3.area` the function specifies two values to describe the area below the curve. In this instance, the feature is achieved with two values for the radius instead of `y` coordinates
 
   ```js
   const areaGenerator = d3
@@ -1747,11 +1749,11 @@ The demo includes a copy of the scatterplot introduced earlier in the repository
 
 The demo includes a line of best fit, showing the correlation, if any, with a `<path>` element.
 
-_Please note:_ the line of best fit is computed considering the `y` coordinate with two `x` values, describing the origin and the end of the visualization. A `<clipPath>` element helps to limit the `<path>` element in the bounded dimensions.
+_Please note:_ the line of best fit is computed considering the `y` coordinate with two `x` values, describing the origin and the end of the visualization. A `<clipPath>` element helps to limit the `<path>` element to the bounded dimensions.
 
 ### Pie and Donut
 
-A pie, or donut, chart is useful to focus on the parts of a whole. It is difficult to interpret differences between slices, especially small differences and numerous variables, but the type can provide a few insights. Focus on a few slices (five at most), sort the values (the pie generator function sorts the values by default) and consider adding more information with labels and accompanying visuals.
+A pie or donut chart is useful to focus on the parts of a whole. It is difficult to interpret differences between slices, especially with small differences and numerous variables, but the type can provide a few insights. Focus on a few slices, five at most, sort the values, the pie generator function sorts the values by default, and consider adding more information with labels or accompanying visuals.
 
 The demo introduces two function from the `d3-shape` module:
 
@@ -1805,7 +1807,7 @@ _Please note:_ the folder doesn't include a demo for the histogram, because the 
 
 ### Box Plot
 
-With a box plot it is possible to study the distribution of a numerical value. The median is useful to describe the tendency of the metric, while the 25th and 75th percentile (also know as 1st and 3rd quartile) provide a measure of the variability.
+With a box plot it is possible to study the distribution of a numerical value. The median is useful to describe the tendency of the metric, while the 25th and 75th percentile, also know as 1st and 3rd quartile, provide a measure of the variability.
 
 ```text
   outliers
@@ -1822,6 +1824,10 @@ With a box plot it is possible to study the distribution of a numerical value. T
 
   outliers
 ```
+
+For the visualizations:
+
+- outliers are those points which exceed the mean by the interquartile range, the difference between first and third quartile, and by a measure of one and a half
 
 For the d3 library:
 
