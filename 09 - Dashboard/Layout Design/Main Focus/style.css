@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Inter var';
-  src: url('../../../Inter.var.woff2');
+  font-family: "Inter var";
+  src: url("../../../Inter.var.woff2");
 }
 
 * {
@@ -13,7 +13,7 @@ body {
   min-height: 100vh;
   background: hsl(0, 0%, 90%);
   color: hsl(215, 29%, 25%);
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
 }
 
 #root {
@@ -28,7 +28,7 @@ body {
 }
 
 #root::before {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 100%;
   width: 100%;
@@ -81,7 +81,7 @@ body {
 }
 
 #root svg text {
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
   color: hsl(215, 29%, 35%);
   fill: currentColor;
 }

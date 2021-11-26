@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Inter var';
-  src: url('../../../Inter.var.woff2');
+  font-family: "Inter var";
+  src: url("../../../Inter.var.woff2");
 }
 
 * {
@@ -12,7 +12,7 @@ body {
   min-height: 100vh;
   background: hsl(0, 0%, 95%);
   color: hsl(215, 29%, 25%);
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
 }
 
 #root {
@@ -33,7 +33,7 @@ header {
 
 header::before {
   position: absolute;
-  content: '';
+  content: "";
   bottom: 100%;
   width: 100%;
   height: 0.25rem;
@@ -94,7 +94,7 @@ h3 svg {
   gap: 0.5rem;
   justify-items: center;
   grid-template-columns: 1fr 2fr;
-  grid-template-areas: 'header header' 'gauge details' 'value details' 'note details';
+  grid-template-areas: "header header" "gauge details" "value details" "note details";
 }
 
 #unfamiliar h3 {

@@ -13,11 +13,11 @@ const {
   forceY,
   axisBottom,
   color,
-  mean
+  mean,
 } = d3;
 
 async function drawDashboard() {
-  const dataset = await json('../../../nyc_weather_data.json');
+  const dataset = await json("../../../nyc_weather_data.json");
   const selectedDay =
     dataset[Math.floor(Math.random() * (dataset.length - 31) + 31)];
 
@@ -28,43 +28,39 @@ async function drawDashboard() {
    `,
   };
 
-  const dateParser = timeParse('%Y-%m-%d');
-  const dateAccessor = d => dateParser(d.date);
+  const dateParser = timeParse("%Y-%m-%d");
+  const dateAccessor = (d) => dateParser(d.date);
 
   const monthData = dataset.filter(
-    d =>
+    (d) =>
       dateAccessor(d) > timeMonth.offset(dateAccessor(selectedDay), -1) &&
       dateAccessor(d) <= dateAccessor(selectedDay)
   );
 
-  const metricAccessor = d => d.dewPoint;
+  const metricAccessor = (d) => d.dewPoint;
   const value = metricAccessor(selectedDay);
   const domain = extent(monthData, metricAccessor);
 
-  const qualifyRange = ['very low', 'low', 'average', 'high', 'very high'];
-  const qualifyScale = scaleQuantize()
-    .domain(domain)
-    .range(qualifyRange);
+  const qualifyRange = ["very low", "low", "average", "high", "very high"];
+  const qualifyScale = scaleQuantize().domain(domain).range(qualifyRange);
 
-  const formatValue = format('.1f');
+  const formatValue = format(".1f");
 
-  const root = select('#root');
+  const root = select("#root");
 
   function drawDetails() {
-    const radiusAccessor = d => d.cloudCover;
+    const radiusAccessor = (d) => d.cloudCover;
     const radiusRange = [2, 20];
 
     const radiusScale = scaleLinear()
       .domain(extent(monthData, radiusAccessor))
       .range(radiusRange);
 
-    const xScale = scaleLinear()
-      .domain(domain)
-      .nice();
+    const xScale = scaleLinear().domain(domain).nice();
 
-    const article = root.append('article').attr('id', 'details');
-    article.append('h3').html(`${icons.dewPoint} Dew point`);
-    article.append('h4').html('This month');
+    const article = root.append("article").attr("id", "details");
+    article.append("h3").html(`${icons.dewPoint} Dew point`);
+    article.append("h4").html("This month");
 
     const dimensions = {
       width: 500,
@@ -85,23 +81,23 @@ async function drawDashboard() {
     xScale.range([0, dimensions.boundedWidth]);
 
     const wrapper = article
-      .append('svg')
-      .attr('id', 'packing')
-      .attr('width', dimensions.width)
-      .attr('height', dimensions.height)
-      .attr('viewBox', [0, 0, dimensions.width, dimensions.height]);
+      .append("svg")
+      .attr("id", "packing")
+      .attr("width", dimensions.width)
+      .attr("height", dimensions.height)
+      .attr("viewBox", [0, 0, dimensions.width, dimensions.height]);
 
     const bounds = wrapper
-      .append('g')
+      .append("g")
       .style(
-        'transform',
+        "transform",
         `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
       );
 
-    const axisGroup = bounds.append('g');
-    const averageGroup = bounds.append('g');
-    const monthGroup = bounds.append('g');
-    const valueGroup = bounds.append('g');
+    const axisGroup = bounds.append("g");
+    const averageGroup = bounds.append("g");
+    const monthGroup = bounds.append("g");
+    const valueGroup = bounds.append("g");
 
     const simulationData = [...monthData];
 
@@ -110,23 +106,27 @@ async function drawDashboard() {
 
     forceSimulation(simulationData)
       .force(
-        'collision',
-        forceCollide()
-          .radius(d => radiusScale(radiusAccessor(d)) + circleMargin)
+        "collision",
+        forceCollide().radius(
+          (d) => radiusScale(radiusAccessor(d)) + circleMargin
+        )
       )
-      .force('x', forceX().x(d => xScale(metricAccessor(d))))
-      .force('y', forceY().y(dimensions.boundedHeight / 2))
+      .force(
+        "x",
+        forceX().x((d) => xScale(metricAccessor(d)))
+      )
+      .force("y", forceY().y(dimensions.boundedHeight / 2))
       .tick(tick);
 
     monthGroup
-      .selectAll('circle')
+      .selectAll("circle")
       .data(simulationData)
       .enter()
-      .append('circle')
-      .attr('fill', 'cornflowerblue')
-      .attr('r', d => radiusScale(radiusAccessor(d)))
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y);
+      .append("circle")
+      .attr("fill", "cornflowerblue")
+      .attr("r", (d) => radiusScale(radiusAccessor(d)))
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y);
 
     // bounds
     // .append('g')
@@ -140,97 +140,93 @@ async function drawDashboard() {
     // .attr('cy', dimensions.boundedHeight / 2)
     // .attr('opacity', 0.5)
 
-    const [averageStart, averageEnd] = qualifyScale.invertExtent('average');
+    const [averageStart, averageEnd] = qualifyScale.invertExtent("average");
     const isAverageStartLeft =
       xScale(averageStart) < dimensions.boundedWidth / 2;
     const averageWidth = xScale(averageEnd) - xScale(averageStart);
 
-    averageGroup.attr('transform', `translate(${xScale(averageStart)} 0)`);
+    averageGroup.attr("transform", `translate(${xScale(averageStart)} 0)`);
 
     averageGroup
-      .append('rect')
-      .attr('width', averageWidth)
-      .attr('height', dimensions.boundedHeight)
-      .attr('fill', 'currentColor')
-      .attr('opacity', 0.1);
+      .append("rect")
+      .attr("width", averageWidth)
+      .attr("height", dimensions.boundedHeight)
+      .attr("fill", "currentColor")
+      .attr("opacity", 0.1);
 
     averageGroup
-      .append('text')
-      .text('average range')
-      .attr('class', 'color-sub')
-      .attr('font-size', 12)
-      .attr('font-weight', 500)
-      .attr('x', isAverageStartLeft ? averageWidth + 5 : -5)
-      .attr('y', 12)
-      .attr('text-anchor', isAverageStartLeft ? 'start' : 'end');
+      .append("text")
+      .text("average range")
+      .attr("class", "color-sub")
+      .attr("font-size", 12)
+      .attr("font-weight", 500)
+      .attr("x", isAverageStartLeft ? averageWidth + 5 : -5)
+      .attr("y", 12)
+      .attr("text-anchor", isAverageStartLeft ? "start" : "end");
 
     valueGroup.attr(
-      'transform',
+      "transform",
       `translate(${xScale(value)} ${dimensions.boundedHeight})`
     );
 
     const isValueLeft = xScale(value) < dimensions.boundedWidth / 2;
     valueGroup
-      .append('path')
-      .attr('fill', 'none')
-      .attr('stroke', 'hsl(34, 100%, 50%)')
-      .attr('stroke-width', 2)
+      .append("path")
+      .attr("fill", "none")
+      .attr("stroke", "hsl(34, 100%, 50%)")
+      .attr("stroke-width", 2)
       .attr(
-        'd',
+        "d",
         `M 0 0 v -${dimensions.boundedHeight + dimensions.margin.top / 2} h ${
           isValueLeft ? 10 : -10
         }`
       );
 
     const valueText = valueGroup
-      .append('text')
-      .attr('x', isValueLeft ? 15 : -15)
-      .attr('y', -dimensions.boundedHeight - dimensions.margin.top / 2)
-      .attr('text-anchor', isValueLeft ? 'start' : 'end')
-      .attr('dominant-baseline', 'middle');
+      .append("text")
+      .attr("x", isValueLeft ? 15 : -15)
+      .attr("y", -dimensions.boundedHeight - dimensions.margin.top / 2)
+      .attr("text-anchor", isValueLeft ? "start" : "end")
+      .attr("dominant-baseline", "middle");
 
     valueText
-      .append('tspan')
+      .append("tspan")
       .text(`${qualifyScale(value)}: `)
-      .style('text-transform', 'capitalize')
-      .attr('font-size', 14)
-      .attr('class', 'color-sub')
-      .attr('font-weight', 500);
+      .style("text-transform", "capitalize")
+      .attr("font-size", 14)
+      .attr("class", "color-sub")
+      .attr("font-weight", 500);
 
     valueText
-      .append('tspan')
+      .append("tspan")
       .text(`${formatValue(value)} °F`)
-      .attr('font-size', 18)
-      .attr('font-weight', 900);
+      .attr("font-size", 18)
+      .attr("font-weight", 900);
 
     const xAxisGenerator = axisBottom()
       .scale(xScale)
       .ticks(4)
       .tickSize(0)
       .tickPadding(8)
-      .tickFormat(d => `${d}°F`);
+      .tickFormat((d) => `${d}°F`);
 
     const xAxisGroup = axisGroup
-      .append('g')
-      .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
+      .append("g")
+      .style("transform", `translate(0px, ${dimensions.boundedHeight}px)`)
       .call(xAxisGenerator);
 
-    axisGroup.selectAll('g.tick text').attr('font-size', 12);
+    axisGroup.selectAll("g.tick text").attr("font-size", 12);
 
-    xAxisGroup.select('path').remove();
+    xAxisGroup.select("path").remove();
   }
 
   function drawHits() {
-    const colorRange = ['hsl(21, 95%, 84%)', 'hsl(34, 100%, 50%)'];
+    const colorRange = ["hsl(21, 95%, 84%)", "hsl(34, 100%, 50%)"];
     const rotateRange = [0, 180];
     const strokeDashoffsetRange = [1, 0];
 
-    const colorScale = scaleLinear()
-      .domain(domain)
-      .range(colorRange);
-    const rotateScale = scaleLinear()
-      .domain(domain)
-      .range(rotateRange);
+    const colorScale = scaleLinear().domain(domain).range(colorRange);
+    const rotateScale = scaleLinear().domain(domain).range(rotateRange);
 
     const strokeDashoffsetScale = scaleLinear()
       .domain(domain)
@@ -257,129 +253,127 @@ async function drawDashboard() {
     const paddingGauge = 2;
     const strokeWidthGauge = (radiusCircle - paddingGauge) * 2;
 
-    const article = root.append('article').attr('id', 'hits');
-    article.append('h3').html(`${icons.dewPoint} Dew point`);
-    article.append('h4').html('This month');
+    const article = root.append("article").attr("id", "hits");
+    article.append("h3").html(`${icons.dewPoint} Dew point`);
+    article.append("h4").html("This month");
 
     const wrapper = article
-      .append('svg')
-      .attr('class', 'gauge')
-      .attr('width', dimensions.width)
-      .attr('height', dimensions.height)
-      .attr('viewBox', `0 0 ${dimensions.width} ${dimensions.height}`);
+      .append("svg")
+      .attr("class", "gauge")
+      .attr("width", dimensions.width)
+      .attr("height", dimensions.height)
+      .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`);
 
     const gradientId = `linear-gradient-familiar`;
     wrapper
-      .append('defs')
-      .append('linearGradient')
-      .attr('id', gradientId)
-      .selectAll('stop')
+      .append("defs")
+      .append("linearGradient")
+      .attr("id", gradientId)
+      .selectAll("stop")
       .data(colorScale.range())
       .enter()
-      .append('stop')
-      .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
-      .attr('stop-color', d => d);
+      .append("stop")
+      .attr("offset", (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
+      .attr("stop-color", (d) => d);
 
     const bounds = wrapper
-      .append('g')
+      .append("g")
       .style(
-        'transform',
+        "transform",
         `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
       );
 
     bounds
-      .append('text')
-      .attr('font-size', 18)
-      .attr('fill', 'currentColor')
+      .append("text")
+      .attr("font-size", 18)
+      .attr("fill", "currentColor")
       .text(qualifyScale(value))
-      .attr('x', dimensions.boundedWidth / 2)
-      .style('text-transform', 'uppercase')
-      .style('letter-spacing', '2px')
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle');
+      .attr("x", dimensions.boundedWidth / 2)
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "2px")
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle");
 
     const groupGauge = bounds
-      .append('g')
+      .append("g")
       .attr(
-        'transform',
+        "transform",
         `translate(${dimensions.boundedWidth / 2} ${dimensions.boundedHeight})`
       );
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        'M 0 -8 a 8 8 0 0 1 0 16 q -6 0 -16 -8 10 -8 16 -8 v 2 a 6 6 0 0 0 0 12 6 6 0 0 0 0 -12 v -2'
+        "d",
+        "M 0 -8 a 8 8 0 0 1 0 16 q -6 0 -16 -8 10 -8 16 -8 v 2 a 6 6 0 0 0 0 12 6 6 0 0 0 0 -12 v -2"
       )
-      .attr('fill', 'currentColor')
-      .attr('stroke', 'currentColor')
-      .attr('stroke-width', 4)
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-linejoin', 'round')
-      .attr('transform', `rotate(${rotateScale(value)})`);
+      .attr("fill", "currentColor")
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 4)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round")
+      .attr("transform", `rotate(${rotateScale(value)})`);
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth /
-          2} ${dimensions.boundedWidth / 2} 0 0 1 ${dimensions.boundedWidth} 0`
+        "d",
+        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth / 2} ${
+          dimensions.boundedWidth / 2
+        } 0 0 1 ${dimensions.boundedWidth} 0`
       )
-      .attr('stroke', 'currentColor')
-      .attr('stroke-width', strokeWidthGauge)
-      .attr('fill', 'none')
-      .attr('opacity', 0.2)
-      .attr('stroke-linecap', 'round');
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", strokeWidthGauge)
+      .attr("fill", "none")
+      .attr("opacity", 0.2)
+      .attr("stroke-linecap", "round");
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth /
-          2} ${dimensions.boundedWidth / 2} 0 0 1 ${dimensions.boundedWidth} 0`
+        "d",
+        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth / 2} ${
+          dimensions.boundedWidth / 2
+        } 0 0 1 ${dimensions.boundedWidth} 0`
       )
-      .attr('stroke', `url(#${gradientId})`)
-      .attr('stroke-width', strokeWidthGauge)
-      .attr('fill', 'none')
-      .attr('opacity', 2)
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-dasharray', function() {
-        return select(this)
-          .node()
-          .getTotalLength();
+      .attr("stroke", `url(#${gradientId})`)
+      .attr("stroke-width", strokeWidthGauge)
+      .attr("fill", "none")
+      .attr("opacity", 2)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-dasharray", function () {
+        return select(this).node().getTotalLength();
       })
-      .attr('stroke-dashoffset', function() {
+      .attr("stroke-dashoffset", function () {
         return (
-          select(this)
-            .node()
-            .getTotalLength() * strokeDashoffsetScale(value)
+          select(this).node().getTotalLength() * strokeDashoffsetScale(value)
         );
       });
 
     groupGauge
-      .append('circle')
-      .attr('r', radiusCircle)
-      .attr('cx', -dimensions.boundedWidth / 2)
-      .attr('stroke-width', strokeWidthCircle)
-      .attr('stroke', 'currentColor')
-      .attr('fill', color(colorScale(value)).darker(0.5))
-      .attr('transform', `rotate(${rotateScale(value)})`);
+      .append("circle")
+      .attr("r", radiusCircle)
+      .attr("cx", -dimensions.boundedWidth / 2)
+      .attr("stroke-width", strokeWidthCircle)
+      .attr("stroke", "currentColor")
+      .attr("fill", color(colorScale(value)).darker(0.5))
+      .attr("transform", `rotate(${rotateScale(value)})`);
 
     article
-      .append('p')
-      .attr('class', 'value')
+      .append("p")
+      .attr("class", "value")
       .html(`${formatValue(value)}<span>°F</span>`);
 
     const average = mean(monthData, metricAccessor);
     const difference = value - average;
     article
-      .append('p')
-      .attr('class', 'note')
+      .append("p")
+      .attr("class", "note")
       .html(
         `<span style="color: ${
           colorScale.range()[1]
         }; font-weight: 700;">${formatValue(difference)}°F</span> ${
-          difference > 0 ? 'higher' : 'lower'
+          difference > 0 ? "higher" : "lower"
         } than normal`
       );
   }

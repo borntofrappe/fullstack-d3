@@ -1,15 +1,7 @@
-const {
-  json,
-  format,
-  extent,
-  scaleLinear,
-  scaleQuantize,
-  select,
-  color
-} = d3;
+const { json, format, extent, scaleLinear, scaleQuantize, select, color } = d3;
 
 async function drawDashboard() {
-  const dataset = await json('../../../nyc_weather_data.json');
+  const dataset = await json("../../../nyc_weather_data.json");
   const selectedDay = dataset[Math.floor(Math.random() * dataset.length)];
 
   const icons = {
@@ -19,24 +11,20 @@ async function drawDashboard() {
    `,
   };
 
-  const formarValue = format('.1f');
-  const qualifyRange = ['very low', 'low', 'average', 'high', 'very high'];
+  const formarValue = format(".1f");
+  const qualifyRange = ["very low", "low", "average", "high", "very high"];
   const rotateRange = [0, 180];
   const strokeDashoffsetRange = [1, 0];
 
-  const metricAccessor = d => d.dewPoint;
+  const metricAccessor = (d) => d.dewPoint;
   const value = metricAccessor(selectedDay);
   const domain = extent(dataset, metricAccessor);
 
   const colorScale = scaleLinear()
     .domain(domain)
-    .range(['hsl(21, 95%, 84%)', 'hsl(34, 100%, 50%)']);
-  const rotateScale = scaleLinear()
-    .domain(domain)
-    .range(rotateRange);
-  const qualifyScale = scaleQuantize()
-    .domain(domain)
-    .range(qualifyRange);
+    .range(["hsl(21, 95%, 84%)", "hsl(34, 100%, 50%)"]);
+  const rotateScale = scaleLinear().domain(domain).range(rotateRange);
+  const qualifyScale = scaleQuantize().domain(domain).range(qualifyRange);
   const strokeDashoffsetScale = scaleLinear()
     .domain(domain)
     .range(strokeDashoffsetRange);
@@ -62,161 +50,147 @@ async function drawDashboard() {
   const paddingGauge = 2;
   const strokeWidthGauge = (radiusCircle - paddingGauge) * 2;
 
-  const root = select('#root');
+  const root = select("#root");
 
   function drawGauge(container) {
     const wrapper = container
-      .append('svg')
-      .attr('class', 'gauge')
-      .attr('width', dimensions.width)
-      .attr('height', dimensions.height)
-      .attr('viewBox', `0 0 ${dimensions.width} ${dimensions.height}`);
+      .append("svg")
+      .attr("class", "gauge")
+      .attr("width", dimensions.width)
+      .attr("height", dimensions.height)
+      .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`);
 
     const gradientId = `linear-gradient-familiar`;
     wrapper
-      .append('defs')
-      .append('linearGradient')
-      .attr('id', gradientId)
-      .selectAll('stop')
+      .append("defs")
+      .append("linearGradient")
+      .attr("id", gradientId)
+      .selectAll("stop")
       .data(colorScale.range())
       .enter()
-      .append('stop')
-      .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
-      .attr('stop-color', d => d);
+      .append("stop")
+      .attr("offset", (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
+      .attr("stop-color", (d) => d);
 
     const bounds = wrapper
-      .append('g')
+      .append("g")
       .style(
-        'transform',
+        "transform",
         `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
       );
 
     bounds
-      .append('text')
-      .attr('font-size', 18)
-      .attr('fill', 'currentColor')
+      .append("text")
+      .attr("font-size", 18)
+      .attr("fill", "currentColor")
       .text(qualifyScale(value))
-      .attr('x', dimensions.boundedWidth / 2)
-      .style('text-transform', 'uppercase')
-      .style('letter-spacing', '2px')
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle');
+      .attr("x", dimensions.boundedWidth / 2)
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "2px")
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle");
 
     const groupGauge = bounds
-      .append('g')
+      .append("g")
       .attr(
-        'transform',
+        "transform",
         `translate(${dimensions.boundedWidth / 2} ${dimensions.boundedHeight})`
       );
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        'M 0 -8 a 8 8 0 0 1 0 16 q -6 0 -16 -8 10 -8 16 -8 v 2 a 6 6 0 0 0 0 12 6 6 0 0 0 0 -12 v -2'
+        "d",
+        "M 0 -8 a 8 8 0 0 1 0 16 q -6 0 -16 -8 10 -8 16 -8 v 2 a 6 6 0 0 0 0 12 6 6 0 0 0 0 -12 v -2"
       )
-      .attr('fill', 'currentColor')
-      .attr('stroke', 'currentColor')
-      .attr('stroke-width', 4)
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-linejoin', 'round')
-      .attr('transform', `rotate(${rotateScale(value)})`);
+      .attr("fill", "currentColor")
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 4)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round")
+      .attr("transform", `rotate(${rotateScale(value)})`);
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth /
-          2} ${dimensions.boundedWidth / 2} 0 0 1 ${dimensions.boundedWidth} 0`
+        "d",
+        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth / 2} ${
+          dimensions.boundedWidth / 2
+        } 0 0 1 ${dimensions.boundedWidth} 0`
       )
-      .attr('stroke', 'currentColor')
-      .attr('stroke-width', strokeWidthGauge)
-      .attr('fill', 'none')
-      .attr('opacity', 0.2)
-      .attr('stroke-linecap', 'round');
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", strokeWidthGauge)
+      .attr("fill", "none")
+      .attr("opacity", 0.2)
+      .attr("stroke-linecap", "round");
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth /
-          2} ${dimensions.boundedWidth / 2} 0 0 1 ${dimensions.boundedWidth} 0`
+        "d",
+        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth / 2} ${
+          dimensions.boundedWidth / 2
+        } 0 0 1 ${dimensions.boundedWidth} 0`
       )
-      .attr('stroke', `url(#${gradientId})`)
-      .attr('stroke-width', strokeWidthGauge)
-      .attr('fill', 'none')
-      .attr('opacity', 2)
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-dasharray', function() {
-        return select(this)
-          .node()
-          .getTotalLength();
+      .attr("stroke", `url(#${gradientId})`)
+      .attr("stroke-width", strokeWidthGauge)
+      .attr("fill", "none")
+      .attr("opacity", 2)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-dasharray", function () {
+        return select(this).node().getTotalLength();
       })
-      .attr('stroke-dashoffset', function() {
+      .attr("stroke-dashoffset", function () {
         return (
-          select(this)
-            .node()
-            .getTotalLength() * strokeDashoffsetScale(value)
+          select(this).node().getTotalLength() * strokeDashoffsetScale(value)
         );
       });
 
     groupGauge
-      .append('circle')
-      .attr('r', radiusCircle)
-      .attr('cx', -dimensions.boundedWidth / 2)
-      .attr('stroke-width', strokeWidthCircle)
-      .attr('stroke', 'currentColor')
-      .attr('fill', color(colorScale(value)).darker(0.5))
-      .attr('transform', `rotate(${rotateScale(value)})`);
+      .append("circle")
+      .attr("r", radiusCircle)
+      .attr("cx", -dimensions.boundedWidth / 2)
+      .attr("stroke-width", strokeWidthCircle)
+      .attr("stroke", "currentColor")
+      .attr("fill", color(colorScale(value)).darker(0.5))
+      .attr("transform", `rotate(${rotateScale(value)})`);
   }
 
   function drawMetricUnfamiliar() {
-    const article = root.append('article').attr('id', 'unfamiliar');
+    const article = root.append("article").attr("id", "unfamiliar");
 
-    article.append('h3').html(`${icons.dewPoint} Dew point`);
+    article.append("h3").html(`${icons.dewPoint} Dew point`);
 
     drawGauge(article);
 
-    article
-      .append('p')
-      .attr('class', 'value')
-      .text(formarValue(value));
+    article.append("p").attr("class", "value").text(formarValue(value));
 
-    article
-      .append('p')
-      .attr('class', 'note')
-      .text('degrees to fahrenheit');
+    article.append("p").attr("class", "note").text("degrees to fahrenheit");
 
-    const details = article.append('div').attr('class', 'details');
+    const details = article.append("div").attr("class", "details");
 
     details
-      .append('p')
+      .append("p")
       .html(
-        'The <strong>dew point</strong> is maximum temperature at which the air is saturated with water vapor.'
+        "The <strong>dew point</strong> is maximum temperature at which the air is saturated with water vapor."
       );
     details
-      .append('p')
+      .append("p")
       .text(
-        'People are most comfortable when the dew point is between 24 and 60 °F.'
+        "People are most comfortable when the dew point is between 24 and 60 °F."
       );
   }
 
   function drawMetricFamiliar() {
-    const article = root.append('article').attr('id', 'familiar');
+    const article = root.append("article").attr("id", "familiar");
 
-    article.append('h3').html(`${icons.dewPoint} Dew point`);
+    article.append("h3").html(`${icons.dewPoint} Dew point`);
 
     drawGauge(article);
 
-    article
-      .append('p')
-      .attr('class', 'value')
-      .text(formarValue(value));
+    article.append("p").attr("class", "value").text(formarValue(value));
 
-    article
-      .append('p')
-      .attr('class', 'note')
-      .text('degrees to fahrenheit');
+    article.append("p").attr("class", "note").text("degrees to fahrenheit");
   }
 
   drawMetricUnfamiliar();

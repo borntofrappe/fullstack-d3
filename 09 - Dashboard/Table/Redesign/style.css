@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Inter var';
-  src: url('../../../Inter.var.woff2');
+  font-family: "Inter var";
+  src: url("../../../Inter.var.woff2");
 }
 
 * {
@@ -14,7 +14,7 @@ body {
   place-items: center;
   background: hsl(222, 90%, 98%);
   color: hsl(233, 67%, 15%);
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
 }
 
 /* 
@@ -28,7 +28,7 @@ body {
 table {
   margin: 1rem 0;
   border-collapse: collapse;
-  font-feature-settings: 'tnum';
+  font-feature-settings: "tnum";
 }
 
 table thead th {

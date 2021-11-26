@@ -7,11 +7,11 @@ const {
   format,
   scaleQuantize,
   scaleLinear,
-  extent
+  extent,
 } = d3;
 
 async function drawDashboard() {
-  const dataset = await json('../../../nyc_weather_data.json');
+  const dataset = await json("../../../nyc_weather_data.json");
   const selectedDay = dataset[Math.floor(Math.random() * dataset.length)];
 
   const icons = {
@@ -29,9 +29,9 @@ async function drawDashboard() {
    `,
   };
 
-  const dateParser = timeParse('%Y-%m-%d');
-  const dateFormatter = timeFormat('%B %-d, %Y');
-  const dateAccessor = d => dateParser(d.date);
+  const dateParser = timeParse("%Y-%m-%d");
+  const dateFormatter = timeFormat("%B %-d, %Y");
+  const dateAccessor = (d) => dateParser(d.date);
 
   const dimensions = {
     width: 150,
@@ -54,188 +54,186 @@ async function drawDashboard() {
   const paddingGauge = 2;
   const strokeWidthGauge = (radiusCircle - paddingGauge) * 2;
 
-  const root = select('#root');
-  const header = root.append('header');
-  header.append('h1').text('Weather in New York City');
-  header.append('h2').text(dateFormatter(dateAccessor(selectedDay)));
-  const section = root.append('section');
+  const root = select("#root");
+  const header = root.append("header");
+  header.append("h1").text("Weather in New York City");
+  header.append("h2").text(dateFormatter(dateAccessor(selectedDay)));
+  const section = root.append("section");
 
   function drawMetric(metric) {
     const { key, title, note, scales, accessor, formatValue } = metric;
     const { qualify, rotate, colorScale, strokeDashoffset } = scales;
     const value = accessor(selectedDay);
 
-    const article = section.append('article');
-    article
-      .append('h3')
-      .text(title)
-      .append('span')
-      .html(icons[key]);
+    const article = section.append("article");
+    article.append("h3").text(title).append("span").html(icons[key]);
 
     const wrapper = article
-      .append('svg')
-      .attr('width', dimensions.width)
-      .attr('height', dimensions.height)
-      .attr('viewBox', `0 0 ${dimensions.width} ${dimensions.height}`);
+      .append("svg")
+      .attr("width", dimensions.width)
+      .attr("height", dimensions.height)
+      .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`);
 
     const gradientId = `linear-gradient-${key}`;
 
     wrapper
-      .append('defs')
-      .append('linearGradient')
-      .attr('id', gradientId)
-      .selectAll('stop')
+      .append("defs")
+      .append("linearGradient")
+      .attr("id", gradientId)
+      .selectAll("stop")
       .data(colorScale.range())
       .enter()
-      .append('stop')
-      .attr('offset', (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
-      .attr('stop-color', d => d);
+      .append("stop")
+      .attr("offset", (d, i, { length }) => `${(i * 100) / (length - 1)}%`)
+      .attr("stop-color", (d) => d);
 
     const bounds = wrapper
-      .append('g')
+      .append("g")
       .style(
-        'transform',
+        "transform",
         `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
       );
 
     bounds
-      .append('text')
-      .attr('font-size', 20)
-      .attr('fill', 'currentColor')
+      .append("text")
+      .attr("font-size", 20)
+      .attr("fill", "currentColor")
       .text(qualify(value))
-      .attr('x', dimensions.boundedWidth / 2)
-      .style('text-transform', 'uppercase')
-      .style('letter-spacing', '2px')
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle');
+      .attr("x", dimensions.boundedWidth / 2)
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "2px")
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle");
 
     const groupGauge = bounds
-      .append('g')
+      .append("g")
       .attr(
-        'transform',
+        "transform",
         `translate(${dimensions.boundedWidth / 2} ${dimensions.boundedHeight})`
       );
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        'M 0 -8 a 8 8 0 0 1 0 16 q -6 0 -16 -8 10 -8 16 -8 v 2 a 6 6 0 0 0 0 12 6 6 0 0 0 0 -12 v -2'
+        "d",
+        "M 0 -8 a 8 8 0 0 1 0 16 q -6 0 -16 -8 10 -8 16 -8 v 2 a 6 6 0 0 0 0 12 6 6 0 0 0 0 -12 v -2"
       )
-      .attr('fill', 'currentColor')
-      .attr('stroke', 'currentColor')
-      .attr('stroke-width', 4)
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-linejoin', 'round')
-      .attr('transform', `rotate(${rotate(value)})`);
+      .attr("fill", "currentColor")
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 4)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round")
+      .attr("transform", `rotate(${rotate(value)})`);
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth /
-          2} ${dimensions.boundedWidth / 2} 0 0 1 ${dimensions.boundedWidth} 0`
+        "d",
+        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth / 2} ${
+          dimensions.boundedWidth / 2
+        } 0 0 1 ${dimensions.boundedWidth} 0`
       )
-      .attr('stroke', 'currentColor')
-      .attr('stroke-width', strokeWidthGauge)
-      .attr('fill', 'none')
-      .attr('opacity', 0.2)
-      .attr('stroke-linecap', 'round');
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", strokeWidthGauge)
+      .attr("fill", "none")
+      .attr("opacity", 0.2)
+      .attr("stroke-linecap", "round");
 
     groupGauge
-      .append('path')
+      .append("path")
       .attr(
-        'd',
-        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth /
-          2} ${dimensions.boundedWidth / 2} 0 0 1 ${dimensions.boundedWidth} 0`
+        "d",
+        `M -${dimensions.boundedWidth / 2} 0 a ${dimensions.boundedWidth / 2} ${
+          dimensions.boundedWidth / 2
+        } 0 0 1 ${dimensions.boundedWidth} 0`
       )
-      .attr('stroke', `url(#${gradientId})`)
-      .attr('stroke-width', strokeWidthGauge)
-      .attr('fill', 'none')
-      .attr('opacity', 2)
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-dasharray', function() {
-        return select(this)
-          .node()
-          .getTotalLength();
+      .attr("stroke", `url(#${gradientId})`)
+      .attr("stroke-width", strokeWidthGauge)
+      .attr("fill", "none")
+      .attr("opacity", 2)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-dasharray", function () {
+        return select(this).node().getTotalLength();
       })
-      .attr('stroke-dashoffset', function() {
-        return (
-          select(this)
-            .node()
-            .getTotalLength() * strokeDashoffset(value)
-        );
+      .attr("stroke-dashoffset", function () {
+        return select(this).node().getTotalLength() * strokeDashoffset(value);
       });
 
     groupGauge
-      .append('circle')
-      .attr('r', radiusCircle)
-      .attr('cx', -dimensions.boundedWidth / 2)
-      .attr('fill', color(colorScale(0)).darker(1))
-      .attr('stroke-width', strokeWidthCircle)
-      .attr('stroke', 'currentColor')
-      .attr('fill', color(colorScale(value)).darker(1))
-      .attr('transform', `rotate(${rotate(value)})`);
+      .append("circle")
+      .attr("r", radiusCircle)
+      .attr("cx", -dimensions.boundedWidth / 2)
+      .attr("fill", color(colorScale(0)).darker(1))
+      .attr("stroke-width", strokeWidthCircle)
+      .attr("stroke", "currentColor")
+      .attr("fill", color(colorScale(value)).darker(1))
+      .attr("transform", `rotate(${rotate(value)})`);
 
-    article.append('p').html(formatValue(value));
+    article.append("p").html(formatValue(value));
 
-    article.append('p').text(note);
+    article.append("p").text(note);
   }
 
-  const qualifyRange = ['very low', 'low', 'average', 'high', 'very high'];
+  const qualifyRange = ["very low", "low", "average", "high", "very high"];
   const rotateRange = [0, 180];
   const strokeDashoffsetRange = [1, 0];
 
   const metrics = [
     {
-      key: 'humidity',
-      accessor: d => d.humidity,
-      title: 'Humidity',
-      note: 'relative, out of 100%',
-      formatValue: d => `${format('.0f')(d * 100)}<span>%</span>`,
+      key: "humidity",
+      accessor: (d) => d.humidity,
+      title: "Humidity",
+      note: "relative, out of 100%",
+      formatValue: (d) => `${format(".0f")(d * 100)}<span>%</span>`,
       scales: {
         qualify: scaleQuantize().range(qualifyRange),
         rotate: scaleLinear().range(rotateRange),
-        colorScale: scaleLinear()
-          .range(['hsl(21, 95%, 84%)', 'hsl(34, 100%, 50%)']),
+        colorScale: scaleLinear().range([
+          "hsl(21, 95%, 84%)",
+          "hsl(34, 100%, 50%)",
+        ]),
         strokeDashoffset: scaleLinear().range(strokeDashoffsetRange),
       },
     },
     {
-      key: 'temperatureMin',
-      accessor: d => d.temperatureMin,
-      title: 'Minimum Temperature',
-      note: 'degrees Fahrenheit',
-      formatValue: d => `${format('.0f')(d)}`,
+      key: "temperatureMin",
+      accessor: (d) => d.temperatureMin,
+      title: "Minimum Temperature",
+      note: "degrees Fahrenheit",
+      formatValue: (d) => `${format(".0f")(d)}`,
       scales: {
         qualify: scaleQuantize().range(qualifyRange),
         rotate: scaleLinear().range(rotateRange),
-        colorScale: scaleLinear()
-          .range(['hsl(220, 100%, 87%)', 'hsl(220, 80%, 41%)']),
+        colorScale: scaleLinear().range([
+          "hsl(220, 100%, 87%)",
+          "hsl(220, 80%, 41%)",
+        ]),
         strokeDashoffset: scaleLinear().range(strokeDashoffsetRange),
       },
     },
     {
-      key: 'temperatureMax',
-      accessor: d => d.temperatureMax,
-      title: 'Maximum Temperature',
-      note: 'degrees Fahrenheit',
-      formatValue: d => `${format('.0f')(d)}`,
+      key: "temperatureMax",
+      accessor: (d) => d.temperatureMax,
+      title: "Maximum Temperature",
+      note: "degrees Fahrenheit",
+      formatValue: (d) => `${format(".0f")(d)}`,
       scales: {
         qualify: scaleQuantize().range(qualifyRange),
         rotate: scaleLinear().range(rotateRange),
-        colorScale: scaleLinear()
-          .range(['hsl(0, 100%, 85%)', 'hsl(0, 92%, 43%)']),
+        colorScale: scaleLinear().range([
+          "hsl(0, 100%, 85%)",
+          "hsl(0, 92%, 43%)",
+        ]),
         strokeDashoffset: scaleLinear().range(strokeDashoffsetRange),
       },
     },
   ];
 
-  metrics.forEach(metric => {
+  metrics.forEach((metric) => {
     const { accessor, scales } = metric;
     const domain = extent(dataset, accessor);
 
-    Object.keys(scales).forEach(scale => metric.scales[scale].domain(domain));
+    Object.keys(scales).forEach((scale) => metric.scales[scale].domain(domain));
 
     drawMetric(metric);
   });

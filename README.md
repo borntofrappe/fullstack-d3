@@ -1861,7 +1861,7 @@ In practice:
 
 It is important to note a distinction introduced with the `drawMetric` function. The script initially sets up the dashboard with the necessary HTML and SVG elements. In `drawMetric`, then, the idea is to change the contents, the appearance of the elements with the specific day.
 
-The project highlights a few methods from the d3 library:
+The project highlights a few methods from the D3 library:
 
 - `d3.scaleQuantize` is helpful to create a scale mapping a continuous domain to a discrete range.
 
@@ -1871,7 +1871,7 @@ The project highlights a few methods from the d3 library:
   d3.scaleQuantize().range(["Very low", "Low", "Average", "High", "Very high"]);
   ```
 
-  `scaleQuantize` divides the domain in intervals of equal size, so that if the value falls in the first 20% of values, it is associated to the `Very low` label. Between 20% and 40% to the `Low` label and so forth. Refer to the documentation in the [`d3-scale`](https://github.com/d3/d3-scale) module for more details.
+  `scaleQuantize` divides the domain in intervals of equal size, so that if the value falls in the first 20% of values, it is associated to the `Very low` label. Between 20% and 40% to the `Low` label and so forth.
 
 - `d3.color` is useful to create a color which is then customized with the `.darker()` method.
 
@@ -1879,15 +1879,15 @@ The project highlights a few methods from the d3 library:
   d3.color(..).darker(1.5)
   ```
 
-  In the project, the function receives a color from the `d3.interpolateBlues` scale. Refer to the documentation for the [`d3-color`](https://github.com/d3/d3-color) module for more information.
+  In the project, the function receives a color from the `d3.interpolateBlues` scale.
 
 ### Feed Metrics
 
 The demo for the starting point considers a few metrics connected to a news feed with the same visual designed for the weather dashboard. The focus is here on the number of views and articles connected to a hypothetical subject.
 
-The redesign improves the visualization with an additional metric: demand. Here the goal is to show how data can be turned into insight, into an actionable metric.
+The redesign improves the visualization with an additional metric: _demand_. Here the goal is to show how data can be turned into insight, into an actionable metric.
 
-_Please note:_ the script for the second demo slightly differs from the first, as I found a more useful solution in having the accessor function directly in the object describing each metric.
+_Please note:_ the script for the second demo slightly differs from the first, as I found an alternative solution in having the accessor function directly in the object describing each metric.
 
 _Please also note:_ the data for the project is included in the `09 - Dashboard` folder, alongside the icons designed for each section.
 
@@ -1930,31 +1930,39 @@ d3.json("../../nyc_weather_data.json").catch((error) => {
 });
 ```
 
-_Please note_: in its current design, the promise should always proceed to the loaded state. To highlight the other states, try modifying the logic of the promise. To highlight an error, for instance, have the promise look for a non-existing file.
+_Please note_: in its current design, the promise should always resolve, leading to the loaded state. To highlight the other states try modifying the logic of the promise. To highlight an error, for instance, have the promise look for a non-existing file.
 
 ```js
 d3.json("../../nyc_weather_data.jn");
+```
+
+To highlight the lack of data have the condition lead to the empty state.
+
+```js
+if (true) {
+  handleEmptyState();
+}
 ```
 
 ### Outliers
 
 The projects work to showcase how to handle outliers, values which vary from the mean and are prone to skew the perception of the visualization.
 
-There is not one solution for every visualization, and it is important to consider the influence of outliers case by case. For instance and to visualize the popularity of articles in terms of views, it might be useful to preserve outliers in recent data, as to highlight potential spikes. It might be then more informative to crop the value (with an accompanying label) after an arbitrary amount of time, to highlight the overall trend. This is exactly what happens in the demo exploring the bar chart; in the first visualization the scale considers the maximum value, while in the second the domain is capped at a threshold considering the mean and standard deviation.
+There is not one solution for every visualization, and it is important to consider the influence of outliers case by case. For instance and to visualize the popularity of articles in terms of views, it might be useful to preserve outliers in recent data, as to highlight potential spikes. It might be then more informative to crop the value (with an accompanying label) after an arbitrary amount of time, to focus on the overall trend. This is exactly what happens in the demo exploring the bar chart: in the first visualization the scale considers the maximum value, while in the second visual the domain is capped at a threshold considering the mean and standard deviation.
 
-It is important to stress that the bar chart shows one way to handle outliers, and defines an outlier with another arbitrary choice. The second project, creating a timeline, proves this by plotting the number of views and articles. The number of articles is shown with a series of dots, and the number of dots is limited to a third of the bounded height. An outlier is here any observation with more articles than can fit in the chosen fraction of the height and is highlighted with a small arrow pointing upwards.
+It is important to stress that the bar chart shows one way to handle outliers, and defines an outlier with another arbitrary choice. The second project creating a timeline proves this by plotting the number of views and articles. The number of articles is shown with a series of dots, and the number of dots is limited to a third of the bounded height. An outlier is here any observation with more articles than can fit in the chosen fraction of the height and is highlighted with a small arrow pointing upwards.
 
 ### Table
 
-A table provides an effective layout to focus on exact values. In the first demo, the data is included as-is, without considering the design of the visualization. The project is still useful to rehearse data binding with HTML elements.
+A table provides an effective layout to focus on exact values. In the first demo the data is included as-is, without much consideration in terms of design. The project is still useful to rehearse data binding with HTML elements.
 
-In the second demo, the table is redesigned both in style and function. In the stylesheet, the table is updated as follows:
+In the second demo the table is redesigned both in style and function. In the stylesheet, the table is updated as follows:
 
 - the table removes the border, included as a rudimentary way to distinguish the data
 
-- cells benefit from whitespace in the form of considerable padding
+- whitespace is increased in the form of considerable padding
 
-- the font is updated with the `font-feature-setting` property so that individual numbers have the same width
+- the font is updated with the `font-feature-setting` property so that individual numbers have the same width. This is a feature available on the chosen `Inter` family and allows numbers to behave like monospace fonts
 
 - the column dedicated to the summary is reduced in importance through the `font-size` property
 
@@ -1962,7 +1970,7 @@ In the second demo, the table is redesigned both in style and function. In the s
 
 - the rows alternate in background color to stress the distinction between observations
 
-- the rows are highlighted on hover and through the background color
+- the rows are highlighted on hover through the background color
 
 In the script, the content is updated as follows:
 
@@ -1976,19 +1984,19 @@ In the script, the content is updated as follows:
 
 - the column describing the precipitation type is substituted with one detailing the presence, or lack, of snow. Snow is signalled with an icon instead of a label
 
-- the time describing the maximum temperature is represented through the horizontal position of a line instead of a label describing the hour. Take notice that the field `temperatureMaxTime` details the number of seconds since the UNIX epoch, and as per [d3 own documentation](https://github.com/d3/d3-time-format#locale_format), it's possible to parse a date with the `%s` directive. The table designed in the book seems to use the `apparentTemperatureMaxTime` field, which explains the differences in the position of the line
+- the time describing the maximum temperature is represented through the horizontal position of a line instead of a label describing the hour. Take notice that the field `temperatureMaxTime` details the number of seconds since the UNIX epoch and, as per [d3 own documentation](https://github.com/d3/d3-time-format#locale_format), it is possible to parse a date with the `%s` directive. The table designed in the book seems to use the `apparentTemperatureMaxTime` field, which explains the differences in the position of the line
 
 _Please note:_ considering the entire dataset, the risk is to having the table exceedingly wide. This is mostly due to two fields: summary and UV index. For the first field, the solution is to limit the width of the associated text. For the second field, one solution is to limit the number of icons associated with the index, and highlight a greater value with another visual.
 
 ### Layout Design
 
-The folder highlight how a dashboard works best when it focuses on providing a clear message and a few metric. The first demo shows the minimum and maximum temperature leading up to a selected day with a timeline. The second demo focyses on showing three metrics side by side.
+The folder highlights how a dashboard works best when it focuses a clear message and a few metrics. The first demo shows the minimum and maximum temperature leading up to a selected day with a timeline. The second demo focuses on three metrics side by side.
 
 ### Deciding Questions
 
 The folder focuses on two questions essential to the design of a dashboard: how familar are users with the provided data, how much time do user spend with the visualization. Already, these issues compel a different visualization. Consider for instance how inexperienced users might benefit from a short explanation (first demo), or again how time-sensitive readers might prefer a single metric instead of an elaborate visualization (second demo).
 
-In terms of d3, it is helpful to note how the elaborate visualization in the second demo leans on the `d3-force` module to have the circles describing the observations separated from one another. With `d3.simulation`, the project sets up a series of forces to have the points tend toward the desired `x` coordinate.
+In terms of D3, it is helpful to note how the elaborate visualization in the second demo leans on the `d3-force` module to have the circles describing the observations separated from one another. With `d3.simulation`, the project sets up a series of forces to have the points tend toward the desired `x` coordinate.
 
 ```js
 d3.forceSimulation(simulationData)

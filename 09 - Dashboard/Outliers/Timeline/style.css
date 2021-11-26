@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Inter var';
-  src: url('../../../Inter.var.woff2');
+  font-family: "Inter var";
+  src: url("../../../Inter.var.woff2");
 }
 
 * {
@@ -27,5 +27,5 @@ body {
 
 svg text {
   fill: currentColor;
-  font-family: 'Inter var', sans-serif;
+  font-family: "Inter var", sans-serif;
 }
