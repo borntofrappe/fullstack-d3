@@ -108,15 +108,15 @@ async function drawLineChart() {
       .attr("y", freezingTemperatureY)
       .attr("height", dimensions.boundedHeight - freezingTemperatureY);
 
-    const lastTwoPoints = data.slice(-2);
-    const pixelsBetweenLastPoints =
-      xScale(xAccessor(lastTwoPoints[1])) - xScale(xAccessor(lastTwoPoints[0]));
-
     /* wiggle
     linePath.transition(lineTransition).attr("d", lineGenerator(data));
     /* */
 
     // /* no wiggle
+    const lastTwoPoints = data.slice(-2);
+    const pixelsBetweenLastPoints =
+      xScale(xAccessor(lastTwoPoints[1])) - xScale(xAccessor(lastTwoPoints[0]));
+
     linePath
       .attr("d", lineGenerator(data))
       .style("transform", `translate(${pixelsBetweenLastPoints}px, 0px)`)

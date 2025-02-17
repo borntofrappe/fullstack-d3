@@ -79,11 +79,7 @@ async function drawBarChart() {
     .attr("tabindex", "0")
     .attr("aria-label", "Histogram bars");
 
-  meanGroup
-    .append("text")
-    .attr("fill", "maroon")
-    .style("font-size", 12)
-    .style("font-family", "sans-serif");
+  meanGroup.append("text").attr("fill", "maroon").style("font-size", 12);
 
   function drawHistogram(metric) {
     /* ACCESS DATA */
@@ -162,18 +158,16 @@ async function drawBarChart() {
       .attr("text-anchor", "middle")
       .attr("fill", "darkslategrey")
       .style("font-size", 12)
-      .style("font-family", "sans-serif")
       .attr("y", dimensions.boundedHeight)
       .style("opacity", 0)
       .transition(enterTransition)
-      .style("opacity", 1)
-      .attr("y", (d) => yScale(yAccessor(d)) - 5);
+      .attr("y", (d) => yScale(yAccessor(d)) - 5)
+      .style("opacity", 1);
 
     newBinGroups
       .append("rect")
       .attr("x", (d) => xScale(d.x0) + barPadding / 2)
       .attr("width", (d) => max([0, xScale(d.x1) - xScale(d.x0) - barPadding]))
-      .attr("fill", "cornflowerblue")
       .attr("y", dimensions.boundedHeight)
       .attr("height", 0)
       .attr("fill", "yellowgreen")

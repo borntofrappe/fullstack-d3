@@ -373,11 +373,11 @@ Beside the axis, included with a limited set of ticks, the groups responsible fo
 
 The project is useful to introduce another generator function in `d3.bin`, plus a couple helper functions in `d3.mean` and `selection.filter`.
 
-The chapter is also and extremely useful in terms of accessibility, with a first set of attributes to make the visualization accessible for screen readers and keyboard users.
+The chapter is also insightful in terms of accessibility, with a first set of attributes to make the visualization accessible for screen readers and keyboard users.
 
 ### Bins
 
-The book introduces `d3.histogram` to create a series of bins, a series of arrays in which d3 slots the data points. [Since version 6](https://github.com/d3/d3/blob/master/CHANGES.md#breaking-changes), however, the function has been deprecated in favour of `d3.bin`.
+The book introduces `d3.histogram` to create a series of bins, a series of arrays in which D3 slots the data points. [Since version 6](https://github.com/d3/d3/blob/master/CHANGES.md#breaking-changes), however, the function has been deprecated in favour of `d3.bin`.
 
 ```js
 // const binGenerator = d3
@@ -387,7 +387,7 @@ const binGenerator = d3.bin();
 
 According to details in [the migration guide](https://observablehq.com/@d3/d3v6-migration-guide#bin), it seems `d3.histogram` is preserved as an alias, but it is ultimately deprecated.
 
-The function creates a series of bins based on the domain of the horizontal scale.
+The function creates a series of bins on the basis of the domain of the horizontal scale.
 
 ```js
 const binGenerator = bin()
@@ -396,11 +396,11 @@ const binGenerator = bin()
   .thresholds(12);
 ```
 
-`threshold` describes the number of bins, but the instruction is not mandatory. d3 will consider a number of groups based on the number of observations and the values of the domain.
+`threshold` describes the number of bins, but the value is not forced. D3 weighs the suggestion with the number of observations and the values of the domain.
 
 ### Mean
 
-`d3-array` provides a few helper functions for summary statistics, among which `d3.mean`. In the visualization, the function is used to highlight the mean with a line and text label.
+[`d3-array`](https://d3js.org/d3-array) also provides a few helper functions for summary statistics, among which `d3.mean`. In the visualization, the function is used to highlight the mean with a line and text label.
 
 ```js
 const mean = d3.mean(dataset, metricAccessor);
@@ -408,7 +408,7 @@ const mean = d3.mean(dataset, metricAccessor);
 
 ### Filter
 
-A selection can be filtered according to a function. In the specific project, the `filter()` function is used to have the text label for the histogram bars only on the bars highlight at least one observation.
+A selection can be filtered according to a function. In the project, the `filter()` function is used to have the text label for the histogram bars only on the bins which have at least one observation.
 
 ```js
 const textGroups = binGroups.filter(yAccessor);
@@ -417,22 +417,20 @@ const textGroups = binGroups.filter(yAccessor);
 `yAccessor` returns the length of the bin, a falsy value for empty arrays. The function works essentially as a shorthand for the following snippet.
 
 ```js
-const textGroups = binGroups.filter((d) => yAccessor(d) !== 0);
+const textGroups = binGroups.filter((d) => yAccessor(d));
 ```
 
 ### Accessibility
 
-Accessibility is improved with a few elements and attributes:
+Accessibility is considered with a few elements and attributes:
 
 - the `title` element introduces the visualization
 
-  ```html
-  <svg>
-    <title>Describe the visualization</title>
-  </svg>
+  ```js
+  wrapper.append("title").text("...");
   ```
 
-- the `tabindex` attribute allows to have specific elements select-able through keyboard.
+- the `tabindex` attribute allows to have specific elements select-able through keyboard
 
   In the individual bar chart, the idea is to focus on the SVG container, the group element wrapping around the histogram bars, and the group elements wrapping around the individual bars
 
@@ -442,7 +440,7 @@ Accessibility is improved with a few elements and attributes:
   binGroups.attr("tabindex", "0");
   ```
 
-- the `role` attribute identifies the specific purpose of the select-able elements
+- the `role` attribute to identifies the purpose of the select-able elements
 
   ```js
   wrapper.attr("role", "figure");
@@ -463,7 +461,7 @@ Accessibility is improved with a few elements and attributes:
   wrapper.selectAll("text").attr("aria-hidden", "true");
   ```
 
-  In the specific demo the labels included on the group elements are enough to describe the bar charts, and the `<text/>` elements overload screen readers with too many values. Without this precaution a screen reader would also read the ticks of the axis
+  In the demo the labels included on the group elements are enough to describe the bar charts, and the `<text>` elements overload screen readers with too many values. Without this precaution a screen reader would also note the ticks of the axis
 
 ### Metrics
 
@@ -626,19 +624,173 @@ const updateTransition = exitTransition.transition().duration(1000);
 
 In this instance `updateTransition` will occur after `exitTransition`.
 
+## 04 - Animation and Transitions
+
+The chapter describes three methods to smoothly change a value over time:
+
+1. the native SVG element `<animate />`
+
+2. the CSS `transition` property (CSS)
+
+3. d3.js `transition` method
+
+In folder I chose to focus on the last approach only.
+
+D3 provides a `.transition` method to interpolate between a start and end state. Essentially, it is enough to apply a transition as follows:
+
+```js
+d3.select("rect")
+  .attr("transform", "scale(0)")
+  .transition()
+  .attr("transform", "scale(1)");
+```
+
+In this instance the selected rectangle transitions to its full size.
+
+### Bar Chart
+
+Before introducing the `transition` method in the context of a bar chart, it is important to have a discussion on the structure of the visualization, and again on the concept of a data join.
+
+#### Static and Dynamic
+
+The function creating the visualization is divided between static and dynamic instructions.
+
+Static are those lines included regardless of the state of the visualization: the object describing the dimensions of the SVG element `<svg>`, the SVG wrapper itself, the group element making up the bounds.
+
+Dynamic are those lines which change depending on the input data, and in the example the metric chosen for the histogram: the scales, the position and dimensions of the rectangles, the labels.
+
+#### Data Join
+
+The concept of the data join, as introduced in the second chapter `02 - Scatterplot`, allows to bind data to DOM element, and it is here essential to have D3 manage the transition for new, existing and old elements.
+
+`drawHistogram` begins by selecting group elements `<g>` and binding the data provided by the bins.
+
+```js
+const binGroups = binsGroup.selectAll("g").data(bins);
+```
+
+From this starting point, `binGroups` describes the update selection, in other words those group elements `<g>` which already exist. New (missing) elements are identified with the `enter` function, while old (superfluous) elements with `exit`.
+
+```js
+const newBinGroups = binGroups.enter();
+const oldBinGroups = binGroups.exit();
+```
+
+With this structure, it is finally possible to update the visualization. In the speficic example:
+
+- remove old elements with the `remove` function
+
+  ```js
+  oldBinGroups.remove();
+  ```
+
+- include new elements in the form of a group elements
+
+  ```js
+  const newBinGroups = binGroups.enter().append("g");
+  ```
+
+  The groups are then used to add the desired label and rectangle
+
+  ```js
+  newBinGroups.filter(yAccessor).append("text");
+  // set attributes and properties
+
+  newBinGroups.append("rect");
+  // set attributes and properties
+  ```
+
+- modify existing element in the position and text of the labels, not to mention the position and size of the bars
+
+  ```js
+  binGroups.filter(yAccessor).select("text");
+  // modify attributes and properties
+
+  binGroups.select("rect");
+  // modify attributes and properties
+  ```
+
+#### Transition
+
+Back to the topic of the chapter, `transition` is applied to a selection object creating a transition object.
+
+```js
+binGroups
+  .select("rect")
+  .transition()
+  .attr("y", (d) => yScale(yAccessor(d)));
+```
+
+The change can be customized in duration and delay with matching functions.
+
+```js
+binGroups
+  .select("rect")
+  .transition()
+  .duration(500)
+  .delay(100)
+  .attr("y", (d) => yScale(yAccessor(d)));
+```
+
+Multiple transitions can also be chained by using the method repeatedly.
+
+```js
+binGroups
+  .select("rect")
+  .transition()
+  .duration(500)
+  .delay(100)
+  .attr("y", (d) => yScale(yAccessor(d)))
+  .transition()
+  .attr("fill", "cornflowerblue");
+```
+
+In this instance the rectangle reaches the new `y` coordinate and then changes in color.
+
+On its own, `transition` is already useful to smoothly change attributes and properties. It is however possible to initialize a transition with `d3.transition` and later reference the value as the argument of a separate `transition` calls.
+
+```js
+const updateTransition = d3.transition().duration(500).delay(100);
+
+binGroups
+  .select("rect")
+  .transition(updateTransition)
+  .attr("y", (d) => yScale(yAccessor(d)));
+```
+
+With this structure the necessary transitions are initialized ahead of time and can be repeated throughout the code to synchronize changes on multiple elements.
+
+```js
+binGroups.select("rect").transition(updateTransition);
+
+binGroups.filter(yAccessor).select("text").transition(updateTransition);
+```
+
+Multiple transitions can be chained to have the modifications happen in sequence.
+
+```js
+const exitTransition = d3.transition().duration(500);
+
+const updateTransition = exitTransition.transition().duration(1000);
+```
+
+In this instance `updateTransition` will take place after `exitTransition`.
+
 ### Line
 
 The goal is to update the line chart introduced in the first chapter, `01 Line Chart`, in order to show a fixed number of days. The days are then modified to have the line progress through the year and analyze the contribution of each passing day.
 
-_Please note:_ the code might differ from that proposed in the book, as I attempted to create the transition on my own.
+---
+
+The code might differ from that proposed in the book, as I attempted to create the transition on my own.
 
 #### Static and Dynamic
 
-As in the demo animating the bar chart, the function creating the visualization includes static and dynamic elements. With `drawDays`, the idea is to receive a subset of the original dataset, and modify the axis and the line accordingly.
+As in the demo animating the bar chart, the function creating the visualization includes static and dynamic elements. With `drawDays` the idea is to receive a subset of the original dataset and modify the axis and the line accordingly.
 
 #### Transition
 
-For the axis, it is enough to use the `transition` method before executing the axis generator.
+For the axis it is enough to use the `transition` method before executing the axis generator.
 
 ```js
 yAxisGroup.transition().call(yAxisGenerator);
@@ -651,14 +803,14 @@ For the line, the `transition` method produces the undesired effect of a wriggle
 line.transition(transition).attr("d", lineGenerator(data));
 ```
 
-This is because d3 is updating the `d` attribute of the line point by point. Consider the following example, where the line is described with a series of points (`L`, or "line to", instructs the path element to continue the line toward a specific `x` `y` coordinate).
+This is because D3 is updating the `d` attribute of the line point by point. Consider the following example, where the line is described with a series of points (`L`, or "line to", instructs the path element to continue the line toward a specific `x` `y` coordinate).
 
 ```html
 <path d="M 0 0 L 1 -5 L 2 -10 L 3 -8" />
 <path d="M 0 -5 L 1 -10 L 2 -8 L 3 -2" />
 ```
 
-Updating the line point by point, the transition results in the first point, `(0, 0)`, moving upwards, to `(0, -5)`. As the goal is to actually move the point to the left, the solution is add the new point, translate the entire line to the left and then remove the origin.
+Updating the line point by point, the transition results in the first point, `(0, 0)`, moving upwards, to `(0, -5)`. As the goal is to actually move the point to the left, the solution is add the new point, translate the entire line to the left and then remove the excess at the beginning.
 
 - while updating the `d` attribute, shift the entire line to the right
 
@@ -667,7 +819,7 @@ Updating the line point by point, the transition results in the first point, `(0
   .style('transform', `translate(${x}px, 0px)`);
   ```
 
-  With this translation, the line doesn't wriggle, as the `x` coordinate is preserved. The last point exceeds the horizontal dimension of the chart, however.
+  With this translation, the line doesn't wriggle as the `x` coordinate is preserved. The last point is however outside of the chart area, to the right.
 
 - with a transition, remove the offset to have the points move to the left
 
@@ -694,7 +846,7 @@ const pixelsBetweenLastPoints =
   xScale(xAccessor(lastTwoPoints[1])) - xScale(xAccessor(lastTwoPoints[0]));
 ```
 
-To fix the second issue, it is instead necessary to introduce a new SVG element in `<clipPath>`. Defined in the a `<defs>` element, the clip describes an area in which elements are actually shown. In the instance of the line chart, it describes a rectangle spanning the bounded width and height.
+To fix the second issue it is instead necessary to introduce a new SVG element, `<clipPath>`. Defined in the `<defs>` element, the clip describes an area in which elements are actually shown. In the instance of the line chart, it describes a rectangle spanning the bounded width and height.
 
 ```js
 bounds
@@ -705,7 +857,7 @@ bounds
   .attr("height", dimensions.boundedHeight);
 ```
 
-The clip is attributed a specific `id`, later referenced in the `clip-path` attribute of the to-be-clipped element.
+The clip has a specific `id` later referenced in the `clip-path` attribute of the to-be-clipped element.
 
 ```js
 bounds.append("defs").append("clipPath").attr("id", "bounds-clip-path");
@@ -742,7 +894,7 @@ const lineGroup = bounds
     .range([0, dimensions.boundedWidth]);
   ```
 
-  This is to avoid removing the first point while first point is still visible. Starting with the second point, the first one is mapped to a negative `x` coordinate, which means it is finally removed outisde of the clip area. Comment out the clip to assess this is what actually happens.
+  This is to avoid removing the first point while this one is still visible. Starting with the second point, the first one is mapped to a negative `x` coordinate, which means it is finally removed outisde of the clip area. Comment out the clip to assess this is what actually happens.
 
   ```js
   const lineGroup = bounds.append("g");

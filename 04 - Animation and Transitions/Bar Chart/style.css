@@ -1,37 +1,27 @@
-@font-face {
-  font-family: "Inter var";
-  src: url("../../Inter.var.woff2");
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
 }
 
 body {
-  min-height: 100vh;
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui, sans-serif;
 }
 
 svg text {
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui, sans-serif;
 }
 
 #wrapper {
+  min-block-size: 100svb;
   display: flex;
-  flex-wrap: wrap;
-  max-width: 800px;
-  justify-content: space-evenly;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-}
-
-#wrapper svg {
-  width: 600px;
-  height: auto;
-  display: block;
+  gap: 1rem;
 }
 
 button {
+  --border-width: 3px;
   font-family: inherit;
   font-size: 1.1rem;
   background: hsl(84, 91%, 41%);
@@ -40,8 +30,6 @@ button {
   padding: 0.75rem 1rem;
   border-radius: 1rem;
   position: relative;
-  --border-width: 3px;
-  border-bottom: 2px solid hsl(120, 78%, 19%);
   border-bottom: var(--border-width) solid hsl(120, 78%, 19%);
   transition-property: background, border-bottom-color, transform;
   transition-duration: 0.15s;
@@ -55,6 +43,5 @@ button:hover {
 
 button:active {
   border-bottom-color: transparent;
-  transform: translateY(2px);
   transform: translateY(var(--border-width));
 }
