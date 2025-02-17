@@ -66,7 +66,8 @@ async function drawScatterplot() {
     .attr("fill", (d) => colorScale(colorAccessor(d)));
   /* */
 
-  /* separate update-enter-exit
+  /* 
+  // update-enter-exit
   const updateSelection = bounds.append("g").selectAll("circle").data(dataset);
 
   const enterSelection = updateSelection.enter();
@@ -79,9 +80,10 @@ async function drawScatterplot() {
     .attr("cx", (d) => xScale(xAccessor(d)))
     .attr("cy", (d) => yScale(yAccessor(d)))
     .attr("fill", (d) => colorScale(colorAccessor(d)));
-  /* */
+  */
 
-  /* join
+  /* 
+  // join
   bounds
     .append("g")
     .selectAll("circle")
@@ -91,9 +93,10 @@ async function drawScatterplot() {
     .attr("cx", (d) => xScale(xAccessor(d)))
     .attr("cy", (d) => yScale(yAccessor(d)))
     .attr("fill", (d) => colorScale(colorAccessor(d)));
-  /* */
+  */
 
-  /* join update-enter-exit
+  /* 
+  // join with update-enter-exit
   bounds
     .append("g")
     .selectAll("circle")
@@ -109,7 +112,7 @@ async function drawScatterplot() {
       (update) => null,
       (exit) => null
     );
-  /* */
+  */
 
   /* PERIPHERALS */
   const xAxisGenerator = axisBottom().scale(xScale).ticks(4);

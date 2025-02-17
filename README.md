@@ -218,11 +218,11 @@ In this manner there is no need to store a reference to the group.
 
 ## 02 - Scatterplot
 
-The second visualization is useful to repeat the process introduced with the line chart and also illustrate the concept of a data join.
+The second visualization is useful to repeat the process introduced with the line chart and also illustrate the concept of a _data join_.
 
 ### Data Join
 
-The visualization includes one circle for each data point, mapping the dew point to the `x` axis, the humidity to the `y` axis, and finally the cloud cover to the `fill` (the color) of the shape.
+The visualization includes one circle for each data point, mapping the dew point to the `x` axis, the humidity to the `y` axis, and finally the cloud cover to the `fill`, the color of the shape.
 
 It is technically possible to append the circles with a for loop, for instance with a `forEach` iterator.
 
@@ -232,7 +232,7 @@ dataset.forEach((point) => {
 });
 ```
 
-However, the chapter introduces the concept of a data join to bind the data to DOM elements. With this binding, each element is linked to a data point, and the visualization can be updated knowing which value is already included.
+However, the chapter introduces the concept of a data join to bind the data to DOM elements. With this binding, each element is linked to a data point and the visualization can be updated knowing which value is already included.
 
 The binding can be implemented in at least two ways.
 
@@ -244,7 +244,7 @@ The binding can be implemented in at least two ways.
    groupCircles.selectAll("circle");
    ```
 
-   With the `data` function, build a selection which knows the elements needed to map the data. In the specific example, a selection which describes all new elements, as no circle is already available.
+   With the `data` function, build a selection which knows the elements needed to map the data. In the specific example, a selection which describes all new elements, as no circle is already present.
 
    ```js
    groupCircles.selectAll("circle").data(dataset);
@@ -264,11 +264,11 @@ The binding can be implemented in at least two ways.
      .data(dataset)
      .enter()
      .append("circle")
-     // other defining attributes
+     // set attributes
      .attr("r", 5);
    ```
 
-   While the implementation may seem convoluted, it helps to know that when you use the `data` function, the selection returned by d3 differentiates the elements with a `_enter` and `_exit` key. The first type describes items which are not represented in the visualizations, data points which are not already mapped to a circle; the second type describes items which were represented, but should no longer be, circles exceeding the sufficient amount.
+   While the implementation may seem convoluted, it helps to know that when you use the `data` function, the selection returned by D3 differentiates the elements with a `_enter` and `_exit` key. The first type describes items which are not represented in the visualizations, data points which are not already mapped to a circle; the second type describes items which were represented, but should no longer be, circles exceeding the necessary number.
 
    ```js
    const update = groupCircles.selectAll("circle").data(dataset);
@@ -277,7 +277,7 @@ The binding can be implemented in at least two ways.
 
    enter
      .append("circle")
-     // other defining attributes
+     // set attributes
      .attr("r", 5);
 
    // const exit = update.exit();
@@ -288,7 +288,7 @@ The binding can be implemented in at least two ways.
    ```js
    enter
      .append("circle")
-     // other defining attributes
+     // set attributes
      .attr("r", 5)
      .merge(update)
      .attr("fill", "red");
@@ -305,7 +305,7 @@ The binding can be implemented in at least two ways.
      .selectAll("circle")
      .data(dataset)
      .join("circle")
-     // other defining attributes
+     // set attributes
      .attr("r", 5);
    ```
 
@@ -322,28 +322,29 @@ The binding can be implemented in at least two ways.
      );
    ```
 
-   Here it is possible to manage the enter, update and exit selections separately.
+   It is therefore possible to manage the enter, update and exit selections separately.
 
-   Note that it is not necessary to specify the three function, and the snippet includes the remaining callbacks just to show where the update and exit logic would go
+   Note that it is not necessary to specify the three functions, and the snippet includes the remaining callbacks just to show where the update and exit logic would go
 
    ```js
    .join(
    (enter) => enter
-     .append("circle")
-     // other defining attributes
+      .append("circle")
+      // set attributes
+      .attr("r", 5);
    );
    ```
 
-_Please note_:
+_Of note_:
 
-- try to log the value returned by a function to understand what said function does. `console.log` proves to be very useful to assess how d3 manages the selection following the `data()` function, the `_enter` and `_exit` keys.
+- try to log the value returned by a function to understand what said function does. `console.log` is very useful to assess how d3 manages the selection following the `data()` function, the `_enter` and `_exit` keys.
 
   ```js
   const update = groupCircles.selectAll('circle').data(dataset);
-  console.log(upate);,
+  console.log(update);,
   ```
 
-- in the script I implemented data binding with the first approach, but continued exploring the concept with other instructions. The instructions commented out, but fundamentally create the same visualization
+- in the script I implemented data binding with the first approach, but continued exploring the concept with other instructions. The code is commented out, but effectively creates the same visualization
 
 ### Linear Scales
 
@@ -366,7 +367,7 @@ const xScale = scaleLinear()
 
 ### Peripherals
 
-Beside the axis, included with a limited set of ticks, the group responsible for the peripherals includes two `<text />` elements to provide a label.
+Beside the axis, included with a limited set of ticks, the groups responsible for the peripherals include `<text>` elements to add a label. The two elements are sibling of the nodes created automatically by D3.
 
 ## 03 - Bar Charts
 
