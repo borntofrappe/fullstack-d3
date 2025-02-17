@@ -62,8 +62,8 @@ async function drawLineChart() {
   bounds
     .append("rect")
     .attr("x", 0)
-    .attr("width", dimensions.boundedWidth)
     .attr("y", freezingTemperatureY)
+    .attr("width", dimensions.boundedWidth)
     .attr("height", dimensions.boundedHeight - freezingTemperatureY)
     .attr("fill", "hsl(180, 44%, 92%)");
 

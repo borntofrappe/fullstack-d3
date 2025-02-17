@@ -1,41 +1,35 @@
 # Fullstack d3
 
-[_Fullstack d3_](https://www.newline.co/fullstack-d3) is an incredibly informative book from [_Amelia Wattenberger_](https://wattenberger.com/) devoted to the [d3.js](https://d3js.org/) library. With this folder I replicate the examples provided in the book, and annotate the lessons learned in the process.
+[_Fullstack d3_](https://www.newline.co/fullstack-d3) is an informative book from [_Amelia Wattenberger_](https://wattenberger.com/) devoted to the [D3.js](https://d3js.org/) library. The goal of this repository is to replicate the examples provided in the book and annotate the lessons learned in the process.
 
-_Please note:_
+_Introductory notes:_
 
-- while the book works with d3 in version 5, this repository includes the library in version **v7.1.1**. I highlight the differences as necessary
+- the repository includes the library in version `v7.9.0`; differences in the code are highlighted as they occur
 
-- at the top of the script, I extract the modules used in the visualizations
+- the script begins by listing the modules used in the rest of the code
 
   ```js
   const { json, timeParse, extent } = d3;
   ```
 
-  This helps to provide an overview of the parts of the library actually being used, but is also important to stress the structure of d3. In a production environment you'd include the necessary modules instead of the entire library.
+  This helps to provide an overview of the parts of the library actually being used, but is also important to stress the structure of D3. In production it may be preferable to include only the necessary modules instead of the entire library.
+
+- at least for the first few visualizations, data is retrieved from a file in `.json` format
+
+  To bypass the CORS safety restriction set up a server; `live-server` might be the quickest solution if installed globally
+
+  ```sh
+  pnpm add -g live-server
+  live-server # visit http://localhost:8080/
+  ```
 
 ## 01 - Line Chart
 
-The book begins immediately with a line chart. It is useful to introduce d3, but also the flow for every visualization.
-
-### Live server
-
-At least for the first few visualizations, data is retrieved from a file in `.json` format. To bypass the CORS safety restriction, it is first necessary to set up a server. The node package `live-server` readily accommodates for this need.
-
-```bash
-npm install -g live-server
-```
-
-Once installed, `live-server` provides an environment on `http://localhost:8080/`, `8080` being the default port.
-
-```bash
-live-server # go to localhost
-```
+The book begins immediately with a line chart. It is useful to introduce D3, but also the sequence used to build a robust data visualization.
 
 ### Async function
 
 The script calls an `async` function to create the visualization.
-f
 
 ```js
 async function drawLineChart() {}
@@ -43,7 +37,7 @@ async function drawLineChart() {}
 drawLineChart();
 ```
 
-Having a dedicated function allows to have variables scoped to the body of the function. Most importantly, having an `async` function helps to `await` the data from methods like `d3.json`, which return a promise.
+Having a dedicated function allows to create a new scope for the variables. Most importantly, the `async` function helps to `await` the data from methods like `d3.json`, which return a promise.
 
 ```js
 async function drawLineChart() {
@@ -53,13 +47,15 @@ async function drawLineChart() {
 
 ### Date parser
 
-In the dataset dates are included as a string, like "2018-01-02", but the d3 library works with date objects. To convert between the two the `d3-time-format` module provides helper functions like `d3.timeParse`.
+In `nyc_weather_data.json` dates are strings, like "2018-01-02". Since the D3 library is able to work with date objects convert the value with the [`d3-time-format`](https://d3js.org/d3-time-format) module and the helper function `d3.timeParse`.
 
 ```js
 const dateParser = timeParse("%Y-%m-%d");
 ```
 
-The function receives as input a string describing the format of the date. In this instance the full year followed by the month followed by the day, all separated with a hyphen.
+The function receives as input a string detailing the format of the date. In this instance the full year followed by the month followed by the day, all separated with a hyphen.
+
+For a list of directives refer to [D3's own documentation](https://d3js.org/d3-time-format#locale_format),
 
 ### Accessor functions
 
@@ -96,16 +92,17 @@ Included at the top of the script, accessor functions are also useful to provide
 The line chart is included in an SVG element `<svg>` and it is furthermore nested in a group element `<g>`.
 
 ```html
-<!-- wrapper -->
 <svg>
-  <!-- bounds -->
-  <g></g>
+  <!-- wrapper -->
+  <g>
+    <!-- bounds -->
+  </g>
 </svg>
 ```
 
-This layered structure is useful to safely draw the visualization and peripherals (axis, labels) without fear of cropping the visuals. Anything falling outside of the `<svg>` SVG element `<svg>` is indeed not rendered on the page.
+This layered structure is useful to safely draw the visualization and peripherals (axis, labels) without fear of cropping the visuals.
 
-The wrapping container is attributed an arbitrary width, height and margin.
+The wrapper has an arbitrary width, height and margin.
 
 ```js
 const dimensions = {
@@ -120,7 +117,7 @@ const dimensions = {
 };
 ```
 
-The dimensions of the bounds are then determined by the margin introduced on either side.
+The dimensions of the bounds are determined by the margin introduced on either side.
 
 ```js
 dimensions.boundedWidth =
@@ -131,13 +128,13 @@ dimensions.boundedHeight =
 
 ### Selection
 
-`d3.select` allows to retrieve a reference to an element in the DOM with any popular CSS selectors.
+`d3.select` allows to retrieve a reference to an element in the DOM with regular CSS selectors.
 
 ```js
 const wrapper = select("#wrapper");
 ```
 
-The library returns a _selection object_ which is a particular type of array with several methods. One of the most useful methods is `.append`, to include HTML elements directly from the script.
+The library returns a _selection object_ which is a particular type of array with several methods. One of the most useful methods is `.append`, to include HTML elements.
 
 ```js
 const wrapper = select("#wrapper");
@@ -158,16 +155,16 @@ const wrapper = select("#wrapper")
 
 Scales map a domain to a range. In the project at hand they map the temperature to a `y` coordinate, the date to a `x` coordinate.
 
-`d3-scale` provides different methods suited for different types of scales. For the temperature, where both the domain and the range describe a continuous metric, the relevant function is `d3.scaleLinear`.
+[`d3-scale`](https://d3js.org/d3-scale) provides different methods suited for different types of scales. For the temperature, where both the domain and the range describe a continuous metric, the relevant function is `d3.scaleLinear`.
 
 ```js
-const yScale = scaleLinear().domain().range();
+const yScale = scaleLinear();
 ```
 
 For the date, where the domain describes a series of date objects, the most appropriate method is `d3.scaleTime`.
 
 ```js
-const xScale = scaleTime().domain().range();
+const xScale = scaleTime();
 ```
 
 In both instances the domain describes the extremes of the respective metric.
@@ -176,7 +173,7 @@ In both instances the domain describes the extremes of the respective metric.
 const yScale = scaleLinear().domain([0, 100]);
 ```
 
-In place of a hard-coded variable, however, `d3-array` provides a helper method `d3.extent` to extract the information with an accessor function.
+In place of a hard-coded variable, however, [`d3-array`](https://d3js.org/d3-array) provides a helper method `d3.extent` to extract the information with an accessor function.
 
 ```js
 const yScale = scaleLinear().domain(extent(dataset, yAccessor));
@@ -184,7 +181,7 @@ const yScale = scaleLinear().domain(extent(dataset, yAccessor));
 
 ### Line
 
-The `d3-shape` module provides `d3.line()` as a generator function. The goal is to create the syntax for the `d` attribute of `<path>` elements.
+The [`d3-shape`](https://d3js.org/d3-shape) module provides `d3.line()` as a _generator_ function. The goal is to create the syntax for the `d` attribute of `<path>` elements.
 
 The `x` and `y` methods allow to decipher the exact coordinates on the basis of the input data.
 
@@ -196,7 +193,7 @@ function lineGenerator = d3.line()
 
 ### Axis
 
-To include an axis you first create the peripheral with methods from the `d3-axis` module.
+To include an axis you first create the peripheral with methods from the [`d3-axis`](https://d3js.org/d3-axis) module.
 
 ```js
 const yAxisGenerator = d3.axisLeft().scale(yScale);
@@ -211,13 +208,13 @@ const yAxis = bounds.append("g");
 yAxisGenerator(yAxis);
 ```
 
-Conveniently, the library allows to call the generator function on the current selection with the `.call` method.
+Conveniently, the library allows to call the generator function on the current selection, passing the current selection as an argument through the `.call` method.
 
 ```js
 bounds.append("g").call(yAxisGenerator);
 ```
 
-In this manner there is no need to store a reference to the selection.
+In this manner there is no need to store a reference to the group.
 
 ## 02 - Scatterplot
 
