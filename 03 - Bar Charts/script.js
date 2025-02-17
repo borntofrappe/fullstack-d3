@@ -3,7 +3,7 @@ const {
   extent,
   max,
   scaleLinear,
-  histogram,
+  histogram, // deprecated in favour of bin
   bin,
   select,
   mean,
@@ -43,19 +43,19 @@ async function drawBarCharts() {
       .range([0, dimensions.boundedWidth])
       .nice();
 
-    /* d3.histogram is deprecated in favour of d3.bin
+    /* 
+    // d3.histogram is deprecated in favour of d3.bin
     const binGenerator = histogram()
       .domain(xScale.domain())
       .value(metricAccessor)
       .thresholds(12);
-    /* */
+    */
 
-    // /*
     const binGenerator = bin()
       .domain(xScale.domain())
       .value(metricAccessor)
       .thresholds(12);
-    /* */
+
     const bins = binGenerator(dataset);
 
     const yAccessor = (d) => d.length;
@@ -123,8 +123,7 @@ async function drawBarCharts() {
       .text((d) => yAccessor(d))
       .attr("text-anchor", "middle")
       .attr("fill", "darkslategrey")
-      .style("font-size", 12)
-      .style("font-family", "sans-serif");
+      .style("font-size", 12);
 
     const meanValue = mean(dataset, metricAccessor);
 
