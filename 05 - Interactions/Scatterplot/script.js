@@ -1,7 +1,7 @@
 const {
   json,
-  extent,
   scaleLinear,
+  extent,
   select,
   timeParse,
   timeFormat,
@@ -50,8 +50,6 @@ async function drawScatterplot() {
     .range(["skyblue", "darkslategrey"]);
 
   /* DRAW DATA */
-  const tooltip = select("#wrapper #tooltip");
-
   const wrapper = select("#wrapper")
     .append("svg")
     .attr("width", dimensions.width)
@@ -65,6 +63,8 @@ async function drawScatterplot() {
     );
 
   /* INTERACTION */
+  const tooltip = select("#wrapper #tooltip");
+
   function onMouseEnter(event, d) {
     const parseDate = timeParse("%Y-%m-%d");
     const formatDate = timeFormat("%B %A %-d, %Y");
@@ -78,7 +78,8 @@ async function drawScatterplot() {
         "transform",
         `translate(calc(-50% + ${x}px), calc(-100% + ${y}px - 0.5rem))`
       )
-      .style("opacity", 1);
+      .style("opacity", 1)
+      .style("visibility", "visible");
 
     tooltip.select("h2").text(formatDate(parseDate(d.date)));
     tooltip
@@ -90,7 +91,7 @@ async function drawScatterplot() {
   }
 
   function onMouseLeave() {
-    tooltip.style("opacity", 0);
+    tooltip.style("opacity", 0).style("visibility", "hidden");
   }
 
   bounds

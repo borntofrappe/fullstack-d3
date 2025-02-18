@@ -83,11 +83,6 @@ async function drawLineChart() {
     .attr("stroke-width", 2);
 
   /* PERIPHERALS */
-  /*
-  const yAxisGenerator = axisLeft().scale(yScale);
-  const yAxis = bounds.append('g')
-  yAxisGenerator(yAxis);
-  */
   const yAxisGenerator = axisLeft().scale(yScale);
   const yAxis = bounds.append("g").call(yAxisGenerator);
 
@@ -145,7 +140,8 @@ async function drawLineChart() {
           x + dimensions.margin.left
         }px), calc(-100% + ${y}px - 0.5rem))`
       )
-      .style("opacity", 1);
+      .style("opacity", 1)
+      .style("visibility", "visible");
 
     tooltip.select("h2").text(formatDate(date));
     tooltip.select("p").text(`Maximum temperature: ${formatValue(value)} (°F)`);
@@ -154,7 +150,7 @@ async function drawLineChart() {
   }
 
   function onMouseLeave() {
-    tooltip.style("opacity", 0);
+    tooltip.style("opacity", 0).style("visibility", "hidden");
 
     tooltipCircle.attr("opacity", 0);
   }

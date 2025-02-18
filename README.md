@@ -915,7 +915,7 @@ const lineGroup = bounds
 
 ## 05 - Interactions
 
-_Please note:_ version 6 of the d3 library revised event handlers considerably.
+_Of note:_ version 6 of the D3 library revised event handlers considerably.
 
 ### Events
 
@@ -937,9 +937,9 @@ rectangles.on("mouseenter", function (event, d) {
 });
 ```
 
-In this example, the function is executed as the cursor enters into the area described by each rectangle. `event` provides details behind the event, like the `x`, `y` coordinates of the mouse pointer, while `d` describes the data bound to the specific rectangle (in the specific example a date).
+In this example, the function is executed as the cursor enters into the area described by each rectangle. `event` provides details behind the event, like the `x`, `y` coordinates of the pointer, while `d` describes the data bound to the specific rectangle (in the specific example a date).
 
-_Please note:_ prior to d3 version 6, the callback function receives three values: the data bound to the selection, the index and the collection to which the element belongs.
+_Please note:_ prior to D3 version 6 the callback function received three values: the data bound to the selection, the index and the collection to which the element belonged.
 
 ```js
 rectangles.on("mouseenter", function (d, i, nodes) {
@@ -949,7 +949,7 @@ rectangles.on("mouseenter", function (d, i, nodes) {
 
 Again and in the rectangles' example, `d` would describe the date, `nodes` the collection of rectangles, and `i` the index of the invoking rectangle in said collection. To know about the event, the library would have provided the global `d3.event`.
 
-With version 6 it is still possible to know about the index and nodes collection, but with a different syntax.
+With version 6 it is still possible to know about the index and nodes' collection, but with a different syntax.
 
 ```js
 rectangles.on("mouseenter", function (event, d) {
@@ -967,7 +967,7 @@ rectangles.on("mouseenter", function (event, d) {
 });
 ```
 
-With ES6 arrow syntax, `=>`, and since version 6, it is still possible to have a reference to the element with `event.currentTarget`.
+With the ES6 arrow syntax, `=>`, and since version 6, it is still possible to have a reference to the element with `event.currentTarget`.
 
 ```js
 rectangles.on("mouseenter", (event, d) => {
@@ -1006,7 +1006,7 @@ svg rect:hover {
 
 As the mouse hovers on the rectangles, the color is updated to the chosen hue.
 
-_Please note:_ The property overrides the `fill` attribute.
+_Please note:_ The property overrides the value set through the `fill` attribute.
 
 ```js
 rectangles.attr("fill", "cornflowerblue");
@@ -1022,7 +1022,7 @@ rectangles
 
 #### Tooltip
 
-Past the stylistic update, d3 manages the contents and position of a tooltip as included in a `<div>` container. The markup is modified from the solution created in the third chapter to nest each bar chart in a wrapping `<div>` element.
+Past the stylistic update, d3 manages the contents and position of a tooltip as included in a `<div>` container. The markup is modified from the solution created in the third chapter to nest each bar chart in a `<div>` container.
 
 ```html
 <div id="root">
@@ -1041,7 +1041,7 @@ Based on this solution, the idea is to include a tooltip for each visualization.
 </div>
 ```
 
-In so doing, the position of the tooltip is made relative to the dedicated bar chart.
+In so doing, the position of the tooltip is made relative to the dedicated wrapper.
 
 ```css
 .wrapper {
@@ -1053,15 +1053,15 @@ In so doing, the position of the tooltip is made relative to the dedicated bar c
 }
 ```
 
-In the stylesheet, the tooltip is modified with a series of property value pairs, mostly to change the appearance of the element, but it is important to highlight the following:
+In the stylesheet, the tooltip is modified with a series of properties, mostly to change the appearance of the element, but it is important to highlight the following:
 
 - `z-index` makes it possible to have the tooltip reside above the sibling SVG element
 
 - `pointer-events` set to `none` avoids mouse events on the element. The risk is that when the tooltip is generated it blocks mouse interaction with the elements below
 
-- `opacity` set to `0` hides the tooltip. The idea is to change the opacity through D3 and in the script
+- `opacity` and `visibility` to make the tooltip evident or hidden. The idea is to change the two through D3 and in the script
 
-In the script, D3 finally manages the tooltip as the mouse hovers on a rectangle.
+In the script, D3 finally manages the tooltip as the mouse enters a rectangle.
 
 ```js
 binGroups
@@ -1076,27 +1076,27 @@ binGroups
 tooltip.select("h2").text(metric);
 ```
 
-In terms of style, the function also shows the tooltip by modifying its opacity.
+In terms of style, the function also shows the tooltip by modifying the opacity and visibility.
 
 ```js
-tooltip.style("opacity", 1);
+tooltip.style("opacity", 1).style("visibility", "visible");
 ```
 
-Most importantly, the function updates the position of the tooltip so that it resides above the selected rectangle. The solution is not simple, and it might help to explain the logic in steps:
+Most importantly, the function updates the position of the tooltip so that it appears above the selected rectangle. The solution is not simple, and it might help to explain the logic in steps:
 
-- `x` refers to the center of the selected rectangle, accessing the coordinates of the range described by `d.x0` and `d.y0`
+- `x` refers to the center of the selected rectangle accessing the coordinates of the range described by `d.x0` and `d.x1`
 
   ```js
   const x = xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2;
   ```
 
-- `y` refers to the top of the selected rectangle, through the value of the rectangle itself
+- `y` refers to the top of the selected rectangle through the value of the rectangle itself
 
   ```js
   const y = yScale(yAccessor(d));
   ```
 
-- both `x` and `y` are updated to consider the margin, included horizontally and vertically in the wrapping `<g>` element
+- both `x` and `y` are updated to consider the margin included horizontally and vertically in the wrapping `<g>` element
 
   ```js
   const x = xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2 + margin.left;
@@ -1104,7 +1104,7 @@ Most importantly, the function updates the position of the tooltip so that it re
   const y = yScale(yAccessor(d)) + margin.top;
   ```
 
-- with the `transform` property, the tooltip is translated to the prescribed `x` and `y` coordinates
+- with the `transform` property, then, the tooltip is translated to the rightful `x` and `y` coordinate
 
   ```js
   tooltip.style("transform", `translate(${x}px, ${y}px)`);
@@ -1112,7 +1112,7 @@ Most importantly, the function updates the position of the tooltip so that it re
 
   This works, but the tooltip is positioned from the top left corner
 
-- again in the `transform` property, the `calc` function modifies the position to align the tooltip to achieve the desired alignment
+- in the `transform` property the `calc` function modifies the position to align the tooltip to achieve the desired alignment
 
   ```js
   tooltip.style(
@@ -1127,7 +1127,7 @@ Most importantly, the function updates the position of the tooltip so that it re
 
 ```js
 function onMouseLeave() {
-  tooltip.style("opacity", 0);
+  tooltip.style("opacity", 0).style("visibility", "hidden");
 }
 ```
 
@@ -1139,7 +1139,7 @@ function onMouseLeave() {
 const format = d3.format(".2f");
 ```
 
-In this instance, `format` can be used to describe numerical values with two numbers after the decimal point.
+In this instance `format` can be used to describe numerical values with two numbers after the decimal point.
 
 ```js
 format(3); // 3.00
@@ -1156,13 +1156,13 @@ The book explains the syntax succinctly and as follows:
 
 - `[.precision]`: specify the number of digits to include after the decimal point
 
-- `[type]`: format with a specific notation, like fixed `f`, decimal `r`, or again percentage `%`.
+- `[type]`: format with a specific notation, like fixed `f`, decimal `r`, or again percentage `%`
 
 Refer to the [`d3-format` module](https://github.com/d3/d3-format) for the comprehensive list of the possible directives.
 
 ### Scatterplot
 
-The second interactive demo relates to the scatterplot introduced in the second chapter, `02 Scatterplot`, and I decided to actually create two folders to focus on event handlers first, and Delaunay triangulation second. The triangulation is introduced to aid the selection of individual data points.
+The second interactive demo relates to the scatterplot introduced in the second chapter, `02 Scatterplot`, and I decided to split the logic of the chapter in two smaller folders: `Scatterplot` to focus on event handlers and `Delaunay` to describe the method to facilitate the selection of the small circles.
 
 Event handlers are included on `<circle>` elements exactly like on rectangles.
 
@@ -1173,27 +1173,29 @@ bounds
   .on("mouseleave", onMouseLeave);
 ```
 
-On top of displaying the data points with numerical values, the tooltip also includes a date, which is formatted with the `d3-time-format` module. Formatted and parsed actually, as it is first necessary to convert the string describing the points to a date object. The functions work similarly to `d3.format`, with a series of directives describing the format.
+On top of displaying the data points with numerical values the tooltip also includes a date, which is formatted with the `d3-time-format` module. Formatted and parsed actually, as it is first necessary to convert the string describing the points to a date object. The functions work similarly to `d3.format`, with a series of directives describing the format.
 
 ```js
 const parseDate = d3.timeParse("%Y-%m-%d");
 ```
 
-In this instance, the function creates a date object from a string displaying the full year, month and day, separated with a hyphen, like `2018-07-23`.
+In this instance `timeParse` creates a date object from a string displaying the full year, month and day, separated with a hyphen, like `2018-07-23`.
 
 ```js
 const formatDate = d3.timeFormat("%B %A %-d, %Y");
 ```
 
-In this instance, the function formats a date object to show the entire name of the month and day, followed by the number of the day and year, like `July Monday 23, 2018`.
+In this instance `timeFormat` formats a date object to show the entire name of the month and day, followed by the number of the day and year, like `July Monday 23, 2018`.
 
 Refer to the [`d3-time-format` module](https://github.com/d3/d3-time-format) for the possible directives.
 
 ### Delaunay
 
-The scatter plot from the previous section is enhanced to have the mouse highlight a circle with a bit of leeway. Delaunay triangulation works by partitioning the chart in triangles, each responsible for an individual circle. The data is then shown when hovering on the triangles, and not the smaller circles.
+The scatter plot from the previous section is enhanced to have the mouse highlight a circle with leeway. The Delaunay triangulation works by partitioning the chart in triangles, each responsible for an individual circle. The data is then shown when hovering on the triangles, and not the smaller units.
 
-- create the triangulation with `d3.Delaunay.from`. The function accepts three arguments, for the dataset and two accessor functions pointing to the `x` and `y` coordinates
+The process is formulaic, but effective:
+
+- create the triangulation with `d3.Delaunay.from`. The function accepts three arguments: the dataset and two accessor functions describing to the `x` and `y` coordinates
 
   ```js
   const delaunay = d3.Delaunay.from(
@@ -1209,14 +1211,14 @@ The scatter plot from the previous section is enhanced to have the mouse highlig
   const voronoi = delaunay.voronoi();
   ```
 
-  With `xmax` and `ymax` it is possible to change the area covered by the diagram, and in the project, extend the area to the bounded dimensions.
+  With `xmax` and `ymax` it is possible to change the area covered by the diagram, and in the project, extend the area to the bound dimensions.
 
   ```js
   voronoi.xmax = dimensions.boundedWidth;
   voronoi.ymax = dimensions.boundedHeight;
   ```
 
-- render the triangles with `voronoi.renderCell`.
+- render the triangles with `voronoi.renderCell`
 
   ```js
   bounds
@@ -1228,9 +1230,9 @@ The scatter plot from the previous section is enhanced to have the mouse highlig
     .attr("d", (d, i) => voronoi.renderCell(i));
   ```
 
-  Note that the function receives the index of the bounded data
+  Note that the function receives the index of the bound data
 
-By default, the path are rendered with a solid fill, so that the scatterplot is completely hidden. By setting a transparent fill it is possible to conceal the elements and still register mouse events.
+By default, the path are rendered with a solid fill, so that the scatterplot is completely hidden. By setting the value to `transparent` it is possible to hide the elements and still register the mouse events
 
 ```js
 .append('path')
@@ -1238,7 +1240,7 @@ By default, the path are rendered with a solid fill, so that the scatterplot is 
 .attr('fill', 'transparent')
 ```
 
-As the triangles are meant to just support mouse interaction, it is unnecessary to shown them. If need be, remove the comments from the lines setting a thin stroke.
+As the triangles are meant to just support mouse interaction, it is unnecessary to show them. If need be, remove the comments from the lines setting a thin stroke.
 
 ```js
 // .attr('stroke', 'currentColor')
@@ -1255,7 +1257,7 @@ For mouse interaction, the event handlers are finally set on the `<path>` elemen
 
 #### Highlight
 
-The event handlers are modified to also show a maroon circle in the place of the selected data point. The idea is to here include a new circle, instead of modifying the existing shape. In so doing, it is possible to guarantee that the highlighted shape is drawn above the existing circles.
+The event handlers are modified to also show a maroon circle in the place of the selected data point. The idea is to include a new circle, instead of modifying the existing shape. In so doing, it is possible to guarantee that the highlighted shape is drawn on top of the circles painted earlier.
 
 ```js
 bounds
@@ -1269,15 +1271,15 @@ bounds
 
 `x` and `y` are updated to refer to the coordinates of the selected data point.
 
-The identifier is useful to target and remove the element as the mouse leaves the elements.
+The `id` attribute is useful to target and remove the element as the mouse leaves the elements.
 
 ```js
 bounds.select("#tooltipCircle").remove();
 ```
 
-### Line
+### Line Chart
 
-The final interactive demo provides more details for a line chart, a visualization similar to the one introduced in the first chapter, `01 Line Chart`. The biggest change is that the chart focuses on a subset of the entire data, on the first one hundred observations.
+The final interactive demo provides more details for a line chart, a visualization similar to the one introduced in the first chapter, `01 Line Chart`. The biggest change is that the chart focuses on a subset of the entire data.
 
 ```js
 const data = await d3.json("../../nyc_weather_data.json");
@@ -1296,7 +1298,7 @@ In terms of interaction, the idea is to:
 
 The final step is similar to the previous demos, so that the biggest hurdle is actually finding the data point.
 
-For the horizontal coordinate, the script first adds an onverlay with a `<rect>` element, spanning the entirety of the bounded dimensions.
+For the horizontal coordinate, the script first adds an onverlay with a `<rect>` element spanning the entirety of the bound dimensions.
 
 ```js
 bounds
@@ -1328,25 +1330,33 @@ function onMouseMove(event) {
 }
 ```
 
-On the basis of the coordinate, the date is computed with the inverse of the horizontal scale.
+Since the pixel coordinate may not describe an actual observation in the line chart it is necessary to the closest value.
+
+Compute a date with the inverse of the horizontal scale
 
 ```js
 const hoverDate = xScale.invert(xHover);
 ```
 
-The book finally finds the closest data point with `d3.scan`, identifying the index of the point describing the smallest difference between the point's date and the hover date. The function is however deprecated, and the library provides `d3.leastIndex` instead. `d3.least` actually returns the data point instead of the index, so that it is not necessary to find the index first.
+Find the nearest data point with `d3.scan`, comparing the difference between the data points and the hovered date.
 
 ```js
-const d = d3.least();
+const i = d3.scan(/* ... */);
 ```
 
-The function is quite complex, and works by comparing the items of the dataset two at a time.
+Note that since version 6 `d3.scan` is deprecated in favour of `d3.leastIndex`. Moreover, there exist `d3.least` to find the data point instead of the index, so that it is not necessary to find the index first.
+
+```js
+const d = d3.least(/* ... */);
+```
+
+The functions work by comparing the items of the dataset two at a time.
 
 ```js
 const d = d3.least(dataset, (a, b) => {});
 ```
 
-The comparator function computes the difference between the points and the hover date, to finally return the difference between the two.
+The comparator function computes the difference between the points and the hover date to finally return the difference between the two.
 
 ```js
 const d = d3.least(
@@ -1357,6 +1367,18 @@ const d = d3.least(
 ```
 
 In this manner the function creates a collection of differences, and returns the smallest value. In this manner `d3.least` identifies the data point with the date closest to the hovered point.
+
+What is left is then finding the coordinates for the value and highlighting the specific observation in the tooltip and added circle. Exactly as for the scatterplot and the Delaunay' demos.
+
+```js
+const date = xAccessor(d);
+const value = yAccessor(d);
+
+const x = xScale(date);
+const y = yScale(value);
+```
+
+<!--
 
 ## 06 - Map
 
@@ -3024,7 +3046,7 @@ function generatePerson(elapsed) {
 
 #### Metrics
 
-While the movement of the people is already informative <!-- and intriguing -->, it is helpful to highlight the number of people by highlighting their different status. This is achieved in two ways:
+While the movement of the people is already informative, it is helpful to highlight the number of people by highlighting their different status. This is achieved in two ways:
 
 - with `<text>` labels, included below each education level and separated vertically by gender, horizontally and through color by ses
 
@@ -3136,3 +3158,5 @@ function generatePerson(elapsed) {
   .join('rect')
   .style('transition', 'all 0.25s ease-out')
   ```
+
+-->

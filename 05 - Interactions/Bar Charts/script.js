@@ -111,7 +111,8 @@ async function drawBarCharts() {
           "transform",
           `translate(calc(-50% + ${x}px), calc(-100% + ${y}px - 0.5rem))`
         )
-        .style("opacity", 1);
+        .style("opacity", 1)
+        .style("visibility", "visible");
 
       tooltip.select("h2").text(metric);
 
@@ -125,7 +126,7 @@ async function drawBarCharts() {
     }
 
     function onMouseLeave() {
-      tooltip.style("opacity", 0);
+      tooltip.style("opacity", 0).style("visibility", "hidden");
     }
 
     binGroups
