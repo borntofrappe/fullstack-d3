@@ -75,7 +75,10 @@ async function drawScatterplot() {
     .attr("fill", (d) => colorScale(colorAccessor(d)));
 
   /* INTERACTION */
-  const tooltip = select("#wrapper #tooltip");
+  const tooltip = select("#wrapper").append("div").attr("id", "tooltip");
+  tooltip.append("h2");
+  tooltip.append("p");
+  tooltip.append("p");
 
   function onMouseEnter(event, d) {
     const parseDate = timeParse("%Y-%m-%d");

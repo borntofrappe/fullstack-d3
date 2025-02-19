@@ -107,7 +107,10 @@ async function drawLineChart() {
     .call(xAxisGenerator);
 
   /* INTERACTIONS */
-  const tooltip = select("#wrapper #tooltip");
+  const tooltip = select("#wrapper").append("div").attr("id", "tooltip");
+  tooltip.append("h2");
+  tooltip.append("p");
+
   const tooltipCircle = bounds
     .append("circle")
     .attr("opacity", 0)
