@@ -1378,44 +1378,42 @@ const x = xScale(date);
 const y = yScale(value);
 ```
 
-<!--
-
 ## 06 - Map
 
-The goal is to plot a choropleth map, highlighting the population growth by applying a different color on the different countries.
+The goal is to plot a choropleth map to highlight population growth by applying a different color on the different countries.
 
 ### geoJSON
 
-geoJSON refers to the syntax necessary to draw a map. For the project, the syntax is obtained as follows:
+**geoJSON** refers to the syntax necessary to draw a map. For the project the syntax is obtained as follows:
 
 - download a shapefile from [Natural Earth Data](https://www.naturalearthdata.com/). An `.shp` file provides an alternative format to represent geographic data
 
-- convert the shapefile to GeoJSON objects. The book describes a library
+- convert the shapefile to GeoJSON objects. The book describes a library, but there are also tools online
 
-The output is a `.json` file, which I named `world-geojson.json`. The file is imported in the script similarly to data in previous demos and with the `d3.json` function.
+The goal is to have as an output a `.json` file, see `world-geojson.json` in the project folder. The file is imported in the script similarly to the data in previous demos and with the `d3.json` function.
 
 ```js
 const countryShapes = await d3.json("./world-geojson.json");
 ```
 
-Take notice of the `features` array, which describes a series of `Feature` objects for the countries. Each feature has a `geometry` and `properties` field. The first one describes the coordinates making up each country, while the second one details information on the country itself, like its name or continent.
+On the return object take notice of the `features` array, which describes a series of `Feature` objects for the countries. Each feature has a `geometry` and `properties` field. The first one describes the coordinates making up each country, while the second one details information on the country itself, like its name or continent.
 
-In the specific project the book introduces two accessor functions to retrieve the country's name and identifier.
+In the chapter the book introduces two accessor functions to retrieve the country's name and identifier.
 
 ```js
 const countryNameAccessor = (d) => d.properties["NAME"];
 const countryIdAccessor = (d) => d.properties["ADM0_A3_IS"];
 ```
 
-The name is useful to describe the country, and will become relevant in the moment the country is highlighted in a tooltip. The identifier provides a link to connect the country and the data describing the population growth.
+The name is useful to describe the country, and will become relevant in the moment the country is highlighted with a tooltip. The identifier provides a link to connect the country and the data describing the population growth.
 
 ### Data
 
 _Please note:_ the values retrieved from the world bank seems to differ for some countries. This is likely because the data has been updated with more accurate estimates.
 
-Data is retrieved from the [world bank](https://databank.worldbank.org/data/source/) and for the year 2017, looking specifically at four metrics:
+Data is retrieved from the [world bank](https://databank.worldbank.org) and for the year 2017, looking specifically at four metrics:
 
-- population growth
+-
 
 - population density
 
@@ -1423,7 +1421,7 @@ Data is retrieved from the [world bank](https://databank.worldbank.org/data/sour
 
 - international tourism through receipts
 
-The dataset is in `.csv` format, where the values are comma separated, but the script reads the data similarly to previous projects. The only difference is `d3.csv` is used in place of `d3.json`.
+The dataset is in `.csv` format, but the script reads the data similarly to previous projects. The only difference is `d3.csv` is used in place of `d3.json`.
 
 ```js
 const dataset = await d3.csv("./databank_data.csv");
@@ -1447,7 +1445,7 @@ In light of this, a dedicated variable is set to store the necessary values in a
 */
 ```
 
-I decided to use a `.reduce()` function instead of looping through the data with a `.forEach` loop as in the book, but the logic is the same: loop through the dataset, and include the country code if the item describes the chosen metric.
+I decided to use `.reduce()` instead of looping through the data with a `.forEach` loop as in the book, but the logic is the same: loop through the dataset, and include the country code if the item describes the chosen metric.
 
 ```js
 if (curr["Series Name"] === metric) {
@@ -1473,23 +1471,23 @@ const sphere = { type: "Sphere" };
 
 ### Projection
 
-A projection describes how the map is approximated. It is indeed necessary to distort the three dimensional shape in order to draw the world in two dimensions.
+A projection describes how the map is approximated. It is indeed necessary to distort the three dimensional shape of the globe in order to draw the world in two dimensions.
 
 There are several projections, each with its pros and cons, but the book motivates the following guidelines:
 
-- Mercator (`d3.geoMercator`) and specifically transverse mercator (`d3.geoTransverseMercator`) for maps devoted to countries or smaller geographical units
+- **Mercator** (`d3.geoMercator`) and specifically the _transverse Mercator_ (`d3.geoTransverseMercator`) for maps devoted to countries or smaller geographical units
 
-- Winkel-Tripel (`d3.geoWinkel3`) and equal Earth (`d3.geoEqualEarth`) for continents and the entire planet
+- **Winkel-Tripel** (`d3.geoWinkel3`) and **Equal Earth** (`d3.geoEqualEarth`) for continents and the entire planet
 
-The documentation for [`d3-geo`](https://github.com/d3/d3-geo) highlights the projections included in the main library, while [`d3-geo-projection`](https://github.com/d3/d3-geo-projection) provides a module for additional types. Incidentally, `d3.geoWinkel3` is available from this additional module.
+The documentation for [`d3-geo`](https://github.com/d3/d3-geo) highlights the projections included in the main library, while the [`d3-geo-projection`](https://github.com/d3/d3-geo-projection) module adds more types. Incidentally, `d3.geoWinkel3` is available from this additional module.
 
-For the specific map, the chosen projection is natural Earth.
+In the demo the chosen projection is equal Earth.
 
 ```js
 const projection = d3.geoEqualEarth();
 ```
 
-To have the projection consider the bounded dimensions, `fitWidth` receives the chosen width and the object of type `'Sphere'` (the object which describes the outline of the planet).
+To have the projection consider the bound dimensions, `fitWidth` receives the chosen width and the object of type `'Sphere'` (the object which describes the outline of the planet).
 
 ```js
 const projection = d3.geoEqualEarth().fitWidth(dimensions.boundedWidth, sphere);
@@ -1503,7 +1501,7 @@ const projection = d3.geoEqualEarth().fitWidth(dimensions.boundedWidth, sphere);
 const pathGenerator = d3.geoPath(projection);
 ```
 
-It then receives a geoJSON object to produce the necessary syntax for the `d` attribute of `<path>` elements. One of these objects, for instance, is the object of type `'Sphere'` introduced earlier.
+It then receives a GeoJSON object to produce the necessary syntax for the `d` attribute of `<path>` elements. One of these objects, for instance, is the object of type `'Sphere'` introduced earlier.
 
 ```js
 console.log(pathGenerator(sphere)); // M ....
@@ -1511,7 +1509,7 @@ console.log(pathGenerator(sphere)); // M ....
 
 ### Chart Dimensions 2
 
-Thanks to the generator function it is possible to compute the vertical dimensions of the chart. `pathGenerator.bounds` provides a two dimensional array with the bounds of the input GeoJSON object. Through the sphere, the function highlights the bounds of the entire visualization: `[[x0, y0], [x1, y1]]`, and finally the height of the bounded area.
+Thanks to the generator function it is possible to compute the vertical dimensions of the chart. `pathGenerator.bounds` returns a two dimensional array with the bounds of the input GeoJSON object. Through the sphere, the function highlights the bounds of the entire visualization: `[[x0, y0], [x1, y1]]`, and finally the height of the bound area.
 
 ```js
 const y1 = pathGenerator.bounds(sphere)[1][1];
@@ -1538,11 +1536,11 @@ It is important to note that `maxChange` describes the greater between the minim
 
 ### Draw Data
 
-The visualization is drawn in a `<svg>` making up the wrapper and a group element `<g>` making up the bounds, exactly like previous project.
+The visualization is drawn in a `<svg>` making up the wrapper and a group element `<g>` making up the bounds, exactly like previous projects.
 
 The map itself is drawn with the path generator function, and at least three types of GeoJSON objects:
 
-- the object of type `'Sphere'` draws the outline of the planet
+- the object of type `'Sphere'` for the outline of the planet
 
   ```js
   bounds
@@ -1552,7 +1550,7 @@ The map itself is drawn with the path generator function, and at least three typ
     .attr("stroke", "none");
   ```
 
-- `d3.geoGraticule10` creates an object for the lines highlighting the longitude and latitude
+- the object returned vt `d3.geoGraticule10` for the lines illustrating the longitude and latitude
 
   ```js
   const graticuleJson = d3.geoGraticule10();
@@ -1564,9 +1562,9 @@ The map itself is drawn with the path generator function, and at least three typ
     .attr("stroke", "#cadddd");
   ```
 
-  The function itself provides a graticule with a set of default options (`10` refers for instance to the degrees separating the longitude and latitude lines). [The documentation](https://github.com/d3/d3-geo#geoGraticule) provides more information as to how to customize the grid.
+  The function itself provides a graticule with a set of default options (`10` refers for instance to the degrees separating the longitude and latitude lines). [The documentation](https://github.com/d3/d3-geo#geoGraticule) has more information as to how to customize the grid.
 
-- each object in the `features` array describes the GeoJSON object for a country
+- each object in the `features` array for the countries
 
   ```js
   bounds
@@ -1585,11 +1583,11 @@ To finally create the choropleth map, the fill of each country considers the col
 ```js
 .attr('fill', d => {
   const metricData = metricDataByCountry[countryIdAccessor(d)];
-  return metricData ? colorScale(metricData) : '#e2e6e9`;
+  return metricData ? colorScale(metricData) : 'hsl(206, 14%, 90%)`;
 })
 ```
 
-`#e2e6e9` is chosen as a default option for those countries not represented in the `metricDataByCountry` object.
+`hsl(206, 14%, 90%)` is chosen as a default option for those countries not represented in the `metricDataByCountry` object.
 
 ### Navigator
 
@@ -1601,7 +1599,7 @@ navigator.geolocation.getCurrentPosition(position => {
 }
 ```
 
-The projection proves to be useful as a standalone function to provide the `x` and `y` dimensions for a given set of real-world coordinates.
+The projection is here be useful as a function to find the `x` and `y` pixel coordinate for the two input values.
 
 ```js
 const [x, y] = projection([longitude, latitude]);
@@ -1664,7 +1662,7 @@ linearGradient
 
 Interactions are included with a tooltip and a couple SVG shapes.
 
-In terms of SVG, the highlight is shown with a `<circle>`, but also a `<path>` element recreating the selected country. The country is rendered first, to eventually show the circle above it.
+In terms of SVG, a country is shown with a `<circle>`, but also a `<path>` element recreating the selection. The country is rendered first, to eventually show the circle above it.
 
 The `<path>` is recreated with the path generator function.
 
@@ -1698,7 +1696,7 @@ The position of the tooltip refers to the same coordinates computed for the circ
 
 ### Delaunay
 
-As suggested in the book, mouse interaction can be improved with Delaunay's triangulation. The logic is fundamentally the same as in the previous chapter: include a series of `<path>` elements above the map and attach the mouse event to said shapes.
+As suggested in the book, mouse interaction can be improved with Delaunay's triangulation. The logic is fundamentally the same as in the interactions chapter: include a series of `<path>` elements above the map and attach the mouse event to said shapes.
 
 ```js
 bounds
@@ -1719,6 +1717,8 @@ const delaunay = d3.Delaunay.from(
   (d) => pathGenerator.centroid(d)[1]
 );
 ```
+
+<!--
 
 ## 07 - Data Visualization Basics
 

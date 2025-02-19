@@ -203,7 +203,9 @@ async function drawMap() {
     .attr("font-size", 12);
 
   /* INTERACTIONS */
-  const tooltip = select("#tooltip");
+  const tooltip = select("#wrapper").append("div").attr("id", "tooltip");
+  tooltip.append("h2");
+  tooltip.append("p");
 
   function onMouseEnter(event, d) {
     const [x, y] = pathGenerator.centroid(d);
