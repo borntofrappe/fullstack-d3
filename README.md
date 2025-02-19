@@ -1411,7 +1411,7 @@ The name is useful to describe the country, and will become relevant in the mome
 
 _Please note:_ the values retrieved from the world bank seems to differ for some countries. This is likely because the data has been updated with more accurate estimates.
 
-Data is retrieved from the [world bank](https://databank.worldbank.org) and for the year 2017, looking specifically at four metrics:
+Data is retrieved from the [world bank](https://databank.worldbank.org) and for the year 2023, looking specifically at four metrics:
 
 -
 
@@ -1449,7 +1449,7 @@ I decided to use `.reduce()` instead of looping through the data with a `.forEac
 
 ```js
 if (curr["Series Name"] === metric) {
-  acc[curr["Country Code"]] = parseFloat(curr["2017 [YR2017]"]) || 0;
+  acc[curr["Country Code"]] = parseFloat(curr["2023 [YR2023]"]) || 0;
 }
 ```
 

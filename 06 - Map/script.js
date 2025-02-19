@@ -28,7 +28,7 @@ async function drawMap() {
 
   const metricDataByCountry = dataset.reduce((acc, curr) => {
     if (curr["Series Name"] === metric) {
-      acc[curr["Country Code"]] = parseFloat(curr["2017 [YR2017]"]) || 0;
+      acc[curr["Country Code"]] = parseFloat(curr["2023 [YR2023]"]) || 0;
     }
 
     return acc;
@@ -153,7 +153,7 @@ async function drawMap() {
 
   legendGroup
     .append("text")
-    .text("Percentage change in 2017")
+    .text("Percentage change in 2023")
     .attr("text-anchor", "middle")
     .attr("y", -24)
     .style("font-size", 14);
