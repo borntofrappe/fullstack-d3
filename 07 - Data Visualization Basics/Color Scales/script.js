@@ -1,6 +1,12 @@
 async function drawColorScales() {
+  d3.select("#wrapper").append("h1").text("Color Scales");
+  const articles = d3
+    .select("#wrapper")
+    .append("div")
+    .attr("class", "articles");
+
   function drawColorScale(scale) {
-    const article = d3.select("#wrapper").append("article");
+    const article = articles.append("article");
     article.append("h2").text(scale.type);
 
     const dimensions = {

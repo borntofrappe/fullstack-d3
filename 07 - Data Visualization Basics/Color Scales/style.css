@@ -1,33 +1,42 @@
-@font-face {
-  font-family: "Inter var";
-  src: url("../../Inter.var.woff2");
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
 }
 
 body {
-  min-height: 100vh;
-  background: hsl(210, 17%, 95%);
-  color: hsl(210, 29%, 12%);
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui;
+  min-block-size: 100svb;
+  color: hsl(210, 29%, 29%);
+  background: hsl(210, 17%, 98%);
 }
 
 svg text {
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui;
 }
 
 #wrapper {
+  padding: 1rem 0.75rem;
+  max-inline-size: 80ch;
+  margin-inline: auto;
+}
+
+#wrapper > * + * {
+  margin-block-start: 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.articles {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   align-items: flex-start;
+  gap: 1rem;
 }
 
 article {
-  margin: 0.75rem;
   display: flex;
   flex-direction: column;
   line-height: 1.5;
@@ -37,14 +46,14 @@ article {
 }
 
 article > * + * {
-  margin-top: 0.25rem;
+  margin-block-start: 0.5rem;
 }
 
 article h2 {
   text-transform: capitalize;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
-article p {
-  font-size: 0.9rem;
+section > * + * {
+  margin-block-start: 0.25rem;
 }

@@ -1,4 +1,13 @@
-const { json, timeParse, timeFormat, timeWeeks, mean, timeMonth, extent } = d3;
+const {
+  json,
+  timeParse,
+  timeFormat,
+  timeWeeks,
+  timeWeek,
+  mean,
+  timeMonth,
+  extent,
+} = d3;
 
 async function drawLineChart() {
   /* ACCESS DATA */
@@ -15,7 +24,7 @@ async function drawLineChart() {
 
   // downsample the data to consider one value per week (the average of the days in the week)
   const weeks = timeWeeks(
-    xAccessor(dataset[0]),
+    timeWeek.offset(xAccessor(dataset[0]), -1),
     xAccessor(dataset[dataset.length - 1])
   );
 
@@ -43,22 +52,22 @@ async function drawLineChart() {
     {
       name: "Spring",
       date: "3-20",
-      color: "hsl(0, 0%, 100%)",
+      color: "hsl(0 0% 100%)",
     },
     {
       name: "Summer",
       date: "6-21",
-      color: "hsl(165, 83%, 37%)",
+      color: "hsl(165 83% 37%)",
     },
     {
       name: "Fall",
       date: "9-21",
-      color: "hsl(0, 0%, 100%)",
+      color: "hsl(0 0% 100%)",
     },
     {
       name: "Winter",
       date: "12-21",
-      color: "hsl(210, 73%, 53%)",
+      color: "hsl(210 73% 53%)",
     },
   ];
 
@@ -122,7 +131,8 @@ async function drawLineChart() {
     .select("#wrapper")
     .append("svg")
     .attr("width", dimensions.width)
-    .attr("height", dimensions.height);
+    .attr("height", dimensions.height)
+    .style("color", "hsl(0 0% 20%)");
 
   const bounds = wrapper
     .append("g")
@@ -149,14 +159,14 @@ async function drawLineChart() {
 
   seasonsGroup.attr("clip-path", `url(#${clipPathSeasonsId})`);
 
-  const seasonGroups = seasonsGroup
+  const seasonsGroups = seasonsGroup
     .append("g")
     .selectAll("g")
     .data(seasonData)
     .enter()
     .append("g");
 
-  seasonGroups
+  seasonsGroups
     .append("rect")
     .attr("x", ({ start }) => xScale(start))
     .attr("width", ({ start, end }) => xScale(end) - xScale(start))
@@ -164,7 +174,7 @@ async function drawLineChart() {
     .attr("fill", ({ color }) => color)
     .attr("opacity", 0.1);
 
-  seasonGroups
+  seasonsGroups
     .append("path")
     .attr(
       "d",
@@ -183,7 +193,7 @@ async function drawLineChart() {
     .attr("cx", (d) => xScale(xAccessor(d)))
     .attr("cy", (d) => yScale(yAccessor(d)))
     .attr("r", 2)
-    .attr("fill", "hsl(210, 17%, 58%)");
+    .attr("fill", "hsl(210 17% 58%)");
 
   const lineGenerator = d3
     .line()
@@ -216,7 +226,7 @@ async function drawLineChart() {
     .attr("y", dimensions.margin.bottom - 8)
     .attr("fill", "currentColor")
     .attr("text-anchor", "middle")
-    .attr("font-size", 16);
+    .attr("font-size", 15);
 
   const yAxisGenerator = d3
     .axisLeft()
@@ -229,7 +239,7 @@ async function drawLineChart() {
 
   yAxisGroup
     .append("text")
-    .text("relative humidity")
+    .text("Relative humidity")
     .attr("y", 5)
     .attr("text-anchor", "start")
     .attr("fill", "currentColor");
@@ -244,8 +254,8 @@ async function drawLineChart() {
     .attr("text-anchor", "end")
     .attr("dominant-baseline", "middle")
     .attr("fill", "currentColor")
-    .attr("font-size", 11)
-    .attr("opacity", 0.5);
+    .attr("font-size", 12)
+    .attr("opacity", 0.7);
 
   yAxisGroup.select("path").remove();
 }

@@ -1,4 +1,14 @@
-const { json, timeParse, extent, axisLeft, axisBottom } = d3;
+const {
+  json,
+  timeParse,
+  scaleTime,
+  scaleLinear,
+  extent,
+  select,
+  line,
+  axisLeft,
+  axisBottom,
+} = d3;
 
 async function drawLineChart() {
   /* ACCESS DATA */
@@ -27,23 +37,21 @@ async function drawLineChart() {
     dimensions.height - (dimensions.margin.top + dimensions.margin.bottom);
 
   /* SCALES */
-  const xScale = d3
-    .scaleTime()
+  const xScale = scaleTime()
     .domain(extent(dataset, xAccessor))
     .range([0, dimensions.boundedWidth]);
 
-  const yScale = d3
-    .scaleLinear()
+  const yScale = scaleLinear()
     .domain(extent(dataset, yAccessor))
     .range([dimensions.boundedHeight, 0])
     .nice();
 
   /* DRAW DATA */
-  const wrapper = d3
-    .select("#wrapper")
+  const wrapper = select("#wrapper")
     .append("svg")
     .attr("width", dimensions.width)
-    .attr("height", dimensions.height);
+    .attr("height", dimensions.height)
+    .style("color", "hsl(0 0% 20%)");
 
   const bounds = wrapper
     .append("g")
@@ -56,10 +64,9 @@ async function drawLineChart() {
     .append("rect")
     .attr("width", dimensions.boundedWidth)
     .attr("height", dimensions.boundedHeight)
-    .attr("fill", "white");
+    .attr("fill", "hsl(0 0% 99%)");
 
-  const lineGenerator = d3
-    .line()
+  const lineGenerator = line()
     .x((d) => xScale(xAccessor(d)))
     .y((d) => yScale(yAccessor(d)));
 

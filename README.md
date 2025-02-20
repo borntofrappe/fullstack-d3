@@ -1718,8 +1718,6 @@ const delaunay = d3.Delaunay.from(
 );
 ```
 
-<!--
-
 ## 07 - Data Visualization Basics
 
 _Please note:_ the notes which follow are no substitute for the thorough analysis of the book. I will focus on a few concepts, but mostly try to recreate the proposed visualizations.
@@ -1740,19 +1738,21 @@ When picking a particular visualization, it is helpful to start with the data be
 
 - quantitative, numerical:
 
-  - discrete, where it's not possible to interpret a value intermediate of two measurements (number of cards)
+  - discrete, when it's not possible to interpret a value intermediate of two measurements (number of cards)
 
-  - continuous, where it's possible to interpolate between two values (degrees)
+  - continuous, when it's possible to interpolate between two values (degrees)
 
 The type of data influences the type of chart. Picking for instance the temperature, the continuous metric can be highlighted with a bar chart (the height of the bars), a scatterplot (the `y` coordinate) or again color (the fill of circles, the gradient of a rectangle).
 
 ### Humidity Timeline
 
+_Please note_: in the folder I created two directories for the project, showcasing the starting visualization and the redesigned version built on top.
+
 The goal is to create a visualization highlighting how humidity changes depending on the time of the year.
 
 Starting from a rudimentary timeline, the book illustrates how to design the line chart to answer the question with more focus and purpose.
 
-The visualization is updated as follows:
+The base visualization is updated as follows:
 
 - the line plots the data with a curve
 
@@ -1764,7 +1764,7 @@ The visualization is updated as follows:
     .curve(d3.curveBasis);
   ```
 
-- instead of considering every data point, the line generator function receives a smaller set of values, considering the average for each week
+- instead of considering every data point, the line generator maps the average value on a weekly basis
 
   ```js
   lineGroup.append("path").attr("d", lineGenerator(downsampleData));
@@ -1774,7 +1774,8 @@ The visualization is updated as follows:
 
   ```js
   const weeks = d3.timeWeeks(
-    xAccessor(dataset[0]),
+    // xAccessor(dataset[0]) possibly skips the days in the first week
+    timeWeek.offset(xAccessor(dataset[0]), -1),
     xAccessor(dataset[dataset.length - 1])
   );
   ```
@@ -1787,7 +1788,7 @@ The visualization is updated as follows:
 
 - the `x` axis is removed
 
-- for the seasons, the line chart includes a semi-transparent rectangle, and a line highlighting the mean value
+- for the seasons, the line chart includes a semi-transparent rectangle and a line highlighting the mean
 
   ```js
   seasonGroup.append("rect");
@@ -1798,7 +1799,7 @@ The visualization is updated as follows:
   The groups are bound to an object detailing the season.
 
   ```js
-  const seasonGroup = seasonsGroup
+  const seasonsGroups = seasonsGroup
     .append("g")
     .selectAll("g")
     .data(seasonData)
@@ -1822,13 +1823,13 @@ The visualization is updated as follows:
     .map((yearDate) => parseInt(d3.timeFormat("%Y")(yearDate)));
   ```
 
-- the `y` axis includes a label for the lines detailing the season's averages
+- ticks on the `y` axis show the seasons' averages
 
-- the `x` axis is re-introduced with a label for the seasons
+- custom ticks on the `x` axis label the seasons
 
 ### Color Scales
 
-The project illustrates how to include color through the `d3-scale-chromatic` and `d3-interpolate` modules.
+The project illustrates how to include color with the `d3-scale-chromatic` and `d3-interpolate` modules.
 
 It is important to note the following:
 
@@ -1836,17 +1837,19 @@ It is important to note the following:
 
 - sequential, diverging, cyclical scales work as a scale with a domain of `[0, 1]` and a range describing the colors. Consider `d3.interpolateBlues()`; you obtain a color by calling the function with a specific number, like `d3.interpolateBlues(0.5)`
 
-- when interpolating between two or more colors, d3 supports both the scale and array syntax. `d3.interpolateBlues()`, for instance, creates a proper scale, while `d3.interpolateBlues[n]` creates an array of `n` colors in the prescribed range
+- when interpolating between two or more colors, D3 supports both the scale and array syntax. `d3.interpolateBlues()`, for instance, creates a proper scale, while `d3.interpolateBlues[n]` creates an array of `n` colors in the color range
 
 - functions from the `d3-interpolate` module allow to interpolate between two colors in a given color space. In this light, it is helpful to have a brief overview of the different formats:
 
   - keywords like `cornflowerblue` provide a first way to describe color. It is important to also highlight `transparent`, used in a previous project to hide elements like Delaunay's `<path>`s, and `currentColor`, useful to consider the value from the `color` property
 
-  - `rgb[a]` describes a color through its red, green and blue components. `a` describes the optional alpha channel, for the opacity of the color. Each component is a number in the `[0, 255]` range, and colors are mixed with additive fashion, meaning `rgb(255, 255, 255)` is completely white
+  - `rgb[a]` describes a color through its red, green and blue components. `a` describes the optional alpha channel for the opacity of the color. Each component is a number in the `[0, 255]` range, and colors are mixed with additive fashion, meaning `rgb(255, 255, 255)` is completely white
 
   - `hsl[a]` describes a color with a hue, saturation and lightness. The hue is a number in the `[0, 360]` range going from red, 0, to green, 120, to blue, 240, back to red, 360. Saturation is a percentage going from grey, 0% to fully saturated, 100%. Lightness is a percentage going from black, 0%, to white, 100%
 
-  - `hcl[a]` describes a color with a hue, chroma and lightness. The chroma is a number in the `[0, 230]` influencing the saturation, while the lightness a number in the `[0, 100]` interval. The difference from the hsl color space is that two values with the same lightness value have the same perceived lightness. In light of this, the format is useful to avoid contrasting levels of saturation
+  - `hcl[a]` describes a color with a hue, chroma and lightness. The chroma is a number in the `[0, 230]` range influencing the saturation, while the lightness a number in the `[0, 100]` interval. The difference from the hsl color space is that two values with the same lightness value have the same perceived lightness. In light of this, the format is useful to avoid contrasting levels of saturation
+
+<!--
 
 ## 08 - Common Charts
 
