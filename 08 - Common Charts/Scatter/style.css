@@ -1,19 +1,14 @@
-@font-face {
-  font-family: "Inter var";
-  src: url("../../Inter.var.woff2");
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
 }
 
 body {
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui;
 }
 
 svg text {
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui;
 }
 
 #wrapper {

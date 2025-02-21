@@ -72,7 +72,7 @@ async function drawRadar() {
   /* DRAW DATA */
   const radarDate = select("#wrapper").append("h2");
 
-  const radarButton = select("#wrapper").append("button").text("Next day");
+  const radarButton = select("#wrapper").append("button").text("Next week");
 
   const wrapper = select("#wrapper")
     .append("svg")
@@ -139,11 +139,11 @@ async function drawRadar() {
 
   axisGroups
     .append("text")
+    .text((d) => d)
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "middle")
     .attr("font-size", 13)
     .attr("fill", "currentColor")
-    .text((d) => d)
     .attr("transform", (d) => {
       const angle = angleScale(d) - Math.PI / 2;
       const x = Math.cos(angle) * (radius + dimensions.margin - 25);
@@ -169,7 +169,7 @@ async function drawRadar() {
   drawDay(index);
 
   radarButton.on("click", () => {
-    index = (index + 1) % dataset.length;
+    index = (index + 7) % dataset.length;
     drawDay(index);
   });
 }

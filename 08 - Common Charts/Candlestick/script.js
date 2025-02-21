@@ -62,6 +62,11 @@ async function drawCandlestickChart() {
     .nice();
 
   /* DRAW DATA */
+  const dayWidth =
+    xScale(timeDay.offset(xAccessor(dataset[0]), 1)) -
+    xScale(xAccessor(dataset[0]));
+  const rectWidth = dayWidth * 0.75;
+
   const wrapper = select("#wrapper")
     .append("svg")
     .attr("width", dimensions.width)
@@ -101,11 +106,6 @@ async function drawCandlestickChart() {
       "d",
       (d) => `M 0 ${yScale(lowAccessor(d))} V ${yScale(highAccessor(d))}`
     );
-
-  const dayWidth =
-    xScale(timeDay.offset(xAccessor(dataset[0]), 1)) -
-    xScale(xAccessor(dataset[0]));
-  const rectWidth = dayWidth * 0.75;
 
   candlestickGroups
     .append("rect")

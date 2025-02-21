@@ -1697,31 +1697,29 @@ It is important to note the following:
 
   - `hcl[a]` describes a color with a hue, chroma and lightness. The chroma is a number in the `[0, 230]` range influencing the saturation, while the lightness a number in the `[0, 100]` interval. The difference from the hsl color space is that two values with the same lightness value have the same perceived lightness. In light of this, the format is useful to avoid contrasting levels of saturation
 
-<!--
-
 ## 08 - Common Charts
 
 The chapter introduces a few types of data visualizations with the goal of laying the foundation for more complex projects.
 
-_Please note:_ in each sub-folder I try to replicate the visualizations introduced in the book.
+_Please note:_ in each sub-folder I try to replicate the visualizations described in the book on my own.
 
 ### Candlestick
 
 A candlestick chart highlights stock prices in terms of open, close, high and low value.
 
-In terms of the d3 library take notice of the following:
+In terms of the D3 library take notice of the following:
 
 - `d3.csv` considers comma separated values describing hypothetical stock prices
 
 - `d3.schemeSet1` provides an array of colors to distinguish gains and losses
 
-- `d3.timeDay.offset` is used to stretch the horizontal scale one day before and one day after the actual domain. The function is useful in the context of the time scale, to provide some padding around the values. A different approach would be to use a band scale, and have each observation positioned at a fraction of the available width
+- `d3.timeDay.offset` is used to stretch the horizontal scale one day before and one day after the actual domain. The function is useful in the context of the time scale to provide some padding around the values. A different approach would be to use a band scale, and have each observation positioned at a fraction of the available width
 
 ### Timeline
 
-The goal with a timeline is to study the evolution of a metric over time. It is important to focus on the granularity of the time scale, or again the smoothness of the line connecting the individual points. It is essential, finally, to accurately describe which data is included in the line; consider for instance how the redesign in chapter seven used the weekly mean in place of the daily observations, and how the visualization preserved the values through small, grey circles.
+The goal with a timeline is to study the evolution of a metric over time. It is important to focus on the granularity of the time scale, or again the smoothness of the line connecting the individual points. It is essential, finally, to accurately describe which data is included in the line; consider for instance how the redesign in chapter seven used the weekly mean instead of daily observations, and how the visualization preserved the values through small, grey circles.
 
-The project in the folder is fundamentally a copy of previous line charts. The visual is however focused on the points making up the line and the interpolating curve. With a `<input>` element of type `checkbox` it is possible to toggle the visibility of the points. With a `<select>` element, and a few `<option>`s, it is possible to change the function used in the line generator function.
+The project in the folder is fundamentally a copy of previous line charts. The visual is however focused on the points making up the line and the interpolating curve. With a `<input>` element of type `checkbox` it is possible to toggle the visibility of the points. With a `<select>` element and a few `<option>`s, it is possible to change the function used in the line generator function.
 
 The book argues for `curveMonotoneX` as a solid choice for the interpolator function, crossing through all the points. `curveBasis` provides a smoother line, but doesn't guarantee the same type of precision.
 
@@ -1729,15 +1727,15 @@ The book argues for `curveMonotoneX` as a solid choice for the interpolator func
 
 Taking inspiration from the visualization highlighting profile contributions on GitHub, a heatmap displays a series of observations in a grid, and depicts a continuous or discrete metric through color.
 
-Since the visualization relies on the color of individual cells, is useful to show trends over time. It is not as effective to describe small differences between values.
+Since the visualization relies on the color of individual cells it is useful to show trends over time. It is not as effective to describe small differences between values.
 
-The demo itself includes a button to cycle through different metrics, similarly to the bar charts developed in the fifth chapter, `05 - Interactions`.
+The demo itself includes a button to cycle through different metrics similarly to the bar charts developed in the fifth chapter.
 
-In terms of D3, the project is an excellent exercise with the `d3-time` module, specifically `d3.timeWeeks`, `d3.timeMonths` and the directives included in the parsing, formatting functions.
+In terms of D3, the project provides a good exercise with the `d3-time` module, specifically `d3.timeWeeks`, `d3.timeMonths` and the directives included in the parsing and formatting functions.
 
 ### Radar
 
-A radar chart is useful to compare multiple metrics. While it is possible to include several polygons in the same chart, it is preferable to limit the number of overlapping shapes, and differentiate them with color. With a large number of visual consider using a button to cycle through the shapes, or multiple, separate radar chart. In the demo I chose the first approach, leaning on two functions from the `d3-shape` module:
+A radar chart is useful to compare multiple metrics. While it is possible to include several polygons in the same chart, it is preferable to limit the number of overlapping shapes and differentiate them by color. With a large number of visual consider using a button to cycle through the shapes, or multiple, separate radar chart. In the demo I chose the first approach, leaning on two functions from the `d3-shape` module:
 
 - `d3.lineRadial`. The generator function works similarly to `d3.line`, but computes the `x` and `y` coordinate of the line on the basis of an angle and radius
 
@@ -1748,7 +1746,7 @@ A radar chart is useful to compare multiple metrics. While it is possible to inc
     .radius(..);
   ```
 
-- `d3.areaRadial`. Similarly to `d3.area` the function specifies two values to describe the area below the curve. In this instance, the feature is achieved with two values for the radius instead of `y` coordinates
+- `d3.areaRadial`. Similarly to `d3.area` the function specifies two values to describe the area below the curve. The values are those for the radii instead of `y` coordinates
 
   ```js
   const areaGenerator = d3
@@ -1770,15 +1768,15 @@ The demo includes a copy of the scatterplot introduced earlier in the repository
 
 - null, between wind speed and humidity
 
-The demo includes a line of best fit, showing the correlation, if any, with a `<path>` element.
+The demo includes a line of best fit showing the correlation, if any, with a `<path>` element.
 
-_Please note:_ the line of best fit is computed considering the `y` coordinate with two `x` values, describing the origin and the end of the visualization. A `<clipPath>` element helps to limit the `<path>` element to the bounded dimensions.
+_Please note:_ the line of best fit is computed considering the `y` coordinate with two `x` values, those describing the beginning and the end of the visualization. A `<clipPath>` element helps to limit the `<path>` element to the bound dimensions.
 
 ### Pie and Donut
 
-A pie or donut chart is useful to focus on the parts of a whole. It is difficult to interpret differences between slices, especially with small differences and numerous variables, but the type can provide a few insights. Focus on a few slices, five at most, sort the values, the pie generator function sorts the values by default, and consider adding more information with labels or accompanying visuals.
+A pie or donut chart is useful to focus on the parts of a whole. It is difficult to interpret differences between slices, especially with small differences and numerous variables, but the type can provide a few insights. Focus on a few slices, five at most, sort the values (the pie generator function sorts the values by default), and consider adding more information with labels or accompanying visuals.
 
-The demo introduces two function from the `d3-shape` module:
+The demo introduces two functions from the `d3-shape` module:
 
 - `d3.pie` modifies the data to assign a start and end angle for each observation
 
@@ -1806,11 +1804,15 @@ The demo introduces two function from the `d3-shape` module:
       .outerRadius(radius);
     ```
 
-  - `startAngle` and `endAngle`, included through the pie genertor function
+  - `startAngle` and `endAngle`, already included through the pie genertor function
 
-_Please note:_ the `icons` folder includes a few SVG icons I created for the project. The syntax is included in `<path>` elements at the center of each slice.
+  The resulting function is useful to fabricate the slices, but also to position the shapes with the ulterior `centroid` method
+
+_Please note:_ `index.html` defines a few icons which are then referenced with `<use>` elements. The `id` attribute of the icons matches the key used to describe the data.
 
 ### Histogram
+
+_Please note:_ the folder doesn't include a demo for the histogram, because the third chapter already implements the type for multiple variables.
 
 A histogram is useful to analyze the variation in the values of a metric.
 
@@ -1826,11 +1828,9 @@ There are generally five types of distributions:
 
 - symmetric, with a homogeneous set of observations
 
-_Please note:_ the folder doesn't include a demo for the histogram, because the third chapter, `03 - Bar Charts`, already implements the type for multiple variables.
-
 ### Box Plot
 
-With a box plot it is possible to study the distribution of a numerical value. The median is useful to describe the tendency of the metric, while the 25th and 75th percentile, also know as 1st and 3rd quartile, provide a measure of the variability.
+With a box plot it is possible to study the distribution of a numerical variable. The median is useful to describe the tendency of the metric, while the 25th and 75th percentile, also know as 1st and 3rd quartile, provide a measure of the variability.
 
 ```text
   outliers
@@ -1848,17 +1848,19 @@ With a box plot it is possible to study the distribution of a numerical value. T
   outliers
 ```
 
-For the visualizations:
+For the visualization:
 
-- outliers are those points which exceed the mean by the interquartile range, the difference between first and third quartile, and by a measure of one and a half
+- outliers are those points which exceed the mean by the interquartile range, the difference between first and third quartile, multiplied by a measure of one and a half
 
-For the d3 library:
+For the D3 library:
 
 - `d3.scaleBand` provides the horizontal coordinate by mapping a discrete domain (an array describing the months) to a continuous range (the bounded width)
 
 - `d3.timeMonths` works similarly to `d3.timeWeeks` in the redesign of the timeline of the seventh chapter. The function creates an array of date objects for the months between the input dates
 
-- in terms of data binding, it is possible to bind two nested layers. Consider how the groups for the boxes are bound to `monthData` and the circles are bound to the array describing the outliers, `d.outliers`
+- in terms of data binding it is possible to bind two nested layers. Consider how the groups for the boxes are bound to `monthData` and the circles are bound to the array describing the outliers, `d.outliers`
+
+<!--
 
 ## 09 - Dashboard
 

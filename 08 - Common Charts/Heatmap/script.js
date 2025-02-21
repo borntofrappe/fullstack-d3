@@ -195,15 +195,15 @@ async function drawHeatmap() {
     heatmapMin.text(min(dataset, metricAccessor));
     heatmapMax.text(max(dataset, metricAccessor));
 
-    const updateGroup = metricGroup.selectAll("rect").data(dataset);
+    const updateRects = metricGroup.selectAll("rect").data(dataset);
 
-    const enterGroup = updateGroup.enter();
+    const enterRects = updateRects.enter();
 
-    const exitGroup = updateGroup.exit();
+    const exitRects = updateRects.exit();
 
-    exitGroup.remove();
+    exitRects.remove();
 
-    enterGroup
+    enterRects
       .append("rect")
       .attr("fill", (d) => interpolateColor(colorScale(metricAccessor(d))))
       .attr("x", (d) => weekAccessor(d) * tileTotalSize + tilePadding)
@@ -211,7 +211,7 @@ async function drawHeatmap() {
       .attr("width", tileSize)
       .attr("height", tileSize);
 
-    updateGroup
+    updateRects
       .transition()
       .attr("fill", (d) => interpolateColor(colorScale(metricAccessor(d))));
   }

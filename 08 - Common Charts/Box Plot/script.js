@@ -169,7 +169,7 @@ async function drawBoxPlot() {
     .tickSize(0)
     .tickPadding(10);
 
-  const xAxisGroup = axisGroup.append("g").call(xAxisGenerator);
+  axisGroup.append("g").call(xAxisGenerator);
 
   yAxisGroup
     .append("text")
@@ -187,7 +187,14 @@ async function drawBoxPlot() {
     );
 
   axisGroup.selectAll("g.tick text").attr("font-size", 11);
-  xAxisGroup.selectAll("g.tick text");
+  yAxisGroup
+    .selectAll("g.tick")
+    .append("line")
+    .attr("x2", dimensions.boundedWidth)
+    .attr("fill", "none")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", "0.2");
+
   axisGroup.selectAll("path").remove();
 }
 
