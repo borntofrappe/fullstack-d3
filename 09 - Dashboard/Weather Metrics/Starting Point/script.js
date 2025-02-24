@@ -3,34 +3,27 @@ const { json, select } = d3;
 async function drawDashboard() {
   const dataset = await json("../../../nyc_weather_data.json");
 
-  const wrapper = select("#wrapper");
-
-  function drawMetric(day, metric) {
-    const article = select(`#article-${metric}`);
-
-    article.select(`h2`).text(metric);
-    article.select(`p`).text(dataset[day][metric]);
-  }
-
+  let selectedDay = 0;
   const metrics = ["windSpeed", "visibility", "pressure"];
 
-  let selectedDay = 0;
-  metrics.forEach((metric) => {
-    const article = wrapper.append("article").attr("id", `article-${metric}`);
+  const wrapper = select("#wrapper");
+  const articles = wrapper
+    .selectAll("article")
+    .data(metrics)
+    .enter()
+    .append("article")
+    .attr("id", (d) => `article-${d}`);
 
-    article.append("h2");
-    article.append("p");
+  articles.append("h2").text((d) => d);
 
-    drawMetric(selectedDay, metric);
-  });
+  articles.append("p").text((d) => dataset[selectedDay][d]);
 
   wrapper
     .append("button")
     .text("Change Date")
     .on("click", () => {
       selectedDay = (selectedDay + 1) % dataset.length;
-
-      metrics.forEach((metric) => drawMetric(selectedDay, metric));
+      articles.select("p").text((d) => dataset[selectedDay][d]);
     });
 }
 
