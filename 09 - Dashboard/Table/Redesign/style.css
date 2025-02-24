@@ -1,20 +1,15 @@
-@font-face {
-  font-family: "Inter var";
-  src: url("../../../Inter.var.woff2");
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100svb;
   display: grid;
   place-items: center;
   background: hsl(222, 90%, 98%);
   color: hsl(233, 67%, 15%);
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui;
 }
 
 /* 
@@ -39,11 +34,7 @@ table thead th {
 }
 
 table thead {
-  font-size: 0.95rem;
-}
-
-table tbody {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
 }
 
 table th,
@@ -57,9 +48,9 @@ table td {
 }
 
 table tbody tr td:nth-of-type(2) {
-  font-size: 0.85rem;
+  font-size: 0.9em;
   vertical-align: bottom;
-  max-width: 350px;
+  max-inline-size: 350px;
 }
 
 table tbody tr:nth-of-type(2n) {

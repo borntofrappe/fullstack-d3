@@ -1860,11 +1860,9 @@ For the D3 library:
 
 - in terms of data binding it is possible to bind two nested layers. Consider how the groups for the boxes are bound to `monthData` and the circles are bound to the array describing the outliers, `d.outliers`
 
-<!--
-
 ## 09 - Dashboard
 
-A dashboard is loosely introduced an interface for data, a display highlighting the accurate value of metrics as weel as complex visualizations to provid more insights.
+A dashboard is loosely discussed as an interface for data, a display for the accurate value of metrics as weel as complex visualizations to provid more insights.
 
 ### Weather Metrics
 
@@ -1876,19 +1874,17 @@ The redesign works to show how the dashboard can be improved by describing the m
 
 In practice:
 
-- the values are formatted to consider fewer decimal numbers, with a fixed notation
+- the values are formatted to consider fewer decimal numbers with a fixed notation
 
 - the metrics are displayed with labels distinct from the value of the connected property. `windSpeed` is displayed as `Wind Speed`, `visibility` as `Visibility` and `pressure` as `Atmospheric pressure`
 
 - each metric is accompanied by a heading displaying the unit of measure
 
-- each metric is accompanied by a gauge, highlighting the value in the context of the dataset, and where the value fits in the domain
-
-It is important to note a distinction introduced with the `drawMetric` function. The script initially sets up the dashboard with the necessary HTML and SVG elements. In `drawMetric`, then, the idea is to change the contents, the appearance of the elements with the specific day.
+- each metric is accompanied by a small graphic highlighting the value in the context of the dataset, where the value fits in the domain
 
 The project highlights a few methods from the D3 library:
 
-- `d3.scaleQuantize` is helpful to create a scale mapping a continuous domain to a discrete range.
+- `d3.scaleQuantize` to create a scale mapping a continuous domain to a discrete range.
 
   For the label above the gauge component, the idea is to display one of five options, from very low to very high, according to where the value fits in the domain.
 
@@ -1911,10 +1907,6 @@ The project highlights a few methods from the D3 library:
 The demo for the starting point considers a few metrics connected to a news feed with the same visual designed for the weather dashboard. The focus is here on the number of views and articles connected to a hypothetical subject.
 
 The redesign improves the visualization with an additional metric: _demand_. Here the goal is to show how data can be turned into insight, into an actionable metric.
-
-_Please note:_ the script for the second demo slightly differs from the first, as I found an alternative solution in having the accessor function directly in the object describing each metric.
-
-_Please also note:_ the data for the project is included in the `09 - Dashboard` folder, alongside the icons designed for each section.
 
 ### Data States
 
@@ -1958,10 +1950,10 @@ d3.json("../../nyc_weather_data.json").catch((error) => {
 _Please note_: in its current design, the promise should always resolve, leading to the loaded state. To highlight the other states try modifying the logic of the promise. To highlight an error, for instance, have the promise look for a non-existing file.
 
 ```js
-d3.json("../../nyc_weather_data.jn");
+d3.json("../../nyc_weather_data.jso");
 ```
 
-To highlight the lack of data have the condition lead to the empty state.
+To highlight the lack of data force the condition to handle the empty state.
 
 ```js
 if (true) {
@@ -1973,9 +1965,9 @@ if (true) {
 
 The projects work to showcase how to handle outliers, values which vary from the mean and are prone to skew the perception of the visualization.
 
-There is not one solution for every visualization, and it is important to consider the influence of outliers case by case. For instance and to visualize the popularity of articles in terms of views, it might be useful to preserve outliers in recent data, as to highlight potential spikes. It might be then more informative to crop the value (with an accompanying label) after an arbitrary amount of time, to focus on the overall trend. This is exactly what happens in the demo exploring the bar chart: in the first visualization the scale considers the maximum value, while in the second visual the domain is capped at a threshold considering the mean and standard deviation.
+There is not one solution for every visualization, and it is important to consider the influence of outliers case by case. For instance, to visualize the popularity of articles in terms of views, it might be useful to preserve outliers in recent data, as to highlight potential spikes. It might be then more informative to crop the value (with an accompanying label) after an arbitrary amount of time and focus on the overall trend instead. This is exactly what happens in the demo exploring the bar chart: in the first visualization the scale considers the maximum value, while in the second visual the domain is capped at a threshold considering the mean and standard deviation.
 
-It is important to stress that the bar chart shows one way to handle outliers, and defines an outlier with another arbitrary choice. The second project creating a timeline proves this by plotting the number of views and articles. The number of articles is shown with a series of dots, and the number of dots is limited to a third of the bounded height. An outlier is here any observation with more articles than can fit in the chosen fraction of the height and is highlighted with a small arrow pointing upwards.
+It is important to stress that the bar chart shows one way to handle outliers, and defines an outlier with another arbitrary decision. The second demo describing a timeline proves this by plotting the number of views and articles. The number of articles is shown with a series of dots, and the number of dots is limited to a third of the bounded height. An outlier is here any observation with more articles than can fit in the chosen fraction of the height and is highlighted with a small arrow pointing upwards.
 
 ### Table
 
@@ -1987,7 +1979,7 @@ In the second demo the table is redesigned both in style and function. In the st
 
 - whitespace is increased in the form of considerable padding
 
-- the font is updated with the `font-feature-setting` property so that individual numbers have the same width. This is a feature available on the chosen `Inter` family and allows numbers to behave like monospace fonts
+- the font is updated with the `font-feature-setting` property so that numbers have the same character width. This is a feature available some typefaces which makes it easier to compare numbers in different rows
 
 - the column dedicated to the summary is reduced in importance through the `font-size` property
 
@@ -1995,11 +1987,11 @@ In the second demo the table is redesigned both in style and function. In the st
 
 - the rows alternate in background color to stress the distinction between observations
 
-- the rows are highlighted on hover through the background color
+- the rows are highlighted on hover through the color of the background
 
 In the script, the content is updated as follows:
 
-- the columns are aligned left or right according to whether the values are strings or numbers respectively
+- the columns are aligned left if they include text, right if they show numbers
 
 - the values are formatted with the `d3-format` and the `d3-format-time` modules to provide more readable labels
 
@@ -2019,7 +2011,13 @@ The folder highlights how a dashboard works best when it focuses a clear message
 
 ### Deciding Questions
 
-The folder focuses on two questions essential to the design of a dashboard: how familar are users with the provided data, how much time do user spend with the visualization. Already, these issues compel a different visualization. Consider for instance how inexperienced users might benefit from a short explanation (first demo), or again how time-sensitive readers might prefer a single metric instead of an elaborate visualization (second demo).
+The folder focuses on two questions essential to the design of a dashboard:
+
+1. how familar are users with the provided data
+
+2. how much time do user spend with the visualization
+
+These issues compel a different visualization. Consider for instance how inexperienced users might benefit from a short explanation (first demo), or again how time-sensitive readers might prefer a single metric instead of an elaborate visualization (second demo).
 
 In terms of D3, it is helpful to note how the elaborate visualization in the second demo leans on the `d3-force` module to have the circles describing the observations separated from one another. With `d3.simulation`, the project sets up a series of forces to have the points tend toward the desired `x` coordinate.
 
@@ -2035,6 +2033,9 @@ The simulation is then run an arbitrary number of time to eventually position th
 ```js
 d3.simulation().tick(300);
 ```
+
+<!--
+just update scripts and links for now
 
 ## 10 - Complex Visualizations
 

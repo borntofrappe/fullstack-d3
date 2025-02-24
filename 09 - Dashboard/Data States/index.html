@@ -5,12 +5,27 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Data States</title>
-    <link rel="icon" href="../../icon.png" />
+    <link rel="icon" href="../../icon.svg" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <svg display="none">
+      <symbol id="icon-empty" viewBox="0 0 100 100">
+        <path
+          fill="currentColor"
+          d="m50 0c-27.56 0-50 22.44-50 50s22.44 50 50 50 50-22.44 50-50-22.44-50-50-50zm0 10c22.15 0 40 17.85 40 40s-17.85 40-40 40-40-17.85-40-40 17.85-40 40-40zm12.46 22.43a5 5 0 0 0-3.49 1.535l-8.965 8.965-8.965-8.965a5 5 0 0 0-3.588-1.516 5 5 0 0 0-3.482 8.586l8.965 8.965-8.965 8.965a5 5 0 1 0 7.07 7.07l8.965-8.965 8.965 8.965a5 5 0 1 0 7.07-7.07l-8.965-8.965 8.965-8.965a5 5 0 0 0-3.58-8.605z"
+        />
+      </symbol>
+      <symbol id="icon-error" viewBox="0 0 100 100">
+        <path
+          fill="currentColor"
+          d="m50 0c-27.56 0-50 22.44-50 50s22.44 50 50 50 50-22.44 50-50-22.44-50-50-50zm0 10c22.15 0 40 17.85 40 40s-17.85 40-40 40-40-17.85-40-40 17.85-40 40-40zm-0.07617 12.93a5 5 0 0 0-4.924 5.07v24a5 5 0 1 0 10 0v-24a5 5 0 0 0-5.076-5.07zm0.07617 42.07a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5z"
+        />
+      </symbol>
+    </svg>
+
     <div id="wrapper"></div>
-    <script src="../../d3.v7.js"></script>
+    <script src="../../d3.min.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

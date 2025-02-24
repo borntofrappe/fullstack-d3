@@ -144,7 +144,7 @@ async function drawDashboard() {
     const yScale = scaleLinear()
       .domain([upperThreshold, 0])
       .range([0, dimensions.boundedHeight])
-      .clamp(true);
+      .clamp(true); // stop at the upper threshold
 
     const wrapper = select("#wrapper")
       .append("svg")

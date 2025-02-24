@@ -1,19 +1,14 @@
-@font-face {
-  font-family: "Inter var";
-  src: url("../../Inter.var.woff2");
-}
-
 * {
   box-sizing: border-box;
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100svb;
   display: grid;
   place-items: center;
   background: hsl(200, 17%, 95%);
   color: hsl(210, 29%, 5%);
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui;
 }
 
 .color-main {
@@ -29,7 +24,7 @@ body {
 }
 
 svg text {
-  font-family: "Inter var", sans-serif;
+  font-family: system-ui;
   fill: currentColor;
 }
 

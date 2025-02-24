@@ -11,15 +11,15 @@ const {
   curveCatmullRom,
   select,
   axisBottom,
-  axisLeft
+  axisLeft,
 } = d3;
 
 async function drawDashboard() {
-  const dataset = await csv('./data_outliers.csv');
-  const dateParser = timeParse('%d-%m-%Y');
-  const xAccessor = d => dateParser(d.date);
-  const yAccessor = d => parseInt(d.views);
-  const articlesAccessor = d => parseInt(d.articles);
+  const dataset = await csv("data_outliers.csv");
+  const dateParser = timeParse("%d-%m-%Y");
+  const xAccessor = (d) => dateParser(d.date);
+  const yAccessor = (d) => parseInt(d.views);
+  const articlesAccessor = (d) => parseInt(d.articles);
 
   const dimensions = {
     width: 600,
@@ -47,58 +47,59 @@ async function drawDashboard() {
     .nice();
 
   const lineGenerator = line()
-    .x(d => xScale(xAccessor(d)))
-    .y(d => yScale(yAccessor(d)))
+    .x((d) => xScale(xAccessor(d)))
+    .y((d) => yScale(yAccessor(d)))
     .curve(curveCatmullRom);
 
   const areaGenerator = area()
-    .x(d => xScale(xAccessor(d)))
-    .y0(d => yScale(yAccessor(d)))
+    .x((d) => xScale(xAccessor(d)))
+    .y0((d) => yScale(yAccessor(d)))
     .y1(dimensions.boundedHeight)
     .curve(curveCatmullRom);
 
-  const wrapper = select('#wrapper')
-    .append('svg')
-    .attr('width', dimensions.width)
-    .attr('height', dimensions.height);
+  const wrapper = select("#wrapper")
+    .append("svg")
+    .attr("width", dimensions.width)
+    .attr("height", dimensions.height);
 
   const bounds = wrapper
-    .append('g')
+    .append("g")
     .style(
-      'transform',
+      "transform",
       `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
     );
 
-  const axisGroup = bounds.append('g');
-  const viewsGroup = bounds.append('g');
-  const articlesGroup = bounds.append('g');
-  const outliersGroup = bounds.append('g');
+  const axisGroup = bounds.append("g");
+  const viewsGroup = bounds.append("g");
+  const articlesGroup = bounds.append("g");
+  const outliersGroup = bounds.append("g");
 
   viewsGroup
-    .append('path')
-    .attr('fill', 'hsl(236, 70%, 96%)')
-    .attr('d', areaGenerator(dataset));
+    .append("path")
+    .attr("fill", "hsl(236, 70%, 96%)")
+    .attr("d", areaGenerator(dataset));
 
   viewsGroup
-    .append('path')
-    .attr('fill', 'none')
-    .attr('stroke', 'hsl(263, 50%, 42%)')
-    .attr('stroke-width', 2.5)
-    .attr('d', lineGenerator(dataset));
+    .append("path")
+    .attr("fill", "none")
+    .attr("stroke", "hsl(263, 50%, 42%)")
+    .attr("stroke-width", 2.5)
+    .attr("d", lineGenerator(dataset));
 
   const width = xScale(xAccessor(dataset[1])) - xScale(xAccessor(dataset[0]));
   const radius = min([(width / 2) * 0.9, 2]);
 
   const articleGroups = articlesGroup
-    .selectAll('g')
+    .selectAll("g")
     .data(dataset)
     .enter()
-    .append('g')
+    .append("g")
     .attr(
-      'transform',
-      d =>
-        `translate(${xScale(xAccessor(d))} ${dimensions.boundedHeight -
-          radius})`
+      "transform",
+      (d) =>
+        `translate(${xScale(xAccessor(d))} ${
+          dimensions.boundedHeight - radius
+        })`
     );
 
   const maxHeightFraction = 1 / 3;
@@ -106,41 +107,43 @@ async function drawDashboard() {
     (dimensions.boundedHeight / (width / 2)) * maxHeightFraction
   );
   articleGroups
-    .selectAll('circle')
-    .data(d =>
+    .selectAll("circle")
+    .data((d) =>
       Array(min([articlesAccessor(d), maxCircles]))
-        .fill()
+        .fill("")
         .map((datum, i) => ((i * width) / 2) * -1)
     )
     .enter()
-    .append('circle')
-    .attr('cy', d => d)
-    .attr('r', radius)
-    .attr('fill', 'hsl(243, 29%, 75%)');
+    .append("circle")
+    .attr("cy", (d) => d)
+    .attr("r", radius)
+    .attr("fill", "hsl(243, 29%, 75%)");
 
-  const outliers = dataset.filter(d => articlesAccessor(d) > maxCircles);
+  const outliers = dataset.filter((d) => articlesAccessor(d) > maxCircles);
   const outlierGroups = outliersGroup
-    .selectAll('g')
+    .selectAll("g")
     .data(outliers)
     .enter()
-    .append('g')
+    .append("g")
     .attr(
-      'transform',
-      d =>
-        `translate(${xScale(xAccessor(d))} ${dimensions.boundedHeight -
+      "transform",
+      (d) =>
+        `translate(${xScale(xAccessor(d))} ${
+          dimensions.boundedHeight -
           dimensions.boundedHeight * maxHeightFraction +
           width / 2 -
-          radius})`
+          radius
+        })`
     );
 
   outlierGroups
-    .append('path')
-    .attr('d', 'M -3 0 l 3 -4 3 4z')
-    .attr('stroke', 'hsl(243, 29%, 75%)')
-    .attr('stroke-width', 2)
-    .attr('stroke-linecap', 'round')
-    .attr('stroke-linejoin', 'round')
-    .attr('fill', 'hsl(243, 29%, 75%)');
+    .append("path")
+    .attr("d", "M -3.5 0 l 3.5 -5 3 5z")
+    .attr("stroke", "hsl(243, 29%, 75%)")
+    .attr("stroke-width", 2)
+    .attr("stroke-linecap", "round")
+    .attr("stroke-linejoin", "round")
+    .attr("fill", "hsl(243, 29%, 75%)");
 
   const xAxisGenerator = axisBottom()
     .scale(xScale)
@@ -155,16 +158,16 @@ async function drawDashboard() {
     .tickPadding(6);
 
   const xAxis = axisGroup
-    .append('g')
-    .style('transform', `translate(0px, ${dimensions.boundedHeight}px)`)
+    .append("g")
+    .style("transform", `translate(0px, ${dimensions.boundedHeight}px)`)
     .call(xAxisGenerator);
 
-  const yAxis = axisGroup.append('g').call(yAxisGenerator);
+  const yAxis = axisGroup.append("g").call(yAxisGenerator);
 
-  axisGroup.selectAll('text').attr('font-size', 11);
+  axisGroup.selectAll("text").attr("font-size", 11);
 
-  xAxis.select('path').remove();
-  yAxis.select('path').remove();
+  xAxis.select("path").remove();
+  yAxis.select("path").remove();
 }
 
 drawDashboard();

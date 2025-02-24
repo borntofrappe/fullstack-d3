@@ -22,13 +22,6 @@ function drawBarChart() {
     },
   };
 
-  const iconsPaths = {
-    empty:
-      "m50 0c-27.56 0-50 22.44-50 50s22.44 50 50 50 50-22.44 50-50-22.44-50-50-50zm0 10c22.15 0 40 17.85 40 40s-17.85 40-40 40-40-17.85-40-40 17.85-40 40-40zm12.46 22.43a5 5 0 0 0-3.49 1.535l-8.965 8.965-8.965-8.965a5 5 0 0 0-3.588-1.516 5 5 0 0 0-3.482 8.586l8.965 8.965-8.965 8.965a5 5 0 1 0 7.07 7.07l8.965-8.965 8.965 8.965a5 5 0 1 0 7.07-7.07l-8.965-8.965 8.965-8.965a5 5 0 0 0-3.58-8.605z",
-    error:
-      "m50 0c-27.56 0-50 22.44-50 50s22.44 50 50 50 50-22.44 50-50-22.44-50-50-50zm0 10c22.15 0 40 17.85 40 40s-17.85 40-40 40-40-17.85-40-40 17.85-40 40-40zm-0.07617 12.93a5 5 0 0 0-4.924 5.07v24a5 5 0 1 0 10 0v-24a5 5 0 0 0-5.076-5.07zm0.07617 42.07a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5z",
-  };
-
   const barPadding = 2;
 
   dimensions.boundedWidth =
@@ -82,7 +75,7 @@ function drawBarChart() {
 
   const thresholds = 10;
   const defaultBins = Array(thresholds + 1)
-    .fill()
+    .fill("")
     .map((d, i, { length }) => {
       const bandWidth = dimensions.boundedWidth / length;
       const padding = barPadding;
@@ -184,10 +177,13 @@ function drawBarChart() {
     );
 
   overlayMessageGroup
-    .append("path")
+    .append("use")
+    .attr("x", -20)
+    .attr("y", -80)
+    .attr("width", 40)
+    .attr("height", 40)
     .attr("class", "color-sub")
-    .attr("fill", "currentColor")
-    .attr("transform", "scale(0.4) translate(-50 -200)");
+    .attr("fill", "currentColor");
 
   overlayMessageGroup
     .append("text")
@@ -204,7 +200,7 @@ function drawBarChart() {
     .attr("y", 42);
 
   function handleErrorState(error) {
-    overlayMessageGroup.select("path").attr("d", iconsPaths.error);
+    overlayMessageGroup.select("use").attr("href", "#icon-error");
 
     overlayMessageGroup
       .select("text:nth-of-type(1)")
@@ -212,7 +208,7 @@ function drawBarChart() {
 
     overlayMessageGroup
       .select("text:nth-of-type(2)")
-      .text("Please try again with a different filter");
+      .text("Review the documentation to learn more about the issue");
   }
 
   function handleEmptyState() {
@@ -232,15 +228,13 @@ function drawBarChart() {
       .attr("height", 0)
       .remove();
 
-    overlayMessageGroup.select("path").attr("d", iconsPaths.empty);
+    overlayMessageGroup.select("use").attr("href", "#icon-empty");
 
     overlayMessageGroup.select("text:nth-of-type(1)").text("No data yet");
 
     overlayMessageGroup
       .select("text:nth-of-type(2)")
-      .html(
-        'Check out <a href="#" style="color: inherit;">these docks</a> for help integrating'
-      );
+      .text("Please try again with a different filter");
   }
 
   function handleLoadedState(dataset) {

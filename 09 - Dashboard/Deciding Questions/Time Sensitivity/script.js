@@ -47,8 +47,11 @@ async function drawDashboard() {
   const formatValue = format(".1f");
 
   const root = select("#root");
+  const header = root.append("header");
+  header.append("h2").text("Detailed");
+  header.append("h2").text("Just the Hits");
 
-  function drawDetails() {
+  (() => {
     const radiusAccessor = (d) => d.cloudCover;
     const radiusRange = [2, 20];
 
@@ -218,9 +221,9 @@ async function drawDashboard() {
     axisGroup.selectAll("g.tick text").attr("font-size", 12);
 
     xAxisGroup.select("path").remove();
-  }
+  })();
 
-  function drawHits() {
+  (() => {
     const colorRange = ["hsl(21, 95%, 84%)", "hsl(34, 100%, 50%)"];
     const rotateRange = [0, 180];
     const strokeDashoffsetRange = [1, 0];
@@ -376,10 +379,7 @@ async function drawDashboard() {
           difference > 0 ? "higher" : "lower"
         } than normal`
       );
-  }
-
-  drawDetails();
-  drawHits();
+  })();
 }
 
 drawDashboard();
