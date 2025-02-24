@@ -2035,7 +2035,6 @@ d3.simulation().tick(300);
 ```
 
 <!--
-just update scripts and links for now
 
 ## 10 - Complex Visualizations
 
