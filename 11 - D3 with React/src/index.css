@@ -1,0 +1,28 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: hsl(210, 29%, 29%);
+  background: hsl(210, 17%, 95%);
+  min-block-size: 100svb;
+  font-family: system-ui;
+}
+
+svg text {
+  font-family: system-ui;
+}
+
+#root {
+  max-inline-size: 60rem;
+  margin-inline: auto;
+  padding: 1rem;
+}
+
+#root > * + * {
+  margin-block-start: 0.5rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
