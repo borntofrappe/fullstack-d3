@@ -2034,6 +2034,23 @@ The simulation is then run an arbitrary number of time to eventually position th
 d3.simulation().tick(300);
 ```
 
+## 11 - Using D3 with React
+
+_Please note_: the book discusses how to use D3 with several frameworks, but I decided to only consider React and focus on the overarching idea behind the framework. For React the sub-folder includes a [vite application](https://vite.dev/) you can set up with node.
+
+```sh
+pnpm i
+pnpm dev
+```
+
+_Please also note_: the book creates a fairly robust charting library with several components. The dashboard I try to create on my own is far less professional, but should suffice.
+
+---
+
+It is possible to use D3 as a library to handle the entire lifecycle of a data visualization, to use the imperative syntax, the `select` and `append` functions to generate and manipulate the elements making up the document object model (DOM). Modern web development, however, often relies on tools like React. The idea here is to use frameworks to manage the DOM while relying on D3 as a utility library, for the logic and functions easing the challenges to work with data visualizations.
+
+With a framework it is possible to break down a visualization into components and create something akin to a charting library. It is then possible to create multiple visualizations changing the input properties. It also means that it is not necessary to know the code necessary to draw ticks or lines, which simplifies the task for the end user.
+
 <!--
 
 ## 10 - Complex Visualizations
