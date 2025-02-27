@@ -1,0 +1,10 @@
+.chart {
+  margin: 0;
+  background: #ffffff;
+  padding: 1rem;
+}
+
+.scatterplot {
+  width: 500px;
+  height: 500px;
+}
