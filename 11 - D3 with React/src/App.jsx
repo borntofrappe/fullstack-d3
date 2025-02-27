@@ -2,6 +2,7 @@ import "./App.css";
 import { getScatterData, getTimelineData } from "./data";
 import Timeline from "./Timeline";
 import ScatterPlot from "./ScatterPlot";
+import Histogram from "./Histogram";
 import { timeParse } from "d3";
 
 function App() {
@@ -29,6 +30,14 @@ function App() {
           yAccessor={(d) => d.temperature}
           xLabel="Humidity"
           yLabel="Temperature"
+        />
+      </figure>
+
+      <figure class="chart histogram">
+        <Histogram
+          data={getScatterData()}
+          accessor={(d) => d.humidity}
+          label="Humidity"
         />
       </figure>
     </>
