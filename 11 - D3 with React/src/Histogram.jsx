@@ -1,5 +1,10 @@
 import { bin, extent, max, scaleLinear } from "d3";
 
+import Chart from "./Chart/Chart";
+import LinearGradient from "./Chart/LinearGradient";
+import AxisBottom from "./Chart/AxisBottom";
+import AxisLeft from "./Chart/AxisLeft";
+
 export default function Histogram({ data, accessor, label }) {
   const numberThresholds = 8;
   const width = 250;
@@ -32,96 +37,52 @@ export default function Histogram({ data, accessor, label }) {
     .range([height, 0])
     .nice();
 
-  const xTicks = xScale.ticks(Math.floor(width / 50));
-  const yTicks = yScale.ticks(Math.floor(height / 25));
-
-  
-  const id = `histogram-gradient-${Math.random().toString().slice(-5)}`;
-
-  const viewBox =
-    "0 0 " +
-    (width + margin.left + margin.right) +
-    " " +
-    (height + margin.top + margin.bottom);
+  const gradientId = `histogram-gradient-${Math.random().toString().slice(-5)}`;
 
   return (
-    <svg viewBox={viewBox}>
+    <Chart width={width} height={height} margin={margin}>
       <defs>
-        <linearGradient
-          id={id}
-          gradientUnits="userSpaceOnUse"
+        <LinearGradient
+          id={gradientId}
+          colors={["#9c85f7", "#d0c7f4"]}
           x1="0"
-          y1={0}
+          y1="0"
           x2="0"
           y2={height}
-        >
-          <stop stopColor="#9c85f7" offset="0" />
-          <stop stopColor="#d0c7f4" offset="1" />
-        </linearGradient>
+        />
       </defs>
-      <g transform={`translate(${margin.left} ${margin.top})`}>
-        <g>
-          {bins.map((d, index) => (
-            <rect
-              key={index}
-              fill={`url(#${id})`}
-              x={xScale(d.x0) + barPadding / 2}
-              width={max([0, xScale(d.x1) - xScale(d.x0) - barPadding])}
-              y={yScale(yAccessor(d))}
-              height={height - yScale(yAccessor(d))}
-            />
-          ))}
-        </g>
-
-        <g transform={`translate(0 ${height})`}>
-          <g
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="middle"
-            transform={`translate(0 ${fontSize * 1.5})`}
-          >
-            {xTicks.map((d, index) => (
-              <text key={index} x={xScale(d)}>
-                {d}
-              </text>
-            ))}
-          </g>
-          <line x2={width} stroke="#bdc3c7" strokeWidth={strokeWidthAxis} />
-          <text
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="middle"
-            transform={`translate(${width / 2} ${margin.bottom - 3})`}
-          >
-            {label}
-          </text>
-        </g>
-        <g>
-          <g
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="end"
-            transform={`translate(${-fontSize * 0.7} 0)`}
-          >
-            {yTicks.map((d, index) => (
-              <text key={index} y={yScale(d)}>
-                {d}
-              </text>
-            ))}
-          </g>
-          <line y2={height} stroke="#bdc3c7" strokeWidth={strokeWidthAxis} />
-          <text
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="middle"
-            transform={`translate(${-margin.left + fontSize + 2} ${
-              height / 2
-            }) rotate(-90)`}
-          >
-            Count
-          </text>
-        </g>
+      <g>
+        {bins.map((d, index) => (
+          <rect
+            key={index}
+            fill={`url(#${gradientId})`}
+            x={xScale(d.x0) + barPadding / 2}
+            width={max([0, xScale(d.x1) - xScale(d.x0) - barPadding])}
+            y={yScale(yAccessor(d))}
+            height={height - yScale(yAccessor(d))}
+          />
+        ))}
       </g>
-    </svg>
+
+      <AxisBottom
+        scale={xScale}
+        width={width}
+        height={height}
+        label={label}
+        styleTicks={{ fill: "#9da09c", fontSize: fontSize * 0.9 }}
+        styleLabel={{ fill: "#9da09c", fontSize: fontSize }}
+        styleLine={{ stroke: "#9da09c", strokeWidth: strokeWidthAxis }}
+      />
+
+      <AxisLeft
+        scale={yScale}
+        width={width}
+        height={height}
+        label="Count"
+        styleTicks={{ fill: "#9da09c", fontSize: fontSize * 0.9 }}
+        styleLabel={{ fill: "#9da09c", fontSize: fontSize }}
+        styleLine={{ stroke: "#9da09c", strokeWidth: strokeWidthAxis }}
+      />
+    </Chart>
   );
 }

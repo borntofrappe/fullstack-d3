@@ -1,4 +1,9 @@
 import { extent, scaleLinear } from "d3";
+
+import Chart from "./Chart/Chart";
+import AxisBottom from "./Chart/AxisBottom";
+import AxisLeft from "./Chart/AxisLeft";
+
 export default function ScatterPlot({
   data,
   xAccessor,
@@ -28,80 +33,38 @@ export default function ScatterPlot({
     .range([height, 0])
     .nice();
 
-  const xTicks = xScale.ticks(Math.floor(width / 20));
-  const yTicks = yScale.ticks(Math.floor(height / 15));
-
-  const viewBox =
-    "0 0 " +
-    (width + margin.left + margin.right) +
-    " " +
-    (height + margin.top + margin.bottom);
-
   return (
-    <svg display="block" viewBox={viewBox}>
-      <g transform={`translate(${margin.left} ${margin.top})`}>
-        <g fill="#9980fa">
-          {data.map((value, index) => (
-            <circle
-              key={index}
-              r={radius}
-              cx={xScale(xAccessor(value))}
-              cy={yScale(yAccessor(value))}
-            />
-          ))}
-        </g>
-
-        <g transform={`translate(0 ${height})`}>
-          <g
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="middle"
-            transform={`translate(0 ${fontSize * 1.5})`}
-          >
-            {xTicks.map((d, index) => (
-              <text key={index} x={xScale(d)}>
-                {d}
-              </text>
-            ))}
-          </g>
-
-          <line x2={width} stroke="#bdc3c7" strokeWidth={strokeWidthAxis} />
-          <text
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="middle"
-            transform={`translate(${width / 2} ${margin.bottom - 3})`}
-          >
-            {xLabel}
-          </text>
-        </g>
-
-        <g>
-          <g
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="end"
-            transform={`translate(${-fontSize * 0.7} 0)`}
-          >
-            {yTicks.map((d, index) => (
-              <text key={index} y={yScale(d)}>
-                {d}
-              </text>
-            ))}
-          </g>
-          <line y2={height} stroke="#bdc3c7" strokeWidth={strokeWidthAxis} />
-          <text
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="middle"
-            transform={`translate(${-margin.left + fontSize + 2} ${
-              height / 2
-            }) rotate(-90)`}
-          >
-            {yLabel}
-          </text>
-        </g>
+    <Chart width={width} height={height} margin={margin}>
+      <g fill="#9980fa">
+        {data.map((value, index) => (
+          <circle
+            key={index}
+            r={radius}
+            cx={xScale(xAccessor(value))}
+            cy={yScale(yAccessor(value))}
+          />
+        ))}
       </g>
-    </svg>
+
+      <AxisBottom
+        scale={xScale}
+        width={width}
+        height={height}
+        label={xLabel}
+        styleTicks={{ fill: "#9da09c", fontSize: fontSize * 0.9 }}
+        styleLabel={{ fill: "#9da09c", fontSize: fontSize }}
+        styleLine={{ stroke: "#9da09c", strokeWidth: strokeWidthAxis }}
+      />
+
+      <AxisLeft
+        scale={yScale}
+        width={width}
+        height={height}
+        label={yLabel}
+        styleTicks={{ fill: "#9da09c", fontSize: fontSize * 0.9 }}
+        styleLabel={{ fill: "#9da09c", fontSize: fontSize }}
+        styleLine={{ stroke: "#9da09c", strokeWidth: strokeWidthAxis }}
+      />
+    </Chart>
   );
 }

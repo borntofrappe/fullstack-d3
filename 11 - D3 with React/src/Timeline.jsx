@@ -1,12 +1,17 @@
 import {
-  area,
   curveCatmullRom,
   extent,
-  line,
   scaleLinear,
   scaleTime,
   timeFormat,
 } from "d3";
+
+import LinearGradient from "./Chart/LinearGradient";
+import Chart from "./Chart/Chart";
+import Line from "./Chart/Line";
+import Area from "./Chart/Area";
+import AxisBottom from "./Chart/AxisBottom";
+import AxisLeft from "./Chart/AxisLeft";
 
 export default function Timeline({ data, xAccessor, yAccessor, label }) {
   const width = 500;
@@ -30,101 +35,62 @@ export default function Timeline({ data, xAccessor, yAccessor, label }) {
     .range([height, 0])
     .nice();
 
-  const xTicks = xScale.ticks(Math.floor(width / 70));
-  const yTicks = yScale.ticks(Math.floor(height / 20));
-
-  const lineGenerator = line()
-    .x((d) => xScale(xAccessor(d)))
-    .y((d) => yScale(yAccessor(d)))
-    .curve(curveCatmullRom);
-
-  const areaGenerator = area()
-    .x((d) => xScale(xAccessor(d)))
-    .y0((d) => yScale(yScale.domain()[0]))
-    .y1((d) => yScale(yAccessor(d)))
-    .curve(curveCatmullRom);
-
   const gradientId = `timeline-gradient-${Math.random().toString().slice(-5)}`;
 
-  const viewBox =
-    "0 0 " +
-    (width + margin.left + margin.right) +
-    " " +
-    (height + margin.top + margin.bottom);
-
   return (
-    <svg viewBox={viewBox}>
+    <Chart width={width} height={height} margin={margin}>
       <defs>
-        <linearGradient
+        <LinearGradient
           id={gradientId}
-          gradientUnits="userSpaceOnUse"
+          colors={["#e2def3", "#f8f9fa"]}
           x1="0"
-          y1={0}
+          y1="0"
           x2="0"
           y2={height}
-        >
-          <stop stopColor="#e2def3" offset="0" />
-          <stop stopColor="#f8f9fa" offset="1" />
-        </linearGradient>
+        />
       </defs>
-      <g transform={`translate(${margin.left} ${margin.top})`}>
-        <path
-          d={areaGenerator(data)}
-          fill={`url(#${gradientId})`}
-          opacity={0.2}
-        />
 
-        <path
-          d={lineGenerator(data)}
-          fill="none"
-          stroke="#9980fa"
-          strokeWidth={strokeWidthLine}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+      <Area
+        data={data}
+        xAccessor={(d) => xScale(xAccessor(d))}
+        yAccessor={(d) => yScale(yAccessor(d))}
+        y0Accessor={(d) => yScale(yScale.domain()[0])}
+        curve={curveCatmullRom}
+        style={{
+          fill: `url(#${gradientId})`,
+        }}
+      />
 
-        <g transform={`translate(0 ${height})`}>
-          <g
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="middle"
-            transform={`translate(0 ${fontSize * 1.5})`}
-          >
-            {xTicks.map((d, index) => (
-              <text key={index} x={xScale(d)}>
-                {formatDate(d)}
-              </text>
-            ))}
-          </g>
+      <Line
+        data={data}
+        xAccessor={(d) => xScale(xAccessor(d))}
+        yAccessor={(d) => yScale(yAccessor(d))}
+        curve={curveCatmullRom}
+        style={{
+          stroke: "#9980fa",
+          strokeWidth: strokeWidthLine,
+          strokeLinecap: "round",
+        }}
+      />
 
-          <line x2={width} stroke="#9da09c" strokeWidth={strokeWidthAxis} />
-        </g>
-        <g>
-          <g
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="end"
-            transform={`translate(${-fontSize * 0.7} 0)`}
-          >
-            {yTicks.map((d, index) => (
-              <text key={index} y={yScale(d)}>
-                {d}
-              </text>
-            ))}
-          </g>
-          <line y2={height} stroke="#9da09c" strokeWidth={strokeWidthAxis} />
-          <text
-            fill="#9da09c"
-            fontSize={fontSize}
-            textAnchor="middle"
-            transform={`translate(${-margin.left + fontSize + 2} ${
-              height / 2
-            }) rotate(-90)`}
-          >
-            {label}
-          </text>
-        </g>
-      </g>
-    </svg>
+      <AxisBottom
+        scale={xScale}
+        width={width}
+        height={height}
+        formatTick={formatDate}
+        styleTicks={{ fill: "#9da09c", fontSize: fontSize * 0.9 }}
+        styleLine={{ stroke: "#9da09c", strokeWidth: strokeWidthAxis }}
+      />
+
+      <AxisLeft
+        scale={yScale}
+        width={width}
+        height={height}
+        label={label}
+        styleTicks={{ fill: "#9da09c", fontSize: fontSize * 0.9 }}
+        styleLabel={{ fill: "#9da09c", fontSize: fontSize }}
+        styleLine={{ stroke: "#9da09c", strokeWidth: strokeWidthAxis }}
+      />
+    </Chart>
   );
 }

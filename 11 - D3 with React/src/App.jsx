@@ -14,7 +14,7 @@ function App() {
         <h1>Weather dahboard</h1>
       </header>
 
-      <figure class="chart timeline">
+      <figure className="chart timeline">
         <Timeline
           data={getTimelineData()}
           xAccessor={(d) => parseDate(d.date)}
@@ -23,7 +23,7 @@ function App() {
         />
       </figure>
 
-      <figure class="chart scatterplot">
+      <figure className="chart scatterplot">
         <ScatterPlot
           data={getScatterData()}
           xAccessor={(d) => d.humidity}
@@ -33,7 +33,7 @@ function App() {
         />
       </figure>
 
-      <figure class="chart histogram">
+      <figure className="chart histogram">
         <Histogram
           data={getScatterData()}
           accessor={(d) => d.humidity}
