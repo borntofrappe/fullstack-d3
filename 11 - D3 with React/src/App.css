@@ -1,5 +1,30 @@
+.app {
+  max-inline-size: 80rem;
+  padding: 1rem;
+  margin-inline: auto;
+}
+
+.app > * + * {
+  margin-block-start: 1rem;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+}
+
 .chart {
   margin: 0;
   background: #ffffff;
   padding: 1rem;
+
+  > svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.timeline {
+  grid-column: 1/-1;
 }

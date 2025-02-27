@@ -1,5 +1,7 @@
 * {
   box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 body {
@@ -11,16 +13,6 @@ body {
 
 svg text {
   font-family: system-ui;
-}
-
-#root {
-  max-inline-size: 60rem;
-  margin-inline: auto;
-  padding: 1rem;
-}
-
-#root > * + * {
-  margin-block-start: 0.5rem;
 }
 
 h1 {

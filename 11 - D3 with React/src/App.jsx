@@ -9,38 +9,40 @@ function App() {
   const parseDate = timeParse("%m/%d/%Y");
 
   return (
-    <>
+    <div className="app">
       <header>
         <h1>Weather dahboard</h1>
       </header>
 
-      <figure className="chart timeline">
-        <Timeline
-          data={getTimelineData()}
-          xAccessor={(d) => parseDate(d.date)}
-          yAccessor={(d) => d.temperature}
-          label="Temperature"
-        />
-      </figure>
+      <div class="charts">
+        <figure className="chart timeline">
+          <Timeline
+            data={getTimelineData()}
+            xAccessor={(d) => parseDate(d.date)}
+            yAccessor={(d) => d.temperature}
+            label="Temperature"
+          />
+        </figure>
 
-      <figure className="chart scatterplot">
-        <ScatterPlot
-          data={getScatterData()}
-          xAccessor={(d) => d.humidity}
-          yAccessor={(d) => d.temperature}
-          xLabel="Humidity"
-          yLabel="Temperature"
-        />
-      </figure>
+        <figure className="chart scatterplot">
+          <ScatterPlot
+            data={getScatterData()}
+            xAccessor={(d) => d.humidity}
+            yAccessor={(d) => d.temperature}
+            xLabel="Humidity"
+            yLabel="Temperature"
+          />
+        </figure>
 
-      <figure className="chart histogram">
-        <Histogram
-          data={getScatterData()}
-          accessor={(d) => d.humidity}
-          label="Humidity"
-        />
-      </figure>
-    </>
+        <figure className="chart histogram">
+          <Histogram
+            data={getScatterData()}
+            accessor={(d) => d.humidity}
+            label="Humidity"
+          />
+        </figure>
+      </div>
+    </div>
   );
 }
 
