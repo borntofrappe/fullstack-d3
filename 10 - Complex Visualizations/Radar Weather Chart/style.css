@@ -13,14 +13,6 @@ body {
   font-family: system-ui;
 }
 
-.color-sub {
-  color: hsl(204, 19%, 80%);
-}
-
-.color-background {
-  color: hsl(0, 0%, 100%);
-}
-
 svg {
   color: hsl(210, 29%, 25%);
 }
@@ -30,12 +22,12 @@ svg text {
   fill: currentColor;
 }
 
-#root {
-  margin: 1rem 0;
+.color-sub {
+  color: hsl(204, 21%, 35%);
 }
 
 #root > * + * {
-  margin-top: 1rem;
+  margin-block-start: 1rem;
 }
 
 header {
@@ -43,7 +35,7 @@ header {
 }
 
 header > * + * {
-  margin-top: 0.25rem;
+  margin-block-start: 0.25rem;
 }
 
 header h1 {
@@ -70,7 +62,7 @@ header h1 {
 }
 
 #wrapper #tooltip > * + * {
-  margin-top: 0.25rem;
+  margin-block-start: 0.25rem;
 }
 
 #wrapper #tooltip h2 {
@@ -88,7 +80,7 @@ header h1 {
 }
 
 #wrapper #tooltip dl {
-  margin-top: 0.5rem;
+  margin-block-start: 0.5rem;
   font-size: 0.8rem;
   display: grid;
   grid-template-columns: 1fr auto;
@@ -98,7 +90,7 @@ header h1 {
 }
 
 #wrapper #tooltip dl dt {
-  padding-left: 0.25rem;
+  padding-inline-start: 0.25rem;
 }
 
 #wrapper #tooltip dl > * {

@@ -2317,11 +2317,9 @@ _Plese note:_ there are parts I elected not to document, hoping to focus on the 
 
 - the mini-histogram are attributed a color based on the selected date
 
-<!--
-
 ### Radar Weather Chart
 
-The second complex visualization focuses on a radial line chart, studying the weather dataset through multiple metrics. The code is well worth a read, and what follows is but a few notes on the structure of the visualization and the d3 library.
+The second complex visualization focuses on a radial line chart studying the weather dataset through multiple metrics. The code is well worth a read, and what follows is but a few notes on the structure of the visualization and the D3 library.
 
 #### Peripherals
 
@@ -2333,23 +2331,23 @@ Before the actual data, the goal is to show the axis with a series of lines radi
 const months = d3.timeMonths(...angleScale.domain());
 ```
 
-Instead of computing the `x` and `y` coordinate of where the lines should end, the `<path>` element draws a straight line upwards, and then rotates the line from the center of the visualization.
+Instead of computing the `x` and `y` coordinate of where the lines should end, the `<path>` element draws a straight line upwards and then rotates the line from the center of the visualization.
 
 ```js
 .attr('transform', d => `rotate(${(angleScale(d) * 180) / Math.PI})`)
 ```
 
-The name of the months is included with a `<text>` element, and while it would be possible to position the elements with the `transform` attribute, the cosine and sine function are helpful to locate the rightful coordinates.
+The name of the months is included with a `<text>` element, and while it would be possible to position the elements with the `transform` attribute, the cosine and sine function are helpful to find the correct coordinates.
 
 ```js
 const angle = angleScale(d) - Math.PI / 2;
 const x =
-  Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.62);
+  Math.cos(angle) * (dimensions.boundedRadius + dimensions.margin * 0.6);
 const y =
-  Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.62);
+  Math.sin(angle) * (dimensions.boundedRadius + dimensions.margin * 0.6);
 ```
 
-The `text-anchor` attribute is modified to have the text aligned left, center or right according to its horizontal position.
+The `text-anchor` attribute is modified to have the text aligned left, center or right according to the horizontal position.
 
 ```js
 return Math.abs(x) < 5 ? "middle" : x > 0 ? "start" : "end";
@@ -2361,7 +2359,7 @@ Past the axis, grid lines are included with a series of `<circle>` element, for 
 const temperatureTicks = radiusScale.ticks(4); // [20, 40, 60, 80, 100]
 ```
 
-The ticks are represented with circles, but also `<text>` elements, positioned vertically and above a solid rectangle. The rectangle provides a background to avoid a visual conflict between labels and grid lines.
+The ticks are represented with circles, but also `<text>` elements, positioned vertically and above a solid rectangle. The rectangle, positioned and sized rather tentatively, provides a background to avoid a visual conflict between labels and grid lines.
 
 #### Data
 
@@ -2462,20 +2460,20 @@ The types are included with an ordinal scale, which maps a discrete domain to a 
 Annotations are included a `<path>` and `<text>` element. The text is positioned outside of the radar chart, while the path points from a feature of the radar chart to the label itself. `drawAnnotation` is helpful to repeat the instructions for the different metrics.
 
 ```js
-function drawAnnotation(angle, offset, text) {}
+function drawAnnotation(text, angle, offset) {}
 ```
 
 `offset` describe where the line should start, while `angle` refers to the position around the radar. Instead of using hard-coded angles, I opted to pick the angle from the dataset. This allows to point to actual values.
 
 ```js
 drawAnnotation(
+  "Cloud Cover",
   angleScale(dateAccessor(dataset[22])),
-  dimensions.boundedRadius + dimensions.margin * 0.5,
-  "Cloud Cover"
+  dimensions.boundedRadius + dimensions.margin * 0.5
 );
 ```
 
-The label for the UV index tends to exceed the limits of the `<svg>` container, and a quick solution is to alter the `overflow` property on the wrapping element.
+The label for the UV index tends to exceed the limits of the `<svg>` container, and a quick solution would be the `overflow` property. The option may work for pages entirely devoted to a visualization, but is a liability when the chart is part of a more elaborate layout.
 
 ```css
 #wrapper svg {
@@ -2550,6 +2548,8 @@ const arcGenerator = d3
   .startAngle(angle - 0.02)
   .endAngle(angle + 0.02);
 ```
+
+<!--
 
 ### Animated Sankey Diagram
 
