@@ -13,14 +13,6 @@ body {
   font-family: system-ui;
 }
 
-.color-sub {
-  color: hsl(204, 19%, 80%);
-}
-
-.color-background {
-  color: hsl(0, 0%, 100%);
-}
-
 svg {
   color: hsl(210, 29%, 25%);
 }
@@ -30,12 +22,20 @@ svg text {
   fill: currentColor;
 }
 
-#root {
-  margin: 1rem 0;
+svg .color-sub {
+  color: hsl(204, 19%, 80%);
+}
+
+svg .color-background {
+  color: hsl(0, 0%, 100%);
+}
+
+svg .color-hover {
+  color: hsl(239, 42%, 54%);
 }
 
 #root > * + * {
-  margin-top: 1rem;
+  margin-block-start: 1rem;
 }
 
 header {
@@ -43,7 +43,7 @@ header {
 }
 
 header > * + * {
-  margin-top: 0.25rem;
+  margin-block-start: 0.25rem;
 }
 
 header h1 {
@@ -52,6 +52,7 @@ header h1 {
 }
 
 header p {
+  color: hsl(210, 29%, 23%);
   line-height: 1.5;
   font-size: 0.9rem;
 }

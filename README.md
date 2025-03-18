@@ -2034,25 +2034,6 @@ The simulation is then run an arbitrary number of time to eventually position th
 d3.simulation().tick(300);
 ```
 
-## 11 - Using D3 with React
-
-_Please note_: the book discusses how to use D3 with several frameworks, but I decided to only consider React and focus on the overarching idea behind the framework. For React the sub-folder includes a [vite application](https://vite.dev/) you can set up with node.
-
-```sh
-pnpm i
-pnpm dev
-```
-
-_Please also note_: the book creates a fairly robust charting library with several components. The dashboard I try to create on my own is far less professional, but should suffice.
-
----
-
-It is possible to use D3 as a library to handle the entire lifecycle of a data visualization, to use the imperative syntax, the `select` and `append` functions to generate and manipulate the elements making up the document object model (DOM). Modern web development, however, often relies on tools like React. The idea here is to use frameworks to manage the DOM while relying on D3 as a utility library, for the logic and functions easing the challenges to work with data visualizations.
-
-With a framework it is possible to break down a visualization into components and create something akin to a charting library. It is then possible to create multiple visualizations changing the input properties. It also means that it is not necessary to know the code necessary to draw ticks or lines, which simplifies the task for the end user.
-
-<!--
-
 ## 10 - Complex Visualizations
 
 The chapter is devoted to three complex visualizations, exploring multiple questions with elaborate designs and interactions. In the folder I try to recreate the projects as closely as possible.
@@ -2072,11 +2053,11 @@ const yAccessor = (d) => d.temperatureMax;
 
 #### Background
 
-The visualization includes a solid background in the form of a rectangle, spanning the entirety of the bounded dimensions. The shape is helpful to create a clear distinction between the scatterplot and the surrounding visuals (axis and soon-to-be histograms).
+The visualization includes a solid background in the form of a rectangle spanning the entirety of the bound dimensions. The shape is helpful to create a clear distinction between the scatterplot and the surrounding visuals (axis and soon-to-be histograms).
 
 #### Domain
 
-Both dimensions use the same domain, to have the sides immediately comparable.
+Both dimensions use the same domain to have the sides immediately comparable.
 
 ```js
 const domain = d3.extent([
@@ -2102,7 +2083,7 @@ d3.scaleSequential()
   .interpolator((d) => d);
 ```
 
-The idea is to have the interpolator function receive a date and return a color in a prescribed interval. In the specific project, the interpolator makes a reference to the `d3.interpolateRainbow` function, which receives a value in the `[0, 1]` range to return a color in the rainbow spectrum.
+The idea is to have the interpolator function receive a date and return a color in a prescribed interval. In the project, the interpolator makes a reference to the `d3.interpolateRainbow` function, which receives a value in the `[0, 1]` range to return a color in the rainbow spectrum.
 
 ```js
 d3.scaleSequential()
@@ -2114,6 +2095,8 @@ d3.scaleSequential()
 ```
 
 By multiplying the value by `-1` it is possible to invert the rainbow, and have the warmer season described by warmer colors (red, orange, yellow).
+
+---
 
 This is helpful for my own understanding, but the interpolator function might also work as follows:
 
@@ -2127,14 +2110,16 @@ Here the color is picked from the hslcolor wheel in the `[0, 360]` range, with a
 .interpolator(d => d3.hcl((d * 360 + 220) % 360, 160, 75));
 ```
 
-As mentioned, the scale is used to color the circles in the scatterplot.
+---
+
+The scale is used to color the circles in the scatterplot.
 
 ```js
 .append('circle')
 .attr('fill', d => colorScale(colorAccessor(d)));
 ```
 
-However, the scale is also included in the `<linearGradient>` element to color the legend. The idea is to here include one `<stop>` element for each month, creating a gradient through twelve colors.
+However, the scale is also included in the `<linearGradient>` element to color the legend. Here you include one `<stop>` element for each month, creating a gradient through twelve colors.
 
 ```js
 .selectAll('stop')
@@ -2143,16 +2128,11 @@ However, the scale is also included in the `<linearGradient>` element to color t
 
 `d3.timeMonths` creates an array of dates between a start and end date. These dates are handily obtained through the domain of the scale itself.
 
-The scale is useful elsewhere, for instance in the `fill` color of the histograms created for the highlighted circles (soon-to-be), but here I want to mention how the domain is included once more in the legend, to provide the labels of the gradient for every other month.
-
-```js
-.selectAll('g')
-.data(d3.timeMonths(...colorScale.domain()).filter((d, i) => i % 2 !== 0))
-```
+The scale is useful elsewhere, for instance in the `fill` color of the histograms created for the highlighted circles (soon-to-be).
 
 #### Histograms
 
-The idea is to include two histograms, describing the overall distribution of the temperatures across the year.
+The goal is to include two histograms describing the overall distribution of the temperatures across the year.
 
 The dimensions of the visuals are included in the `dimensions` object, which is itself modified to increase the top and right margin.
 
@@ -2210,7 +2190,7 @@ The way the histogram is generated is similar to the visualizaton in a previous 
     .y1(dimensions.histogram.height);
   ```
 
-  `x0` and `x1` are two fields included by the bin generator for each array, describing the start and end value (in this instance in terms of minimum temperature).
+  `x0` and `x1` are two fields included by the bin generator for each array for the start and end value (in this instance in terms of minimum temperature).
 
   As mentioned, the function is finally included in a `<path>` element above the scatterplot.
 
@@ -2225,7 +2205,7 @@ The same logic is repeated for the right side, but the histogram is ultimately f
 
 #### Scatterplot Interaction
 
-When hovering on the scatterplot, the visualization highlights a specific circle. This is implemented exactly as in the chapter devoted to interactions, with a tooltip and Delaunay's triangulation, so I want devote much attention to the code. I will note, however, that beside the tooltip and the circle highlighting the selection, the visualization includes two rectangle elements, to highlight the color in the context of the histogram.
+When hovering on the scatterplot, the visualization highlights a specific circle. This is implemented exactly as in the chapter devoted to interactions, with a tooltip and Delaunay's triangulation, so I won't devote much attention to the code. I will note, however, that beside the tooltip and the circle highlighting the selection, the visualization includes two rectangle elements to highlight the color in the context of the histogram.
 
 ```js
 highlightGroup.append("rect");
@@ -2239,7 +2219,7 @@ One important mention goes to the `mix-blend-mode` property, used to have the re
 highlightGroup.style("mix-blend-mode", "color-burn");
 ```
 
-The highlight group is also included before the scatterplot, so that the rectangles are drawn below the circles.
+The highlight group is also included before the scatterplot so that the rectangles are drawn below the circles.
 
 #### Legend Interaction
 
@@ -2336,6 +2316,8 @@ _Plese note:_ there are parts I elected not to document, hoping to focus on the 
 - the labels and ticks above the legend are hidden when hovering on the legend, allowing to focus on the highlight
 
 - the mini-histogram are attributed a color based on the selected date
+
+<!--
 
 ### Radar Weather Chart
 
@@ -3030,3 +3012,20 @@ function generatePerson(elapsed) {
   ```
 
 -->
+
+## 11 - Using D3 with React
+
+_Please note_: the book discusses how to use D3 with several frameworks, but I decided to only consider React and focus on the overarching idea behind the framework. For React the sub-folder includes a [vite application](https://vite.dev/) you can set up with node.
+
+```sh
+pnpm i
+pnpm dev
+```
+
+_Please also note_: the book creates a fairly robust charting library with several components. The dashboard I try to create on my own is far less professional, but should suffice.
+
+---
+
+It is possible to use D3 as a library to handle the entire lifecycle of a data visualization, to use the imperative syntax, the `select` and `append` functions to generate and manipulate the elements making up the document object model (DOM). Modern web development, however, often relies on tools like React. The idea here is to use frameworks to manage the DOM while relying on D3 as a utility library, for the logic and functions easing the challenges to work with data visualizations.
+
+With a framework it is possible to break down a visualization into components and create something akin to a charting library. It is then possible to create multiple visualizations changing the input properties. It also means that it is not necessary to know the code necessary to draw ticks or lines, which simplifies the task for the end user.
