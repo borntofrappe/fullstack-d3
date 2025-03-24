@@ -14,7 +14,7 @@ function App() {
         <h1>Weather dahboard</h1>
       </header>
 
-      <div class="charts">
+      <div className="charts">
         <figure className="chart timeline">
           <Timeline
             data={getTimelineData()}
