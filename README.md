@@ -14,14 +14,14 @@ _Introductory notes:_
 
   This helps to provide an overview of the parts of the library actually being used, but is also important to stress the structure of D3. In production it may be preferable to include only the necessary modules instead of the entire library.
 
-- at least for the first few visualizations, data is retrieved from a file in `.json` format
-
-  To bypass the CORS safety restriction set up a server; `live-server` might be the quickest solution if installed globally
+- for most visualizations data is retrieved from a file in `.json` format. To bypass the CORS safety restriction you need to set up a server and `live-server` might be the quickest solution if installed globally
 
   ```sh
   pnpm add -g live-server
   live-server # visit http://localhost:8080/
   ```
+
+  With the command you are able to see every visualization except the one in chapter 11. "11 - D3 with React" includes a more elaborate setup with a vite app. 
 
 ## 01 - Line Chart
 
