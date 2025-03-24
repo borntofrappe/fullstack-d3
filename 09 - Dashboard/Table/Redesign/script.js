@@ -80,7 +80,7 @@ async function drawDashboard() {
           <path 
           d="
             M ${positionScale(parseInt(timeFormatHour(timeParseSeconds(d))))} 0 
-            v ${dimensions.height} 
+            v ${dimensions.height}"
           fill="none" 
           stroke="currentColor" 
           stroke-width="${strokeWidth}"" />
