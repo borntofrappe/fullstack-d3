@@ -15,25 +15,25 @@ const {
 
 async function drawAnimatedSankey() {
   /* ACCESS DATA */
-  const dataset = await json('./education.json');
+  const dataset = await json("./education.json");
 
-  const sexAccessor = d => d.sex;
-  const sexNames = ['female', 'male'];
+  const sexAccessor = (d) => d.sex;
+  const sexNames = ["female", "male"];
   const sexIds = range(sexNames.length);
 
-  const educationAccessor = d => d.education;
+  const educationAccessor = (d) => d.education;
   const educationNames = [
-    '<High School',
-    'High School',
-    'Some Post-secondary',
-    'Post-secondary',
+    "<High School",
+    "High School",
+    "Some Post-secondary",
+    "Post-secondary",
     "Associate's",
     "Bachelor's and up",
   ];
   const educationIds = range(educationNames.length);
 
-  const sesAccessor = d => d.ses;
-  const sesNames = ['low', 'middle', 'high'];
+  const sesAccessor = (d) => d.ses;
+  const sesNames = ["low", "middle", "high"];
   const sesIds = range(sesNames.length);
 
   const getStatusKey = ({ sex, ses }) => `${sex}--${ses}`;
@@ -55,7 +55,7 @@ async function drawAnimatedSankey() {
     return accDataset;
   }, {});
 
-  const getRandomValue = array =>
+  const getRandomValue = (array) =>
     array[Math.floor(Math.random() * array.length)];
   const getRandomNumberInRange = (min, max) =>
     Math.random() * (max - min) + min;
@@ -104,7 +104,7 @@ async function drawAnimatedSankey() {
   /* SCALES */
   const colorScale = scaleLinear()
     .domain(extent(sesIds))
-    .range(['hsl(178, 84%, 43%)', 'hsl(332, 55%, 46%)'])
+    .range(["hsl(178, 84%, 43%)", "hsl(332, 55%, 46%)"])
     .interpolate(interpolateHcl);
 
   const xScale = scaleLinear()
@@ -127,201 +127,222 @@ async function drawAnimatedSankey() {
     .curve(curveMonotoneX);
 
   const linkOptions = merge(
-    sesIds.map(startId =>
-      educationIds.map(endId => Array(linkPoints).fill([startId, endId]))
+    sesIds.map((startId) =>
+      educationIds.map((endId) => Array(linkPoints).fill([startId, endId]))
     )
   );
 
   /* DRAW DATA */
-  const wrapper = select('#wrapper')
-    .append('svg')
-    .attr('width', dimensions.width)
-    .attr('height', dimensions.height)
-    .attr('viewBox', [0, 0, dimensions.width, dimensions.height]);
+  const root = select("#root");
 
-  const bounds = wrapper
-    .append('g')
+  const header = root.append("header");
+
+  header
+    .append("h1")
+    .text("What do people achieve within 12 years of starting high school?");
+  header
+    .append("p")
+    .text(
+      "Simulated data based on a National Center for Education Statistics study of where high school sophomores are ten years later."
+    );
+
+  const wrapper = root.append("main").attr("id", "wrapper");
+
+  const svg = wrapper.append("svg");
+
+  root
+    .append("footer")
+    .html(
+      `Data from the U.S. Department of Education, National Center for Education Statistics. <a href="https://nces.ed.gov/programs/digest/d14/tables/dt14_104.91.asp">Education Longitudinal Study of 2002</a>.`
+    );
+
+  svg
+    .attr("width", dimensions.width)
+    .attr("height", dimensions.height)
+    .attr("viewBox", [0, 0, dimensions.width, dimensions.height]);
+
+  const bounds = svg
+    .append("g")
     .attr(
-      'transform',
+      "transform",
       `translate(${dimensions.margin.left} ${dimensions.margin.top})`
     );
 
-  const linksGroup = bounds.append('g');
+  const linksGroup = bounds.append("g");
+  const peripheralsGroup = bounds.append("g");
+  const markersGroup = bounds.append("g");
+  const metricsGroup = bounds.append("g");
+  const startingBarsGroup = bounds.append("g");
 
   linksGroup
-    .selectAll('path')
+    .selectAll("path")
     .data(linkOptions)
     .enter()
-    .append('path')
-    .attr('d', linkGenerator)
-    .attr('fill', 'none')
-    .attr('stroke', 'white')
-    .attr('stroke-width', dimensions.pathHeight);
+    .append("path")
+    .attr("d", linkGenerator)
+    .attr("fill", "none")
+    .attr("stroke", "white")
+    .attr("stroke-width", dimensions.pathHeight);
 
   /* PERIPHERALS */
-  const peripheralsGroup = bounds.append('g');
   const startLabelGroup = peripheralsGroup
-    .append('g')
-    .attr('transform', 'translate(-16, 0)')
-    .attr('text-anchor', 'end')
-    .attr('fill', 'currentColor');
+    .append("g")
+    .attr("transform", "translate(-16, 0)")
+    .attr("text-anchor", "end")
+    .attr("fill", "currentColor");
 
   const startLabel = startLabelGroup
-    .append('text')
-    .attr('font-size', 12)
-    .attr('fill', ' hsl(215, 10%, 56%)')
-    .attr('y', startYScale(sesIds[sesIds.length - 1]) - 64);
+    .append("text")
+    .attr("font-size", 12)
+    .attr("fill", " hsl(215, 10%, 56%)")
+    .attr("y", startYScale(sesIds[sesIds.length - 1]) - 64);
 
-  startLabel.append('tspan').text('Socioeconomic');
-  startLabel
-    .append('tspan')
-    .attr('x', 0)
-    .attr('dy', 16)
-    .text('Status');
+  startLabel.append("tspan").text("Socioeconomic");
+  startLabel.append("tspan").attr("x", 0).attr("dy", 16).text("Status");
 
   startLabelGroup
-    .append('g')
-    .attr('dominant-baseline', 'middle')
-    .attr('font-size', 15)
-    .attr('font-weight', 700)
-    .selectAll('text')
+    .append("g")
+    .attr("dominant-baseline", "middle")
+    .attr("font-size", 15)
+    .attr("font-weight", 700)
+    .selectAll("text")
     .data(sesIds)
     .enter()
-    .append('text')
-    .text(d => sesNames[d])
-    .attr('y', d => startYScale(d))
-    .style('text-transform', 'capitalize');
+    .append("text")
+    .text((d) => sesNames[d])
+    .attr("y", (d) => startYScale(d))
+    .style("text-transform", "capitalize");
 
   const endLabelGroup = peripheralsGroup
-    .append('g')
-    .attr('transform', `translate(${dimensions.boundedWidth + 32}, 0)`)
-    .attr('text-anchor', 'start')
-    .attr('fill', 'currentColor');
+    .append("g")
+    .attr("transform", `translate(${dimensions.boundedWidth + 32}, 0)`)
+    .attr("text-anchor", "start")
+    .attr("fill", "currentColor");
 
   const endLabelGroups = endLabelGroup
-    .selectAll('g')
+    .selectAll("g")
     .data(educationIds)
     .enter()
-    .append('g')
+    .append("g")
     .attr(
-      'transform',
-      d => `translate(0 ${endYScale(d) - dimensions.pathHeight / 2 + 12})`
+      "transform",
+      (d) => `translate(0 ${endYScale(d) - dimensions.pathHeight / 2 + 12})`
     );
 
   endLabelGroups
-    .append('text')
-    .attr('font-size', 15)
-    .attr('font-weight', 700)
-    .text(d => educationNames[d])
-    .style('text-transform', 'capitalize');
+    .append("text")
+    .attr("font-size", 15)
+    .attr("font-weight", 700)
+    .text((d) => educationNames[d])
+    .style("text-transform", "capitalize");
 
   const radiusCircle = 5;
 
   endLabelGroups
-    .append('circle')
-    .attr('opacity', 0.5)
-    .attr('fill', 'hsl(215, 10%, 56%)')
-    .attr('r', radiusCircle)
-    .attr('transform', 'translate(5 14)');
+    .append("circle")
+    .attr("opacity", 0.5)
+    .attr("fill", "hsl(215, 10%, 56%)")
+    .attr("r", radiusCircle)
+    .attr("transform", "translate(5 14)");
 
-  const pointsTriangle = [[-6, 5], [6, 5], [0, -5]].join(',');
+  const pointsTriangle = [
+    [-6, 5],
+    [6, 5],
+    [0, -5],
+  ].join(",");
 
   endLabelGroups
-    .append('polygon')
-    .attr('opacity', 0.5)
-    .attr('fill', 'hsl(215, 10%, 56%)')
-    .attr('points', pointsTriangle)
-    .attr('transform', 'translate(5 30)');
+    .append("polygon")
+    .attr("opacity", 0.5)
+    .attr("fill", "hsl(215, 10%, 56%)")
+    .attr("points", pointsTriangle)
+    .attr("transform", "translate(5 30)");
 
-  const markersGroup = bounds.append('g');
-  const metricsGroup = bounds.append('g');
-
-  const startingBarsGroup = bounds.append('g');
   startingBarsGroup
-    .selectAll('rect')
+    .selectAll("rect")
     .data(sesIds)
     .enter()
-    .append('rect')
-    .attr('fill', d => colorScale(d))
-    .attr('x', -dimensions.barWidth / 2)
-    .attr('width', dimensions.barWidth)
-    .attr('y', d => startYScale(d) - dimensions.pathHeight / 2)
-    .attr('height', dimensions.pathHeight);
+    .append("rect")
+    .attr("fill", (d) => colorScale(d))
+    .attr("x", -dimensions.barWidth / 2)
+    .attr("width", dimensions.barWidth)
+    .attr("y", (d) => startYScale(d) - dimensions.pathHeight / 2)
+    .attr("height", dimensions.pathHeight);
 
   const legendGroup = bounds
-    .append('g')
-    .attr('fill', ' hsl(215, 10%, 56%)')
+    .append("g")
+    .attr("fill", " hsl(215, 10%, 56%)")
     .attr(
-      'transform',
-      `translate(${dimensions.boundedWidth - dimensions.barWidth} ${endYScale(
-        educationIds[educationIds.length - 1]
-      ) -
-        dimensions.pathHeight / 2})`
+      "transform",
+      `translate(${dimensions.boundedWidth - dimensions.barWidth} ${
+        endYScale(educationIds[educationIds.length - 1]) -
+        dimensions.pathHeight / 2
+      })`
     );
 
   const femaleLegendGroup = legendGroup
-    .append('g')
-    .attr('transform', `translate(${dimensions.barWidth / 2} 0)`);
+    .append("g")
+    .attr("transform", `translate(${dimensions.barWidth / 2} 0)`);
   femaleLegendGroup
-    .append('path')
-    .attr('d', 'M 0 -5 v -15')
-    .attr('fill', 'none')
-    .attr('stroke', 'currentColor')
-    .attr('stroke-width', 0.5);
+    .append("path")
+    .attr("d", "M 0 -5 v -15")
+    .attr("fill", "none")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 0.5);
 
   femaleLegendGroup
-    .append('circle')
-    .attr('opacity', 0.5)
-    .attr('transform', `translate(0 -30)`)
-    .attr('r', radiusCircle)
-    .attr('fill', 'hsl(215, 10%, 56%)');
+    .append("circle")
+    .attr("opacity", 0.5)
+    .attr("transform", `translate(0 -30)`)
+    .attr("r", radiusCircle)
+    .attr("fill", "hsl(215, 10%, 56%)");
 
   femaleLegendGroup
-    .append('text')
-    .attr('transform', `translate(-12 -30)`)
-    .attr('text-anchor', 'end')
-    .attr('dominant-baseline', 'middle')
-    .attr('font-size', 11)
-    .text('Female');
+    .append("text")
+    .attr("transform", `translate(-12 -30)`)
+    .attr("text-anchor", "end")
+    .attr("dominant-baseline", "middle")
+    .attr("font-size", 11)
+    .text("Female");
 
   const maleLegendGroup = legendGroup
-    .append('g')
+    .append("g")
     .attr(
-      'transform',
-      `translate(${dimensions.barWidth +
-        dimensions.barPadding +
-        dimensions.barWidth / 2} 0)`
+      "transform",
+      `translate(${
+        dimensions.barWidth + dimensions.barPadding + dimensions.barWidth / 2
+      } 0)`
     );
   maleLegendGroup
-    .append('path')
-    .attr('d', 'M 0 -5 v -15')
-    .attr('fill', 'none')
-    .attr('stroke', 'currentColor')
-    .attr('stroke-width', 0.5);
+    .append("path")
+    .attr("d", "M 0 -5 v -15")
+    .attr("fill", "none")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 0.5);
 
   maleLegendGroup
-    .append('polygon')
-    .attr('opacity', 0.5)
-    .attr('transform', `translate(0 -30)`)
-    .attr('points', pointsTriangle)
-    .attr('fill', 'hsl(215, 10%, 56%)');
+    .append("polygon")
+    .attr("opacity", 0.5)
+    .attr("transform", `translate(0 -30)`)
+    .attr("points", pointsTriangle)
+    .attr("fill", "hsl(215, 10%, 56%)");
 
   maleLegendGroup
-    .append('text')
-    .attr('transform', `translate(12 -30)`)
-    .attr('text-anchor', 'start')
-    .attr('dominant-baseline', 'middle')
-    .attr('font-size', 11)
-    .text('Male');
+    .append("text")
+    .attr("transform", `translate(12 -30)`)
+    .attr("text-anchor", "start")
+    .attr("dominant-baseline", "middle")
+    .attr("font-size", 11)
+    .text("Male");
 
   /* METRICS */
   const dataMetrics = educationIds.map(() =>
     sexIds.map(() => sesIds.map(() => 0))
   );
 
-  metricsGroup.attr('transform', `translate(${dimensions.boundedWidth} 0)`);
+  metricsGroup.attr("transform", `translate(${dimensions.boundedWidth} 0)`);
 
-  const heightScale = scaleLinear().range([0, dimensions.pathHeight]);
+  const heightScale = scaleLinear().range([0, dimensions.pathHeight]); // domain defaults to [0, 1]
 
   function highlightMetrics(metrics) {
     const data = merge(
@@ -356,42 +377,43 @@ async function drawAnimatedSankey() {
     );
 
     metricsGroup
-      .selectAll('rect')
+      .selectAll("rect")
       .data(data)
-      .join('rect')
-      .style('transition', 'all 0.25s ease-out')
+      .join("rect")
+      .style("transition", "all 0.25s ease-out")
       .attr(
-        'transform',
-        d =>
-          `translate(${-dimensions.barWidth +
-            (dimensions.barWidth + dimensions.barPadding) * d.sex} ${endYScale(
-            d.education
-          ) -
-            dimensions.pathHeight / 2})`
+        "transform",
+        (d) =>
+          `translate(${
+            -dimensions.barWidth +
+            (dimensions.barWidth + dimensions.barPadding) * d.sex
+          } ${endYScale(d.education) - dimensions.pathHeight / 2})`
       )
-      .attr('width', dimensions.barWidth)
-      .attr('fill', d => (d.total ? colorScale(d.ses) : 'hsl(240, 4%, 86%)'))
-      .attr('y', d => (d.total ? d.y : 0))
-      .attr('height', d => (d.total ? d.height : dimensions.pathHeight));
+      .attr("width", dimensions.barWidth)
+      .attr("fill", (d) => (d.total ? colorScale(d.ses) : "hsl(240, 4%, 86%)"))
+      .attr("y", (d) => (d.total ? d.y : 0))
+      .attr("height", (d) => (d.total ? d.height : dimensions.pathHeight));
 
     metricsGroup
-      .selectAll('text')
+      .selectAll("text")
       .data(data)
-      .join('text')
-      .text(d => d.count)
+      .join("text")
+      .text((d) => d.count)
       .attr(
-        'transform',
-        d =>
-          `translate(${32 + 28 + d.ses * 32} ${12 +
+        "transform",
+        (d) =>
+          `translate(${32 + 28 + d.ses * 32} ${
+            12 +
             15 +
             endYScale(d.education) -
             dimensions.pathHeight / 2 +
-            16 * d.sex})`
+            16 * d.sex
+          })`
       )
-      .attr('fill', d => colorScale(d.ses))
-      .attr('font-size', 13)
-      .attr('font-weight', 600)
-      .attr('dominant-baseline', 'middle');
+      .attr("fill", (d) => colorScale(d.ses))
+      .attr("font-size", 13)
+      .attr("font-weight", 600)
+      .attr("dominant-baseline", "middle");
   }
 
   /* PEOPLE */
@@ -409,54 +431,54 @@ async function drawAnimatedSankey() {
 
   function updateMarkers(elapsed) {
     people = [
-      ...people.filter(d => xProgressAccessor(elapsed, d) < 1),
+      ...people.filter((d) => xProgressAccessor(elapsed, d) < 1),
       generatePerson(elapsed),
     ];
 
-    const updateFemales = markersGroup
-      .selectAll('.marker-circle')
-      .data(people.filter(d => sexAccessor(d) === 0), d => d.id);
+    const updateFemales = markersGroup.selectAll(".marker-circle").data(
+      people.filter((d) => sexAccessor(d) === 0),
+      (d) => d.id
+    );
 
     updateFemales
       .enter()
-      .append('circle')
-      .attr('class', 'marker marker-circle')
-      .attr('fill', d => colorScale(sesAccessor(d)))
-      .attr('r', radiusCircle)
-      .style('mix-blend-mode', 'multiply')
-      .style('opacity', 0)
+      .append("circle")
+      .attr("class", "marker marker-circle")
+      .attr("fill", (d) => colorScale(sesAccessor(d)))
+      .attr("r", radiusCircle)
+      .style("mix-blend-mode", "multiply")
+      .style("opacity", 0)
       .transition()
       .duration(200)
-      .style('opacity', 1);
+      .style("opacity", 1);
 
-    const updateMale = markersGroup
-      .selectAll('.marker-triangle')
-      .data(people.filter(d => sexAccessor(d) === 1), d => d.id);
+    const updateMale = markersGroup.selectAll(".marker-triangle").data(
+      people.filter((d) => sexAccessor(d) === 1),
+      (d) => d.id
+    );
 
     updateMale
       .enter()
-      .append('polygon')
-      .attr('class', 'marker marker-triangle')
-      .attr('fill', d => colorScale(sesAccessor(d)))
-      .attr('points', pointsTriangle)
-      .style('mix-blend-mode', 'multiply')
-      .style('opacity', 0)
+      .append("polygon")
+      .attr("class", "marker marker-triangle")
+      .attr("fill", (d) => colorScale(sesAccessor(d)))
+      .attr("points", pointsTriangle)
+      .style("mix-blend-mode", "multiply")
+      .style("opacity", 0)
       .transition()
       .duration(200)
-      .style('opacity', 1);
+      .style("opacity", 1);
 
     updateFemales
       .exit()
       .merge(updateMale.exit())
       .each(({ sex, ses, education }) => {
         dataMetrics[education][sex][ses] += 1;
-      })
-      .call(() => {
         highlightMetrics(dataMetrics);
       })
       .remove();
 
-    selectAll('.marker').attr('transform', d => {
+    selectAll(".marker").attr("transform", (d) => {
       const xProgress = xProgressAccessor(elapsed, d);
       const x = xScale(xProgress);
       const yStart = startYScale(sesAccessor(d));

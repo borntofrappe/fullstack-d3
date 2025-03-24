@@ -13,35 +13,34 @@ body {
   font-family: system-ui;
 }
 
-#root {
-  margin: 1rem;
-}
-
 #root > * + * {
-  margin-top: 1rem;
+  margin-block-start: 1rem;
 }
 
-header {
-  text-align: center;
+header > * + * {
+  margin-block-start: 0.25rem;
+}
+
+header > p,
+header > p + * {
+  margin-block-start: 1rem;
 }
 
 h2 {
-  font-weight: 700;
   font-size: 1.25rem;
+  font-weight: 600;
 }
 
 p {
-  margin: 1rem auto;
-  max-width: 600px;
   line-height: 1.5;
   font-size: 0.95rem;
-  color: hsl(215, 10%, 56%);
+  color: hsl(217, 13%, 32%);
 }
 
 footer {
   font-size: 0.9rem;
   font-style: italic;
-  color: hsl(215, 10%, 56%);
+  color: hsl(217, 13%, 32%);
 }
 
 a {
