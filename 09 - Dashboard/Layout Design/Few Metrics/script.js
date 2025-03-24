@@ -64,7 +64,7 @@ async function drawDashboard() {
   const root = select("#root");
   const header = root.append("header");
   header.append("h1").text("Weather in New York City");
-  header.append("h2").text(dateFormatter(dateAccessor(selectedDay)));
+  header.append("h2").text(dateFormatter(dateAccessor(dataset[selectedDay])));
   const section = root.append("section");
 
   const dimensions = {
