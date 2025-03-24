@@ -42,8 +42,8 @@ async function drawDashboard() {
       text: scaleQuantize()
         .domain(domain)
         .range(["Very low", "Low", "Average", "High", "Very high"]),
-      rotate: scaleLinear().domain(domain).range(fillRange),
-      fill: scaleLinear().domain(domain).range([0.2, 1]),
+      rotate: scaleLinear().domain(domain).range([0, 180]),
+      fill: scaleLinear().domain(domain).range(fillRange),
       strokeDashoffset: scaleLinear().domain(domain).range([1, 0]),
     };
   });
@@ -70,7 +70,6 @@ async function drawDashboard() {
       left: 15,
     },
   };
-
 
   const strokeWidthCircle = 1;
   const radiusCircle = dimensions.margin.bottom - strokeWidthCircle / 2;
