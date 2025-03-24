@@ -124,6 +124,7 @@ async function drawMap() {
     bounds
       .append("g")
       .append("circle")
+      .style("pointer-events", "none")
       .attr("cx", x)
       .attr("cy", y)
       .attr("fill", "hsl(234, 51%, 71%)")
